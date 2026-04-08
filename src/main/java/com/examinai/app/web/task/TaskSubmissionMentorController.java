@@ -22,6 +22,8 @@ import com.examinai.app.domain.task.GitRetrievalState;
 import com.examinai.app.domain.task.Submission;
 import com.examinai.app.domain.task.SubmissionStatus;
 import com.examinai.app.domain.user.UserRepository;
+import com.examinai.app.integration.ai.AiDraftAssessmentService;
+import com.examinai.app.integration.ai.InferenceUnavailableException;
 import com.examinai.app.service.MentorReviewService;
 import com.examinai.app.service.SourceRetrievalService;
 import com.examinai.app.service.SubmissionService;
@@ -45,16 +47,20 @@ public class TaskSubmissionMentorController {
 
 	private final MentorReviewService mentorReviewService;
 
+	private final AiDraftAssessmentService aiDraftAssessmentService;
+
 	private final UserRepository userRepository;
 
 	public TaskSubmissionMentorController(TaskService taskService, TaskAssignmentService taskAssignmentService,
 			SubmissionService submissionService, SourceRetrievalService sourceRetrievalService,
-			MentorReviewService mentorReviewService, UserRepository userRepository) {
+			MentorReviewService mentorReviewService, AiDraftAssessmentService aiDraftAssessmentService,
+			UserRepository userRepository) {
 		this.taskService = taskService;
 		this.taskAssignmentService = taskAssignmentService;
 		this.submissionService = submissionService;
 		this.sourceRetrievalService = sourceRetrievalService;
 		this.mentorReviewService = mentorReviewService;
+		this.aiDraftAssessmentService = aiDraftAssessmentService;
 		this.userRepository = userRepository;
 	}
 
@@ -134,6 +140,30 @@ public class TaskSubmissionMentorController {
 		}
 		sourceRetrievalService.retrieveAndPersist(submission.getId());
 		redirectAttributes.addFlashAttribute("submissionNotice", "Fetch completed. Review status below.");
+		return "redirect:/tasks/" + taskId + "/submissions/" + internId;
+	}
+
+	@PostMapping("/{taskId}/submissions/{internId}/ai-draft-assessment")
+	public String generateAiDraft(@PathVariable UUID taskId, @PathVariable UUID internId, RedirectAttributes redirectAttributes) {
+		taskService.requireTask(taskId);
+		requireAssignment(taskId, internId);
+		Submission submission = submissionService.findForTaskAndInternOrNull(taskId, internId);
+		if (submission == null) {
+			redirectAttributes.addFlashAttribute("reviewError", "Save submission coordinates before requesting an AI draft.");
+			return "redirect:/tasks/" + taskId + "/submissions/" + internId;
+		}
+		try {
+			String draft = aiDraftAssessmentService.generateDraft(submission.getId());
+			redirectAttributes.addFlashAttribute("aiDraftAssessment", draft);
+			redirectAttributes.addFlashAttribute("submissionNotice",
+					"AI draft generated below. Assistive only—you retain final judgment.");
+		}
+		catch (IllegalStateException ex) {
+			redirectAttributes.addFlashAttribute("reviewError", ex.getMessage());
+		}
+		catch (InferenceUnavailableException ex) {
+			redirectAttributes.addFlashAttribute("reviewError", "AI draft unavailable. You can edit feedback manually. (" + ex.getMessage() + ")");
+		}
 		return "redirect:/tasks/" + taskId + "/submissions/" + internId;
 	}
 

@@ -1,4 +1,10 @@
 examinai:
+  ai:
+    draft-assessment:
+      max-source-chars: ${EXAMINAI_AI_DRAFT_MAX_SOURCE_CHARS:100000}
+      request-timeout-seconds: ${EXAMINAI_AI_DRAFT_TIMEOUT_SECONDS:120}
+      max-retries: ${EXAMINAI_AI_DRAFT_MAX_RETRIES:2}
+      retry-backoff-ms: ${EXAMINAI_AI_DRAFT_RETRY_BACKOFF_MS:400}
   git:
     # Deployment-only: set via environment (see .env.example). Never collect from UI or database.
     base-url: ${GIT_PROVIDER_BASE_URL:}
@@ -10,6 +16,15 @@ examinai:
 spring:
   application:
     name: examinai
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://127.0.0.1:11434}
+      chat:
+        options:
+          model: ${OLLAMA_MODEL:llama3.2}
+      init:
+        pull-model-strategy: never
+        max-retries: 0
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
   jpa:

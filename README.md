@@ -16,6 +16,14 @@ Use **environment variables** for credentials—do not commit secrets. See **`.e
 
 Git HTTP calls use **Spring `RestClient` only** (not `WebClient`); configure **`GIT_PROVIDER_BASE_URL`** to a GitHub REST v3–compatible API root when ingesting source (e.g. `https://api.github.com`).
 
+## AI draft assessments (pilot; FR18 / NFR4 / NFR7)
+
+Mentors can request an **assistive** draft from **Spring AI** (Ollama-backed `ChatClient` in code). Controllers delegate to **`com.examinai.app.integration.ai`** only—no ad-hoc HTTP calls to an LLM from the web layer.
+
+**Data minimization:** The prompt includes the **task title and instructions** plus **truncated normalized source** already stored on the submission after a successful fetch. It does **not** include Git provider tokens, `.env` or credential material, or other deployment secrets.
+
+Configure inference with **`OLLAMA_BASE_URL`**, **`OLLAMA_MODEL`**, and optional bounds: **`EXAMINAI_AI_DRAFT_MAX_SOURCE_CHARS`**, **`EXAMINAI_AI_DRAFT_TIMEOUT_SECONDS`**, **`EXAMINAI_AI_DRAFT_MAX_RETRIES`**, **`EXAMINAI_AI_DRAFT_RETRY_BACKOFF_MS`** (see `application.yml`).
+
 Example local database with Docker:
 
 ```bash
