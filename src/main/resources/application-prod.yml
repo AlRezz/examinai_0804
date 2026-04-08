@@ -1,0 +1,18 @@
+# Production-oriented defaults; supply credentials via environment (no secrets in-repo).
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/examinai}
+    username: ${DATABASE_USERNAME:examinai}
+    password: ${DATABASE_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://127.0.0.1:11434}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

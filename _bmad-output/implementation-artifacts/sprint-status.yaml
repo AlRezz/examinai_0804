@@ -43,7 +43,7 @@ story_location: "{project-root}/_bmad-output/implementation-artifacts"
 
 development_status:
   epic-1: in-progress
-  1-1-bootstrap-application-from-spring-initializr: ready-for-dev
+  1-1-bootstrap-application-from-spring-initializr: review
   1-2-database-connectivity-and-first-liquibase-changelog: ready-for-dev
   1-3-user-identity-persistence-and-password-hashing: ready-for-dev
   1-4-session-login-logout-and-csrf-safe-navigation: ready-for-dev

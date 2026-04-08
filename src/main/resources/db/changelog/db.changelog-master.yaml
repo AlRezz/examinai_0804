@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0001-baseline-tag
+      author: examinai
+      changes:
+        - tagDatabase:
+            tag: baseline
