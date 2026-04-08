@@ -54,7 +54,7 @@ After migrations run, a **bootstrap administrator** exists for development and a
 - **Email:** `admin@examinai.local`
 - **Temporary password:** `ChangeMe!Dev1` (documented here only; **not** stored as plaintext in the database or migrations)
 
-The row stores a **BCrypt** hash. **Change this password** (or drop the user) before any shared or production-like environment. Spring Security login wiring arrives in story **1.4**; until then you can inspect the account via tests or SQL tools.
+The row stores a **BCrypt** hash. **Change this password** (or drop the user) before any shared or production-like environment. With the app running, open **`/login`** and sign in with the email and password above; administrators are redirected to **`/admin/users`** for account management (stories **1.4–1.5**).
 
 ## Tests
 

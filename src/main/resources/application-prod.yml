@@ -1,4 +1,14 @@
 # Production-oriented defaults; supply credentials via environment (no secrets in-repo).
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: true
+  error:
+    include-stacktrace: never
+    include-message: on_param
+
 spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:${DATABASE_URL:jdbc:postgresql://localhost:5432/examinai}}

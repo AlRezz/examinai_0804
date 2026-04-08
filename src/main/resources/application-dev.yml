@@ -1,4 +1,11 @@
 # Local development against PostgreSQL. Override URLs and credentials via environment (see README / .env.example).
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: false
+
 spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/examinai}

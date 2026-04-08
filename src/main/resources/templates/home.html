@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+	<meta charset="UTF-8" />
+	<title>Home</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+<main>
+	<h1>Home</h1>
+	<p>Signed in as <strong sec:authentication="name">user</strong>.</p>
+	<ul>
+		<li><a th:href="@{/app/secure}" href="#">Protected sample</a></li>
+		<li sec:authorize="hasRole('ADMINISTRATOR')"><a th:href="@{/admin/users}" href="#">User management</a></li>
+	</ul>
+	<form th:action="@{/logout}" method="post">
+		<button type="submit">Sign out</button>
+	</form>
+</main>
+</body>
+</html>

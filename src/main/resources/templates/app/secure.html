@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+	<meta charset="UTF-8" />
+	<title>Protected area</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+<main>
+	<h1>Protected sample</h1>
+	<p>This page requires a signed-in session.</p>
+	<p><a th:href="@{/home}" href="#">Back to home</a></p>
+	<form th:action="@{/logout}" method="post">
+		<button type="submit">Sign out</button>
+	</form>
+</main>
+</body>
+</html>

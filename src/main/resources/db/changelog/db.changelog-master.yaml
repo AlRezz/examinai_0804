@@ -5,3 +5,6 @@ databaseChangeLog:
   - include:
       file: changes/001-users-and-roles.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/002-user-account-enabled.yaml
+      relativeToChangelogFile: true

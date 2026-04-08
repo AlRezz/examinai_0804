@@ -38,6 +38,7 @@ class UserRepositoryTest {
 		assertThat(admin).isPresent();
 		assertThat(passwordEncoder.matches("ChangeMe!Dev1", admin.get().getPasswordHash())).isTrue();
 		assertThat(admin.get().getRoles()).extracting(Role::getName).containsExactly("administrator");
+		assertThat(admin.get().isEnabled()).isTrue();
 	}
 
 	@Test

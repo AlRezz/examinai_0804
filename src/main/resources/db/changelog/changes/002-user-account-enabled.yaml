@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-01-users-add-enabled
+      author: examinai
+      comment: Account enable/disable for administration (story 1.5)
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: enabled
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false

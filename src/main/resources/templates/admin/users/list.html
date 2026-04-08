@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+	<meta charset="UTF-8" />
+	<title>Users</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+<main>
+	<h1>Users</h1>
+	<p th:if="${adminNotice}" role="status" th:text="${adminNotice}">Notice</p>
+	<p><a th:href="@{/admin/users/new}" href="#">Create user</a> — <a th:href="@{/home}" href="#">Home</a></p>
+	<table>
+		<thead>
+		<tr>
+			<th scope="col">Email</th>
+			<th scope="col">Enabled</th>
+			<th scope="col">Roles</th>
+			<th scope="col">Actions</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr th:each="u : ${users}">
+			<td th:text="${u.email}">email</td>
+			<td th:text="${u.enabled} ? 'yes' : 'no'">yes</td>
+			<td>
+				<th:block th:each="r, stat : ${u.roles}">
+					<span th:text="${r.name}">role</span><span th:unless="${stat.last}">, </span>
+				</th:block>
+			</td>
+			<td><a th:href="@{/admin/users/{id}/edit(id=${u.id})}" href="#">Edit</a></td>
+		</tr>
+		</tbody>
+	</table>
+	<form th:action="@{/logout}" method="post">
+		<button type="submit">Sign out</button>
+	</form>
+</main>
+</body>
+</html>

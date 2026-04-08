@@ -33,6 +33,9 @@ public class User {
 	@Column(name = "password_hash", nullable = false, length = 255)
 	private String passwordHash;
 
+	@Column(name = "enabled", nullable = false)
+	private boolean enabled = true;
+
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;
 
@@ -83,6 +86,14 @@ public class User {
 		this.passwordHash = passwordHash;
 	}
 
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
 	public Instant getCreatedAt() {
 		return createdAt;
 	}
@@ -97,6 +108,10 @@ public class User {
 
 	public void addRole(Role role) {
 		roles.add(role);
-		role.getUsers().add(this);
+	}
+
+	public void replaceRoles(Set<Role> newRoles) {
+		roles.clear();
+		newRoles.forEach(roles::add);
 	}
 }

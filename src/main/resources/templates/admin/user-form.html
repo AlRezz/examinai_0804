@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8" />
+	<title th:text="${createMode} ? 'Create user' : 'Edit user'">User</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+<main>
+	<h1 th:text="${createMode} ? 'Create user' : 'Edit user'">User</h1>
+	<p><a th:href="@{/admin/users}" href="#">Back to list</a></p>
+
+	<form th:if="${createMode}" th:action="@{/admin/users/new}" th:object="${createRequest}" method="post" novalidate>
+		<p th:if="${#fields.hasGlobalErrors()}" role="alert" th:errors="*{global}">Error</p>
+		<p>
+			<label for="email">Email</label><br />
+			<input id="email" th:field="*{email}" type="email" autocomplete="off" required />
+			<span th:if="${#fields.hasErrors('email')}" th:errors="*{email}">error</span>
+		</p>
+		<p>
+			<label for="password">Temporary password</label><br />
+			<input id="password" th:field="*{password}" type="password" autocomplete="new-password" required />
+			<span th:if="${#fields.hasErrors('password')}" th:errors="*{password}">error</span>
+		</p>
+		<fieldset>
+			<legend>Roles</legend>
+			<div th:each="r : ${allRoles}">
+				<label th:for="${'role-' + r.id}">
+					<input type="checkbox" name="roles" th:id="${'role-' + r.id}" th:value="${r.name}"
+						th:checked="${createRequest.roles != null and createRequest.roles.contains(r.name)}" />
+					<span th:text="${r.name}">role</span>
+				</label>
+			</div>
+			<p th:if="${#fields.hasErrors('roles')}" th:errors="*{roles}">error</p>
+		</fieldset>
+		<p>
+			<button type="submit">Create</button>
+		</p>
+	</form>
+
+	<form th:unless="${createMode}" th:action="@{/admin/users/{id}/edit(id=${userId})}" th:object="${editRequest}" method="post">
+		<p th:if="${#fields.hasGlobalErrors()}" role="alert" th:errors="*{global}">Error</p>
+		<p>Email: <strong th:text="${email}">user</strong></p>
+		<p>
+			<label for="enabled">
+				<input id="enabled" type="checkbox" th:field="*{enabled}" />
+				Account enabled
+			</label>
+		</p>
+		<p>
+			<label for="newPassword">New password (optional)</label><br />
+			<input id="newPassword" th:field="*{newPassword}" type="password" autocomplete="new-password" />
+			<span th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}">error</span>
+		</p>
+		<fieldset>
+			<legend>Roles</legend>
+			<div th:each="r : ${allRoles}">
+				<label th:for="${'erole-' + r.id}">
+					<input type="checkbox" name="roles" th:id="${'erole-' + r.id}" th:value="${r.name}"
+						th:checked="${editRequest.roles != null and editRequest.roles.contains(r.name)}" />
+					<span th:text="${r.name}">role</span>
+				</label>
+			</div>
+			<p th:if="${#fields.hasErrors('roles')}" th:errors="*{roles}">error</p>
+		</fieldset>
+		<p>
+			<button type="submit">Save</button>
+		</p>
+	</form>
+</main>
+</body>
+</html>

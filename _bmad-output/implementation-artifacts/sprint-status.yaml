@@ -46,8 +46,8 @@ development_status:
   1-1-bootstrap-application-from-spring-initializr: review
   1-2-database-connectivity-and-first-liquibase-changelog: review
   1-3-user-identity-persistence-and-password-hashing: review
-  1-4-session-login-logout-and-csrf-safe-navigation: ready-for-dev
-  1-5-role-based-access-and-administrator-user-management-ui: ready-for-dev
+  1-4-session-login-logout-and-csrf-safe-navigation: review
+  1-5-role-based-access-and-administrator-user-management-ui: review
   epic-1-retrospective: optional
 
   epic-2: in-progress

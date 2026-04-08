@@ -1,3 +1,10 @@
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: false
+
 spring:
   datasource:
     # Unique DB name per process + Liquibase + H2/DATABASE_TO_LOWER avoids stale DATABASECHANGELOG between test contexts.
