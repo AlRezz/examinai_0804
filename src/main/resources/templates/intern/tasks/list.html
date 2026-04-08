@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8" />
+	<title>My tasks</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+<main>
+	<h1>My assigned tasks</h1>
+	<p><a th:href="@{/home}">Home</a></p>
+	<ul>
+		<li th:each="t : ${tasks}">
+			<a th:href="@{/intern/tasks/{id}(id=${t.id})}" th:text="${t.title}">task</a>
+			— due <span th:text="${t.dueDate}">due</span>
+		</li>
+	</ul>
+	<p th:if="${#lists.isEmpty(tasks)}">No assignments yet.</p>
+	<form th:action="@{/logout}" method="post">
+		<button type="submit">Sign out</button>
+	</form>
+</main>
+</body>
+</html>

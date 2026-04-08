@@ -1,0 +1,162 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-01-create-tasks
+      author: examinai
+      comment: Program tasks (Story 2.1)
+      changes:
+        - createTable:
+            tableName: tasks
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: title
+                  type: varchar(500)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: due_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 003-02-create-task-assignments
+      author: examinai
+      comment: Task–intern assignments (Story 2.2); replace-all updates in application layer
+      changes:
+        - createTable:
+            tableName: task_assignments
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: task_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: intern_user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: task_assignments
+            columnNames: task_id, intern_user_id
+            constraintName: uk_task_assignments_task_intern
+        - addForeignKeyConstraint:
+            baseTableName: task_assignments
+            baseColumnNames: task_id
+            constraintName: fk_task_assignments_task
+            referencedTableName: tasks
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: task_assignments
+            baseColumnNames: intern_user_id
+            constraintName: fk_task_assignments_intern
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - createIndex:
+            indexName: idx_task_assignments_intern_user
+            tableName: task_assignments
+            columns:
+              - column:
+                  name: intern_user_id
+
+  - changeSet:
+      id: 003-03-create-submissions
+      author: examinai
+      comment: VC coordinates per assigned intern+task (Story 2.4); one row per pair, upsert = newest wins
+      changes:
+        - createTable:
+            tableName: submissions
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: task_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: intern_user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: repo_identifier
+                  type: varchar(2048)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: commit_sha
+                  type: varchar(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: path_scope
+                  type: varchar(512)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: status
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: submissions
+            columnNames: task_id, intern_user_id
+            constraintName: uk_submissions_task_intern
+        - addForeignKeyConstraint:
+            baseTableName: submissions
+            baseColumnNames: task_id
+            constraintName: fk_submissions_task
+            referencedTableName: tasks
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: submissions
+            baseColumnNames: intern_user_id
+            constraintName: fk_submissions_intern
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE

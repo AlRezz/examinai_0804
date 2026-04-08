@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8" />
+	<title>Assign interns</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+<main>
+	<h1>Assign interns</h1>
+	<p>Task: <strong th:text="${task.title}">task</strong></p>
+	<p th:if="${assignmentError}" th:text="${assignmentError}" style="color: crimson;">error</p>
+	<p>Selected interns replace all existing assignments for this task (replace-all).</p>
+	<form th:action="@{/tasks/{id}/assignments(id=${task.id})}" method="post">
+		<div th:each="u : ${interns}">
+			<label>
+				<input type="checkbox" name="internIds" th:value="${u.id}"
+				       th:checked="${selectedInternIds.contains(u.id)}" />
+				<span th:text="${u.email}">email</span>
+			</label>
+		</div>
+		<p th:if="${#lists.isEmpty(interns)}">No intern accounts exist yet.</p>
+		<button type="submit">Save assignments</button>
+		<a th:href="@{/tasks}">Back</a>
+	</form>
+</main>
+</body>
+</html>

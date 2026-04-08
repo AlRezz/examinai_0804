@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8" />
+	<title th:text="${taskId} != null ? 'Edit task' : 'New task'">Task</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+<main>
+	<h1 th:text="${taskId} != null ? 'Edit task' : 'New task'">Task</h1>
+	<form th:if="${taskId == null}" th:action="@{/tasks/new}" th:object="${taskForm}" method="post">
+		<div>
+			<label>Title<br />
+				<input type="text" th:field="*{title}" maxlength="500" />
+			</label>
+			<p th:if="${#fields.hasErrors('title')}" th:errors="*{title}">err</p>
+		</div>
+		<div>
+			<label>Description / instructions<br />
+				<textarea th:field="*{description}" rows="8" cols="60"></textarea>
+			</label>
+			<p th:if="${#fields.hasErrors('description')}" th:errors="*{description}">err</p>
+		</div>
+		<div>
+			<label>Due date<br />
+				<input type="date" th:field="*{dueDate}" />
+			</label>
+			<p th:if="${#fields.hasErrors('dueDate')}" th:errors="*{dueDate}">err</p>
+		</div>
+		<button type="submit">Save</button>
+		<a th:href="@{/tasks}">Cancel</a>
+	</form>
+	<form th:if="${taskId != null}" th:action="@{/tasks/{id}/edit(id=${taskId})}" th:object="${taskForm}" method="post">
+		<div>
+			<label>Title<br />
+				<input type="text" th:field="*{title}" maxlength="500" />
+			</label>
+			<p th:if="${#fields.hasErrors('title')}" th:errors="*{title}">err</p>
+		</div>
+		<div>
+			<label>Description / instructions<br />
+				<textarea th:field="*{description}" rows="8" cols="60"></textarea>
+			</label>
+			<p th:if="${#fields.hasErrors('description')}" th:errors="*{description}">err</p>
+		</div>
+		<div>
+			<label>Due date<br />
+				<input type="date" th:field="*{dueDate}" />
+			</label>
+			<p th:if="${#fields.hasErrors('dueDate')}" th:errors="*{dueDate}">err</p>
+		</div>
+		<button type="submit">Save</button>
+		<a th:href="@{/tasks}">Cancel</a>
+	</form>
+</main>
+</body>
+</html>

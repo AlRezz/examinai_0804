@@ -51,10 +51,10 @@ development_status:
   epic-1-retrospective: optional
 
   epic-2: in-progress
-  2-1-create-and-edit-tasks: ready-for-dev
-  2-2-assign-tasks-to-interns: ready-for-dev
-  2-3-intern-task-list: ready-for-dev
-  2-4-attach-submission-with-version-control-coordinates: ready-for-dev
+  2-1-create-and-edit-tasks: review
+  2-2-assign-tasks-to-interns: review
+  2-3-intern-task-list: review
+  2-4-attach-submission-with-version-control-coordinates: review
   epic-2-retrospective: optional
 
   epic-3: in-progress

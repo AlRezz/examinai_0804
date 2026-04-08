@@ -11,6 +11,8 @@
 	<p>Signed in as <strong sec:authentication="name">user</strong>.</p>
 	<ul>
 		<li><a th:href="@{/app/secure}" href="#">Protected sample</a></li>
+		<li sec:authorize="hasAnyRole('MENTOR', 'ADMINISTRATOR')"><a th:href="@{/tasks}">Program tasks</a></li>
+		<li sec:authorize="hasRole('INTERN')"><a th:href="@{/intern/tasks}">My assigned tasks</a></li>
 		<li sec:authorize="hasRole('ADMINISTRATOR')"><a th:href="@{/admin/users}" href="#">User management</a></li>
 	</ul>
 	<form th:action="@{/logout}" method="post">

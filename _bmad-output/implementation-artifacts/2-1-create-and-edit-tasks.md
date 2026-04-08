@@ -1,6 +1,6 @@
 # Story 2.1: Create and edit tasks
 
-Status: ready-for-dev
+Status: review
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -28,12 +28,12 @@ so that **interns know what to build and by when**.
 
 ## Tasks / Subtasks
 
-- [ ] Liquibase: `tasks` table (snake_case columns, `due_at` or similar) + changelog include (AC: #2).
-- [ ] Entity `Task`, repository, `TaskService` in `domain.task` (AC: #2).
-- [ ] `TaskController` under `web/task` (or `web/tasks`): list, new, edit, form POST + redirect [Source: architecture **Format Patterns**] (AC: #1–#3).
-- [ ] Thymeleaf templates under `templates/tasks/` (AC: #2–#3).
-- [ ] Secure routes with Spring Security expressions matching mentor/admin (AC: #1).
-- [ ] Tests: service + `@WebMvcTest` or slice tests (AC: #1–#3).
+- [x] Liquibase: `tasks` table (snake_case columns, `due_at` or similar) + changelog include (AC: #2).
+- [x] Entity `Task`, repository, `TaskService` in `domain.task` (AC: #2).
+- [x] `TaskController` under `web/task` (or `web/tasks`): list, new, edit, form POST + redirect [Source: architecture **Format Patterns**] (AC: #1–#3).
+- [x] Thymeleaf templates under `templates/tasks/` (AC: #2–#3).
+- [x] Secure routes with Spring Security expressions matching mentor/admin (AC: #1).
+- [x] Tests: service + `@WebMvcTest` or slice tests (AC: #1–#3). _(Covered via `Epic2TaskAndInternIntegrationTest` + security tests.)_
 
 ## Dev Notes
 
@@ -59,12 +59,32 @@ so that **interns know what to build and by when**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+
+Composer (Cursor agent)
+
 ### Debug Log References
+
 ### Completion Notes List
+
+- Implemented `tasks` table (`title`, `description`, `due_date`, audit columns), `Task` entity, `TaskService`, and `TaskController` with Thymeleaf list/form at `/tasks`. Routes secured with `hasAnyRole('MENTOR', 'ADMINISTRATOR')`. Interns receive 403 on `/tasks/**`.
+
 ### File List
-_(filled by dev agent on completion)_
+
+- `src/main/resources/db/changelog/changes/003-epic2-tasks-assignments-submissions.yaml` (tasks DDL section)
+- `src/main/resources/db/changelog/db.changelog-master.yaml`
+- `src/main/java/com/examinai/app/domain/task/Task.java`
+- `src/main/java/com/examinai/app/domain/task/TaskRepository.java`
+- `src/main/java/com/examinai/app/service/TaskService.java`
+- `src/main/java/com/examinai/app/web/task/TaskForm.java`
+- `src/main/java/com/examinai/app/web/task/TaskController.java`
+- `src/main/resources/templates/tasks/list.html`
+- `src/main/resources/templates/tasks/form.html`
+- `src/main/java/com/examinai/app/config/SecurityConfig.java`
+- `src/main/java/com/examinai/app/security/RoleBasedAuthenticationSuccessHandler.java`
+- `src/main/resources/templates/home.html`
+- `src/test/java/com/examinai/app/web/Epic2TaskAndInternIntegrationTest.java`
+- `src/test/java/com/examinai/app/web/LoginAndSecurityIntegrationTest.java`
 
 ---
 
-**Story completion status:** `ready-for-dev` — Ultimate context engine analysis completed.
+**Story completion status:** `review` — Implementation complete; run independent code review per workflow.

@@ -46,6 +46,11 @@ public class UserManagementService {
 		return roleRepository.findAll(Sort.by("name"));
 	}
 
+	@Transactional(readOnly = true)
+	public List<User> listInternsOrderedByEmail() {
+		return userRepository.findAllWithRoleName("intern");
+	}
+
 	@Transactional
 	public User createUser(String email, String rawPassword, Set<String> roleNames) {
 		String trimmed = email == null ? "" : email.trim();

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8" />
+	<title th:text="${task.title}">Task</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+<main>
+	<h1 th:text="${task.title}">Task</h1>
+	<p><a th:href="@{/intern/tasks}">← My tasks</a></p>
+	<p th:if="${submissionNotice}" th:text="${submissionNotice}">notice</p>
+	<section>
+		<p><strong>Due:</strong> <span th:text="${task.dueDate}">due</span></p>
+		<pre th:text="${task.description}">description</pre>
+	</section>
+	<section th:if="${submission != null}">
+		<h2>Current submission</h2>
+		<ul>
+			<li>Repository: <code th:text="${submission.repoIdentifier}">repo</code></li>
+			<li>Commit: <code th:text="${submission.commitSha}">sha</code></li>
+			<li th:if="${submission.pathScope != null}">Path scope: <code th:text="${submission.pathScope}">path</code></li>
+			<li>Status: <span th:text="${submission.status}">status</span></li>
+			<li>Updated: <span th:text="${submission.updatedAt}">ts</span></li>
+		</ul>
+	</section>
+	<h2 th:text="${submission != null} ? 'Update submission coordinates' : 'Attach submission'">Form</h2>
+	<form th:action="@{/intern/tasks/{id}/submission(id=${task.id})}" th:object="${submissionForm}" method="post">
+		<div>
+			<label>Repository identifier (URL or slug)<br />
+				<input type="text" th:field="*{repoIdentifier}" size="80" maxlength="2048" />
+			</label>
+			<p th:if="${#fields.hasErrors('repoIdentifier')}" th:errors="*{repoIdentifier}">err</p>
+		</div>
+		<div>
+			<label>Commit SHA<br />
+				<input type="text" th:field="*{commitSha}" maxlength="64" />
+			</label>
+			<p th:if="${#fields.hasErrors('commitSha')}" th:errors="*{commitSha}">err</p>
+		</div>
+		<div>
+			<label>Optional path scope<br />
+				<input type="text" th:field="*{pathScope}" maxlength="512" />
+			</label>
+			<p th:if="${#fields.hasErrors('pathScope')}" th:errors="*{pathScope}">err</p>
+		</div>
+		<div th:if="${#fields.hasGlobalErrors()}">
+			<p th:each="err : ${#fields.globalErrors()}" th:text="${err}">global</p>
+		</div>
+		<button type="submit">Save coordinates</button>
+	</form>
+	<form th:action="@{/logout}" method="post">
+		<button type="submit">Sign out</button>
+	</form>
+</main>
+</body>
+</html>

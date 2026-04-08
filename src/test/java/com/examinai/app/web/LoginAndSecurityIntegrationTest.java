@@ -48,6 +48,11 @@ class LoginAndSecurityIntegrationTest {
 			intern.addRole(roleRepository.findByName("intern").orElseThrow());
 			userRepository.save(intern);
 		}
+		if (userRepository.findByEmail("itest-mentor@examinai.local").isEmpty()) {
+			User mentor = new User("itest-mentor@examinai.local", passwordEncoder.encode("ItestMentor!8"));
+			mentor.addRole(roleRepository.findByName("mentor").orElseThrow());
+			userRepository.save(mentor);
+		}
 	}
 
 	@Test
@@ -59,11 +64,19 @@ class LoginAndSecurityIntegrationTest {
 	}
 
 	@Test
-	void loginSuccessRedirectsNonAdminToHome() throws Exception {
+	void loginSuccessRedirectsInternToAssignedTasksHome() throws Exception {
 		mockMvc.perform(
 				formLogin("/login").user("itest-intern@examinai.local").password("ItestIntern!8"))
 			.andExpect(authenticated())
-			.andExpect(redirectedUrl("/home"));
+			.andExpect(redirectedUrl("/intern/tasks"));
+	}
+
+	@Test
+	void loginSuccessRedirectsMentorToTasks() throws Exception {
+		mockMvc.perform(
+				formLogin("/login").user("itest-mentor@examinai.local").password("ItestMentor!8"))
+			.andExpect(authenticated())
+			.andExpect(redirectedUrl("/tasks"));
 	}
 
 	@Test

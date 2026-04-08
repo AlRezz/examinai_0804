@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+	<meta charset="UTF-8" />
+	<title>Tasks</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+<main>
+	<h1>Program tasks</h1>
+	<p th:if="${taskNotice}" th:text="${taskNotice}">notice</p>
+	<p><a th:href="@{/tasks/new}">New task</a> · <a th:href="@{/home}">Home</a></p>
+	<table border="1" cellpadding="6" cellspacing="0">
+		<thead>
+		<tr>
+			<th>Title</th>
+			<th>Due</th>
+			<th>Actions</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr th:each="t : ${tasks}">
+			<td th:text="${t.title}">title</td>
+			<td th:text="${t.dueDate}">due</td>
+			<td>
+				<a th:href="@{/tasks/{id}/edit(id=${t.id})}">Edit</a>
+				·
+				<a th:href="@{/tasks/{id}/assignments(id=${t.id})}">Assign interns</a>
+			</td>
+		</tr>
+		<tr th:if="${#lists.isEmpty(tasks)}">
+			<td colspan="3">No tasks yet.</td>
+		</tr>
+		</tbody>
+	</table>
+	<form th:action="@{/logout}" method="post">
+		<button type="submit">Sign out</button>
+	</form>
+</main>
+</body>
+</html>

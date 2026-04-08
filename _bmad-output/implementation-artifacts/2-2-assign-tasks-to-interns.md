@@ -1,6 +1,6 @@
 # Story 2.2: Assign tasks to interns
 
-Status: ready-for-dev
+Status: review
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -24,11 +24,11 @@ so that **each intern sees only their own assigned work later**.
 
 ## Tasks / Subtasks
 
-- [ ] Liquibase: `task_assignments` (or `intern_task_assignments`) with FKs to `tasks` and `users`; unique constraint where appropriate (AC: #1).
-- [ ] Domain services: assign, list by task, update strategy per AC #2 (AC: #1–#2).
-- [ ] Mentor/admin UI: pick task, multi-select interns, submit (AC: #1–#2).
-- [ ] Secure endpoints: same policy as task management—mentor/admin only (AC: #1).
-- [ ] Tests: service + web slice proving intern cannot assign (AC: #1).
+- [x] Liquibase: `task_assignments` (or `intern_task_assignments`) with FKs to `tasks` and `users`; unique constraint where appropriate (AC: #1).
+- [x] Domain services: assign, list by task, update strategy per AC #2 (AC: #1–#2).
+- [x] Mentor/admin UI: pick task, multi-select interns, submit (AC: #1–#2).
+- [x] Secure endpoints: same policy as task management—mentor/admin only (AC: #1).
+- [x] Tests: service + web slice proving intern cannot assign (AC: #1). _(Isolation covered in `Epic2TaskAndInternIntegrationTest`.)_
 
 ## Dev Notes
 
@@ -52,12 +52,28 @@ so that **each intern sees only their own assigned work later**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+
+Composer (Cursor agent)
+
 ### Debug Log References
+
 ### Completion Notes List
+
+- Added `task_assignments` with unique `(task_id, intern_user_id)`. **`TaskAssignmentService.replaceAssignmentsForTask`** implements **replace-all**: POST clears previous rows for the task and re-inserts selected interns; interns must have role `intern`. UI: `/tasks/{id}/assignments` with checkboxes. `UserManagementService.listInternsOrderedByEmail()` feeds intern list.
+
 ### File List
-_(filled by dev agent on completion)_
+
+- `src/main/resources/db/changelog/changes/003-epic2-tasks-assignments-submissions.yaml` (task_assignments section)
+- `src/main/java/com/examinai/app/domain/task/TaskAssignment.java`
+- `src/main/java/com/examinai/app/domain/task/TaskAssignmentRepository.java`
+- `src/main/java/com/examinai/app/service/TaskAssignmentService.java`
+- `src/main/java/com/examinai/app/service/UserManagementService.java`
+- `src/main/java/com/examinai/app/domain/user/UserRepository.java`
+- `src/main/java/com/examinai/app/web/task/TaskAssignmentController.java`
+- `src/main/resources/templates/tasks/assign.html`
+- `src/main/resources/templates/tasks/list.html`
+- `src/test/java/com/examinai/app/web/Epic2TaskAndInternIntegrationTest.java`
 
 ---
 
-**Story completion status:** `ready-for-dev` — Ultimate context engine analysis completed.
+**Story completion status:** `review` — Implementation complete; run independent code review per workflow.
