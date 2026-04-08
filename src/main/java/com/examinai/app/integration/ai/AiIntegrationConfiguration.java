@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties(AiDraftAssessmentProperties.class)
+@EnableConfigurationProperties({ AiDraftAssessmentProperties.class, LlmHealthProbeProperties.class })
 public class AiIntegrationConfiguration {
 
 	@Bean

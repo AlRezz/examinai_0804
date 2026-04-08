@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="banner" th:if="${degradedInference}" class="alert alert-warning border border-warning shadow-sm mb-3" role="status">
+	<strong class="d-block mb-1">Assistive AI temporarily unavailable</strong>
+	<p class="mb-0 small">
+		The model or inference service did not respond in time. You can still save a draft and publish your review manually.
+		<strong>Official outcomes use only the rubric scores and narrative you enter and publish below—they are not model grades.</strong>
+		You may retry &ldquo;Generate AI draft&rdquo; when the service is back.
+	</p>
+</div>
+</body>
+</html>

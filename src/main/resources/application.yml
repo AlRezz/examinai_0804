@@ -1,5 +1,9 @@
 examinai:
   ai:
+    llm-health-probe:
+      enabled: ${EXAMINAI_LLM_HEALTH_PROBE_ENABLED:false}
+      connect-timeout-ms: ${EXAMINAI_LLM_HEALTH_CONNECT_TIMEOUT_MS:2000}
+      read-timeout-ms: ${EXAMINAI_LLM_HEALTH_READ_TIMEOUT_MS:3000}
     draft-assessment:
       max-source-chars: ${EXAMINAI_AI_DRAFT_MAX_SOURCE_CHARS:100000}
       request-timeout-seconds: ${EXAMINAI_AI_DRAFT_TIMEOUT_SECONDS:90}

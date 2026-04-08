@@ -31,8 +31,10 @@ import com.examinai.app.service.SourceRetrievalService;
 import com.examinai.app.service.SubmissionService;
 import com.examinai.app.service.TaskAssignmentService;
 import com.examinai.app.service.TaskService;
+import com.examinai.app.web.DegradedInferenceAttributes;
 import com.examinai.app.web.intern.SubmissionForm;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 @Controller
@@ -151,7 +153,8 @@ public class TaskSubmissionMentorController {
 	}
 
 	@PostMapping("/{taskId}/submissions/{internId}/ai-draft-assessment")
-	public String generateAiDraft(@PathVariable UUID taskId, @PathVariable UUID internId, RedirectAttributes redirectAttributes) {
+	public String generateAiDraft(@PathVariable UUID taskId, @PathVariable UUID internId, HttpSession session,
+			RedirectAttributes redirectAttributes) {
 		taskService.requireTask(taskId);
 		requireAssignment(taskId, internId);
 		Submission submission = submissionService.findForTaskAndInternOrNull(taskId, internId);
@@ -161,6 +164,7 @@ public class TaskSubmissionMentorController {
 		}
 		try {
 			String draft = aiDraftAssessmentService.generateDraft(submission.getId());
+			session.removeAttribute(DegradedInferenceAttributes.SESSION_KEY);
 			aiDraftPersistenceService.persistSuccessfulDraft(submission.getId(), draft);
 			redirectAttributes.addFlashAttribute("submissionNotice",
 					"AI draft saved below. Assistive only—not final until you publish.");
@@ -172,6 +176,7 @@ public class TaskSubmissionMentorController {
 			redirectAttributes.addFlashAttribute("reviewError", ex.getMessage());
 		}
 		catch (InferenceUnavailableException ex) {
+			session.setAttribute(DegradedInferenceAttributes.SESSION_KEY, Boolean.TRUE);
 			String suffix = ex.getMessage() == null ? "" : ex.getMessage().trim();
 			redirectAttributes.addFlashAttribute("reviewError",
 					"AI draft unavailable. You can edit feedback manually. (" + suffix + ")");

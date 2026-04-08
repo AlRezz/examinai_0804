@@ -71,11 +71,11 @@ development_status:
   4-5-outcome-and-submission-history-across-resubmissions: done
   epic-4-retrospective: optional
 
-  epic-5: in-progress
+  epic-5: done
   5-1-request-ai-draft-assessment-via-spring-ai: done
   5-2-persist-draft-separately-and-record-invocation-metadata: done
   5-3-optional-ai-mentor-workflow-without-model-dependence: done
-  5-4-degraded-inference-detection-banner-and-mentor-only-publish: ready-for-dev
+  5-4-degraded-inference-detection-banner-and-mentor-only-publish: done
   epic-5-retrospective: optional
 
   epic-6: in-progress

@@ -14,6 +14,7 @@
 		<p class="text-secondary mb-0">Submissions awaiting review or in progress, ordered by task due date.</p>
 		<p class="mt-2"><a th:href="@{/tasks}">Program tasks</a> · <a th:href="@{/home}">Home</a></p>
 	</header>
+	<div th:replace="~{tasks/fragments/degraded-inference-banner :: banner}"></div>
 	<div class="table-responsive card shadow-sm">
 		<table class="table table-striped table-hover mb-0">
 			<thead class="table-light">

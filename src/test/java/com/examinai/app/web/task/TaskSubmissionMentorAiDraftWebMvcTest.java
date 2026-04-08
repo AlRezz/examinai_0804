@@ -1,5 +1,6 @@
 package com.examinai.app.web.task;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -25,6 +27,7 @@ import com.examinai.app.domain.task.TaskAssignment;
 import com.examinai.app.domain.user.User;
 import com.examinai.app.domain.user.UserRepository;
 import com.examinai.app.integration.ai.AiDraftAssessmentService;
+import com.examinai.app.integration.ai.InferenceUnavailableException;
 import com.examinai.app.service.AiDraftPersistenceService;
 import com.examinai.app.security.RoleBasedAuthenticationSuccessHandler;
 import com.examinai.app.service.MentorReviewService;
@@ -32,6 +35,7 @@ import com.examinai.app.service.SourceRetrievalService;
 import com.examinai.app.service.SubmissionService;
 import com.examinai.app.service.TaskAssignmentService;
 import com.examinai.app.service.TaskService;
+import com.examinai.app.web.DegradedInferenceAttributes;
 
 @WebMvcTest(TaskSubmissionMentorController.class)
 @Import({ SecurityConfig.class, RoleBasedAuthenticationSuccessHandler.class })
@@ -91,6 +95,65 @@ class TaskSubmissionMentorAiDraftWebMvcTest {
 
 		verify(aiDraftAssessmentService).generateDraft(submissionId);
 		verify(aiDraftPersistenceService).persistSuccessfulDraft(submissionId, "Draft text");
+	}
+
+	@Test
+	@WithMockUser(roles = "MENTOR")
+	void aiDraftInferenceFailureSetsDegradedSessionFlag() throws Exception {
+		UUID taskId = UUID.randomUUID();
+		UUID internId = UUID.randomUUID();
+		UUID submissionId = UUID.randomUUID();
+
+		Task task = org.mockito.Mockito.mock(Task.class);
+		when(task.getId()).thenReturn(taskId);
+		when(taskService.requireTask(taskId)).thenReturn(task);
+
+		User intern = org.mockito.Mockito.mock(User.class);
+		when(intern.getId()).thenReturn(internId);
+		when(taskAssignmentService.listForTask(taskId)).thenReturn(List.of(new TaskAssignment(task, intern)));
+
+		Submission submission = org.mockito.Mockito.mock(Submission.class);
+		when(submission.getId()).thenReturn(submissionId);
+		when(submissionService.findForTaskAndInternOrNull(taskId, internId)).thenReturn(submission);
+		when(aiDraftAssessmentService.generateDraft(submissionId))
+			.thenThrow(new InferenceUnavailableException("AI draft request timed out."));
+
+		var session = new MockHttpSession();
+		mockMvc.perform(post("/tasks/" + taskId + "/submissions/" + internId + "/ai-draft-assessment").with(csrf())
+			.session(session))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(redirectedUrl("/tasks/" + taskId + "/submissions/" + internId));
+
+		assertThat(session.getAttribute(DegradedInferenceAttributes.SESSION_KEY)).isEqualTo(Boolean.TRUE);
+	}
+
+	@Test
+	@WithMockUser(roles = "MENTOR")
+	void successfulAiDraftClearsDegradedSessionFlag() throws Exception {
+		UUID taskId = UUID.randomUUID();
+		UUID internId = UUID.randomUUID();
+		UUID submissionId = UUID.randomUUID();
+
+		Task task = org.mockito.Mockito.mock(Task.class);
+		when(task.getId()).thenReturn(taskId);
+		when(taskService.requireTask(taskId)).thenReturn(task);
+
+		User intern = org.mockito.Mockito.mock(User.class);
+		when(intern.getId()).thenReturn(internId);
+		when(taskAssignmentService.listForTask(taskId)).thenReturn(List.of(new TaskAssignment(task, intern)));
+
+		Submission submission = org.mockito.Mockito.mock(Submission.class);
+		when(submission.getId()).thenReturn(submissionId);
+		when(submissionService.findForTaskAndInternOrNull(taskId, internId)).thenReturn(submission);
+		when(aiDraftAssessmentService.generateDraft(submissionId)).thenReturn("ok");
+
+		var session = new MockHttpSession();
+		session.setAttribute(DegradedInferenceAttributes.SESSION_KEY, Boolean.TRUE);
+		mockMvc.perform(post("/tasks/" + taskId + "/submissions/" + internId + "/ai-draft-assessment").with(csrf())
+			.session(session))
+			.andExpect(status().is3xxRedirection());
+
+		assertThat(session.getAttribute(DegradedInferenceAttributes.SESSION_KEY)).isNull();
 	}
 
 	@Test
