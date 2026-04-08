@@ -1,7 +1,4 @@
 databaseChangeLog:
-  - changeSet:
-      id: 0001-baseline-tag
-      author: examinai
-      changes:
-        - tagDatabase:
-            tag: baseline
+  - include:
+      file: changes/000-baseline.yaml
+      relativeToChangelogFile: true

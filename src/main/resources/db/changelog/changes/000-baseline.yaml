@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 000-baseline
+      author: examinai
+      comment: Baseline tag only; no domain DDL (story 1.2)
+      changes:
+        - tagDatabase:
+            tag: baseline

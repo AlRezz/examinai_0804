@@ -1,13 +1,12 @@
-# Local development without PostgreSQL (story 1.2 wires real Postgres + migrations).
+# Local development against PostgreSQL. Override URLs and credentials via environment (see README / .env.example).
 spring:
   datasource:
-    url: jdbc:h2:mem:examinai_dev;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: ""
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/examinai}
+    username: ${SPRING_DATASOURCE_USERNAME:examinai}
+    password: ${SPRING_DATASOURCE_PASSWORD:examinai}
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
   ai:
     ollama:
       base-url: http://127.0.0.1:11434

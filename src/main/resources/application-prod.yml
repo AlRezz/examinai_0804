@@ -1,12 +1,12 @@
 # Production-oriented defaults; supply credentials via environment (no secrets in-repo).
 spring:
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/examinai}
-    username: ${DATABASE_USERNAME:examinai}
-    password: ${DATABASE_PASSWORD:}
+    url: ${SPRING_DATASOURCE_URL:${DATABASE_URL:jdbc:postgresql://localhost:5432/examinai}}
+    username: ${SPRING_DATASOURCE_USERNAME:${DATABASE_USERNAME:examinai}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DATABASE_PASSWORD:}}
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
   ai:
     ollama:
       base-url: ${OLLAMA_BASE_URL:http://127.0.0.1:11434}

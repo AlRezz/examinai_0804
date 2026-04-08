@@ -6,12 +6,28 @@ Spring Boot baseline for the Examinai product: Java **21**, **Maven**, Thymeleaf
 
 - JDK 21 or newer
 - Maven (or use the included **`./mvnw`** wrapper)
+- **PostgreSQL** for the **`dev`** profile (local or container)
 
 Full stack and sequencing are described in [`_bmad-output/planning-artifacts/architecture.md`](_bmad-output/planning-artifacts/architecture.md).
 
+## Configuration (secrets)
+
+Use **environment variables** for credentials—do not commit secrets. See **`.env.example`** for key names (`SPRING_DATASOURCE_*`, and optional `DATABASE_*` aliases in **`prod`**).
+
+Example local database with Docker:
+
+```bash
+docker run -d --name examinai-pg \
+  -e POSTGRES_USER=examinai \
+  -e POSTGRES_PASSWORD=examinai \
+  -e POSTGRES_DB=examinai \
+  -p 5432:5432 \
+  postgres:16-alpine
+```
+
 ## Run locally (dev profile)
 
-Development uses an **in-memory H2** database so the app starts without PostgreSQL. Story 1.2 will wire real Postgres and migrations for shared environments.
+The **`dev`** profile expects PostgreSQL at **`jdbc:postgresql://localhost:5432/examinai`** with user **`examinai`** and password **`examinai`** by default. Override with **`SPRING_DATASOURCE_URL`**, **`SPRING_DATASOURCE_USERNAME`**, and **`SPRING_DATASOURCE_PASSWORD`**.
 
 ```bash
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
@@ -25,7 +41,7 @@ curl -sSf http://localhost:8080/actuator/health
 
 ## Production-oriented profile
 
-Smoke-style run (expects **`DATABASE_URL`** / **`DATABASE_USERNAME`** / **`DATABASE_PASSWORD`** and optional **`OLLAMA_BASE_URL`**):
+Smoke-style run (set **`SPRING_DATASOURCE_*`** or **`DATABASE_URL`** / **`DATABASE_USERNAME`** / **`DATABASE_PASSWORD`** and optional **`OLLAMA_BASE_URL`**):
 
 ```bash
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=prod
@@ -37,7 +53,7 @@ Smoke-style run (expects **`DATABASE_URL`** / **`DATABASE_USERNAME`** / **`DATAB
 ./mvnw verify
 ```
 
-The **`test`** profile uses H2 and Liquibase; it does not require Docker or PostgreSQL.
+The **`test`** profile uses **H2** (in PostgreSQL compatibility mode) plus the same Liquibase changelog. **`PostgresLiquibaseIntegrationTest`** uses **Testcontainers** against PostgreSQL when **Docker** is available; it is **skipped** otherwise so `mvn verify` still passes.
 
 ## Spring Boot version note
 
