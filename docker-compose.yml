@@ -6,6 +6,7 @@
 #   docker compose up --build
 #
 # Ports: app 8080, db 5432, Ollama 11434 (see .env.example for overrides).
+# OLLAMA_IMAGE = Docker image (e.g. ollama/ollama:0.20.2). OLLAMA_MODEL = model tag for `ollama pull` (same as app).
 
 services:
   db:
@@ -26,11 +27,32 @@ services:
       start_period: 10s
 
   llm:
-    image: ollama/ollama:latest
+    image: ${OLLAMA_IMAGE:-ollama/ollama:0.20.2}
+    environment:
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-deepseek-r1:8b}
     volumes:
       - examinai_ollama_data:/root/.ollama
     ports:
       - "${OLLAMA_PUBLISH_PORT:-11434}:11434"
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        ollama serve &
+        sleep 2
+        ollama pull "$OLLAMA_MODEL"
+        wait
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'ollama list 2>/dev/null | grep -Fq "$$OLLAMA_MODEL"',
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 600s
 
   app:
     build:
@@ -40,14 +62,14 @@ services:
       db:
         condition: service_healthy
       llm:
-        condition: service_started
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://db:5432/${POSTGRES_DB:-examinai}}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-${POSTGRES_USER:-examinai}}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-${POSTGRES_PASSWORD:-examinai}}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://llm:11434}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-deepseek-r1:8b}
       GIT_PROVIDER_BASE_URL: ${GIT_PROVIDER_BASE_URL:-}
       GIT_PROVIDER_TOKEN: ${GIT_PROVIDER_TOKEN:-}
     ports:

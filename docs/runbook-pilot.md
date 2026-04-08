@@ -5,10 +5,8 @@ Short guide for operators bringing up the **Examinai** pilot stack (story **7.3*
 ## Prerequisites
 
 - Repo root: copy **`.env.example`** to **`.env`** and set secrets there only (never commit **`.env`**).
-- **Docker Compose v2** (`docker compose`). See **`.env.example`** for port overrides and JDBC / Ollama / Git keys.
-- Pull the configured Ollama model once inside the LLM container, for example:
-
-  `docker compose exec llm ollama pull llama3.2`
+- **Docker Compose v2** (`docker compose`). See **`.env.example`** for port overrides, **`OLLAMA_IMAGE`**, **`OLLAMA_MODEL`**, JDBC, and Git keys.
+- With the bundled **`docker-compose.yml`**, the **`llm`** service starts **`ollama serve`**, then runs **`ollama pull "$OLLAMA_MODEL"`** (default **`deepseek-r1:8b`**). The first pull can take several minutes; the **`llm`** healthcheck waits until that model appears in **`ollama list`** before **`app`** starts. To refresh or add a model manually: `docker compose exec llm ollama pull <model>`.
 
 ## Health checks
 
@@ -16,7 +14,7 @@ Short guide for operators bringing up the **Examinai** pilot stack (story **7.3*
 |--------|--------|--------|
 | Spring Boot app | `GET /actuator/health` | Default base path `/actuator` (see `application.yml`). Compose healthcheck uses this on port **8080** inside the app container. |
 | PostgreSQL | Compose `db` service `healthcheck` | `pg_isready`; app waits on `depends_on: condition: service_healthy`. |
-| Ollama | Host port **11434** (default) | No Spring Actuator integration required for pilot; inference uses **`OLLAMA_BASE_URL`**. |
+| Ollama | Host **11434** (default); Compose **`llm`** health | Daemon up and **`OLLAMA_MODEL`** present per **`ollama list`**; inference uses **`OLLAMA_BASE_URL`**. |
 
 Example from the host (default app port):
 

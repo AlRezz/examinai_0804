@@ -51,11 +51,14 @@ Composer (Cursor agent)
 - Added **`docs/runbook-pilot.md`**: health table, Git HTTP → **`GitFailureKind`** mapping (secret-safe), degraded LLM (**NFR8**), smoke path through mentor **`…/fetch`**, **`prod`** NFR6 + Actuator vs **`architecture.md`**, CI snippet, NFR8/NFR12 traceability.
 - **`application-prod.yml`**: top comment cross-links NFR6 and architecture observability; verified **`management.endpoints.web.exposure.include: health`** only.
 - **`README.md`**: link to runbook.
+- **Follow-up (Compose / pilot ops):** runbook and **`.env.example`** describe **`llm`** entrypoint auto-pull of **`OLLAMA_MODEL`**, **`OLLAMA_IMAGE`** pin, and health gate before **`app`** (see story **7.2**).
 
 ### File List
 
 - `.env.example`
+- `docker-compose.yml`
 - `docs/runbook-pilot.md`
+- `src/main/resources/application.yml`
 - `src/main/resources/application-prod.yml`
 - `README.md`
 - `_bmad-output/implementation-artifacts/7-3-pilot-operations-runbook-and-environment-documentation.md`
@@ -66,6 +69,7 @@ Composer (Cursor agent)
 
 - **2026-04-08** — Story 7.3: pilot runbook, `.env.example` alignment, prod Actuator verification note, sprint → review.
 - **2026-04-08** — Story 7.3 marked **done** after review.
+- **2026-04-08** — Runbook and story record refreshed for Compose **`llm`** auto-pull, **`OLLAMA_IMAGE`**, and model health gate (aligned with story **7.2**).
 
 ---
 

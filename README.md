@@ -53,7 +53,7 @@ docker compose up --build
 curl -sSf http://localhost:8080/actuator/health
 ```
 
-The app runs with profile **`dev`** by default under Compose (HTTP sessions without requiring TLS on localhost). **`OLLAMA_BASE_URL`** defaults to **`http://llm:11434`** inside the stack; JDBC targets host **`db`**. If the **LLM** container is stopped, mentor flows follow **Epic 5** degraded behavior (inference banner, mentor-only publish — **NFR8**). Ensure the configured **`OLLAMA_MODEL`** is pulled in Ollama (`docker compose exec llm ollama pull llama3.2`) before expecting draft inference to succeed.
+The app runs with profile **`dev`** by default under Compose (HTTP sessions without requiring TLS on localhost). **`OLLAMA_BASE_URL`** defaults to **`http://llm:11434`** inside the stack; JDBC targets host **`db`**. If the **LLM** container is stopped, mentor flows follow **Epic 5** degraded behavior (inference banner, mentor-only publish — **NFR8**). The **`llm`** service entrypoint runs **`ollama pull`** for **`OLLAMA_MODEL`** (default **`deepseek-r1:8b`**); the first run may take several minutes. To pull manually or after changing the model: `docker compose exec llm ollama pull deepseek-r1:8b`.
 
 Published ports default to **8080** (app), **5432** (Postgres), **11434** (Ollama); override with **`APP_PUBLISH_PORT`**, **`POSTGRES_PUBLISH_PORT`**, **`OLLAMA_PUBLISH_PORT`** in **`.env`** (see **`.env.example`**).
 

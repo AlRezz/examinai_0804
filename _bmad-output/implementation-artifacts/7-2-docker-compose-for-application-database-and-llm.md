@@ -58,19 +58,27 @@ Composer (Cursor agent)
 
 ### Completion Notes List
 
-- Added tri-service **`docker-compose.yml`**: **`db`** (`postgres:16-alpine`), **`llm`** (`ollama/ollama:latest`), **`app`** (image built from **`Dockerfile`**). App defaults: **`SPRING_PROFILES_ACTIVE=dev`**, JDBC to **`db`**, **`OLLAMA=http://llm:11434`**, **`GIT_PROVIDER_*`** from env; Actuator healthcheck via **`curl`** in the app image.
+- Added tri-service **`docker-compose.yml`**: **`db`** (`postgres:16-alpine`), **`llm`** (Ollama image pin + health), **`app`** (image built from **`Dockerfile`**). App defaults: **`SPRING_PROFILES_ACTIVE=dev`**, JDBC to **`db`**, **`OLLAMA_BASE_URL=http://llm:11434`**, **`OLLAMA_MODEL=deepseek-r1:8b`**, **`GIT_PROVIDER_*`** from env; Actuator healthcheck via **`curl`** in the app image.
+- **`llm`**: image **`${OLLAMA_IMAGE:-ollama/ollama:0.20.2}`** (override via **`.env`**); **healthcheck** `ollama list`; **`app`** uses **`depends_on` → `service_healthy`** on **`llm`** so the daemon accepts RPC before the JVM starts.
 - **`Dockerfile`**: multi-stage Maven wrapper build (JDK 21 Alpine) → JRE 21 Alpine runnable JAR; non-root **`spring`** user; **`curl`** for health checks.
-- **`.dockerignore`** to keep build context small; **`.env.example`** and **README** document Compose env and ports.
-- **`application-dev.yml`**: Ollama base URL now respects **`OLLAMA_BASE_URL`** so Compose can point at the **`llm`** service instead of localhost.
+- **`.dockerignore`** to keep build context small; **`.env.example`** documents **`OLLAMA_IMAGE`**, ports, JDBC, **`OLLAMA_MODEL`**; **README** and **`docs/runbook-pilot.md`** document Compose and **`ollama pull deepseek-r1:8b`**.
+- **`application-dev.yml`**: Ollama base URL respects **`OLLAMA_BASE_URL`** for the **`llm`** service host.
+- **`application.yml`**: default chat model **`OLLAMA_MODEL`** → **`deepseek-r1:8b`** (still overridable by env).
 
 ### File List
 
-- `docker-compose.yml` (new)
-- `Dockerfile` (new)
-- `.dockerignore` (new)
-- `.env.example` (updated)
-- `README.md` (updated)
-- `src/main/resources/application-dev.yml` (updated)
+- `docker-compose.yml`
+- `Dockerfile`
+- `.dockerignore`
+- `.env.example`
+- `README.md`
+- `docs/runbook-pilot.md`
+- `src/main/resources/application-dev.yml`
+- `src/main/resources/application.yml`
+
+## Change Log
+
+- **2026-04-08** — Follow-up: Compose Ollama pin + **`OLLAMA_IMAGE`**, **`llm` healthcheck**, **`app` → `llm` `service_healthy`**; default model **`deepseek-r1:8b`** in Compose and **`application.yml`**; docs and **`.env.example`** aligned.
 
 ---
 
