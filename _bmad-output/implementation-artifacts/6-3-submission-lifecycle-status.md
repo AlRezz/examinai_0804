@@ -1,6 +1,6 @@
 # Story 6.3: Submission lifecycle status
 
-Status: review
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -70,4 +70,4 @@ _(none)_
 
 ---
 
-**Story completion status:** `review` — Implementation complete; ready for code review.
+**Story completion status:** `done` — Accepted; epic 6 closed in sprint tracking.

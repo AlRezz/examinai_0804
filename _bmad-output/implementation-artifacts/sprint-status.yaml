@@ -1,5 +1,5 @@
 # generated: 2026-04-08
-# last_updated: 2026-04-08
+# last_updated: 2026-04-08 (epic-6 → done)
 # project: examinai_0804
 # project_key: NOKEY
 # tracking_system: file-system
@@ -78,11 +78,11 @@ development_status:
   5-4-degraded-inference-detection-banner-and-mentor-only-publish: done
   epic-5-retrospective: optional
 
-  epic-6: in-progress
-  6-1-intern-feedback-view-for-published-outcomes: review
-  6-2-draft-vs-published-labeling-for-interns: review
-  6-3-submission-lifecycle-status: review
-  6-4-privacy-isolation-between-interns: review
+  epic-6: done
+  6-1-intern-feedback-view-for-published-outcomes: done
+  6-2-draft-vs-published-labeling-for-interns: done
+  6-3-submission-lifecycle-status: done
+  6-4-privacy-isolation-between-interns: done
   epic-6-retrospective: optional
 
   epic-7: in-progress
