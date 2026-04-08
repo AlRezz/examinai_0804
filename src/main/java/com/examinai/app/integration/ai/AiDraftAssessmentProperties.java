@@ -1,26 +1,46 @@
 package com.examinai.app.integration.ai;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
+@Validated
 @ConfigurationProperties(prefix = "examinai.ai.draft-assessment")
 public class AiDraftAssessmentProperties {
 
 	/**
 	 * Maximum characters of stored normalized source sent to the model (truncation tail is appended).
 	 */
+	@Min(1)
+	@Max(50_000_000)
 	private int maxSourceChars = 100_000;
 
 	/**
 	 * Per-attempt wall-clock timeout for the chat call (NFR4).
 	 */
+	@Min(0)
+	@Max(86400)
 	private int requestTimeoutSeconds = 120;
 
 	/**
 	 * Retries after a failed or timed-out attempt (NFR4).
 	 */
+	@Min(0)
+	@Max(50)
 	private int maxRetries = 2;
 
+	@Min(0)
+	@Max(600_000)
 	private long retryBackoffMs = 400L;
+
+	/**
+	 * Max characters placed in flash/session for one AI draft until persistence exists (story 5.2).
+	 */
+	@Min(256)
+	@Max(2_000_000)
+	private int maxFlashChars = 32_768;
 
 	public int getMaxSourceChars() {
 		return maxSourceChars;
@@ -52,5 +72,13 @@ public class AiDraftAssessmentProperties {
 
 	public void setRetryBackoffMs(long retryBackoffMs) {
 		this.retryBackoffMs = retryBackoffMs;
+	}
+
+	public int getMaxFlashChars() {
+		return maxFlashChars;
+	}
+
+	public void setMaxFlashChars(int maxFlashChars) {
+		this.maxFlashChars = maxFlashChars;
 	}
 }

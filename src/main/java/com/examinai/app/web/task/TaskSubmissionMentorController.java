@@ -1,6 +1,7 @@
 package com.examinai.app.web.task;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ import com.examinai.app.domain.task.GitRetrievalState;
 import com.examinai.app.domain.task.Submission;
 import com.examinai.app.domain.task.SubmissionStatus;
 import com.examinai.app.domain.user.UserRepository;
+import com.examinai.app.integration.ai.AiDraftAssessmentProperties;
 import com.examinai.app.integration.ai.AiDraftAssessmentService;
 import com.examinai.app.integration.ai.InferenceUnavailableException;
 import com.examinai.app.service.MentorReviewService;
@@ -49,18 +51,21 @@ public class TaskSubmissionMentorController {
 
 	private final AiDraftAssessmentService aiDraftAssessmentService;
 
+	private final AiDraftAssessmentProperties aiDraftAssessmentProperties;
+
 	private final UserRepository userRepository;
 
 	public TaskSubmissionMentorController(TaskService taskService, TaskAssignmentService taskAssignmentService,
 			SubmissionService submissionService, SourceRetrievalService sourceRetrievalService,
 			MentorReviewService mentorReviewService, AiDraftAssessmentService aiDraftAssessmentService,
-			UserRepository userRepository) {
+			AiDraftAssessmentProperties aiDraftAssessmentProperties, UserRepository userRepository) {
 		this.taskService = taskService;
 		this.taskAssignmentService = taskAssignmentService;
 		this.submissionService = submissionService;
 		this.sourceRetrievalService = sourceRetrievalService;
 		this.mentorReviewService = mentorReviewService;
 		this.aiDraftAssessmentService = aiDraftAssessmentService;
+		this.aiDraftAssessmentProperties = aiDraftAssessmentProperties;
 		this.userRepository = userRepository;
 	}
 
@@ -154,9 +159,12 @@ public class TaskSubmissionMentorController {
 		}
 		try {
 			String draft = aiDraftAssessmentService.generateDraft(submission.getId());
-			redirectAttributes.addFlashAttribute("aiDraftAssessment", draft);
+			redirectAttributes.addFlashAttribute("aiDraftAssessment", truncateForFlash(draft));
 			redirectAttributes.addFlashAttribute("submissionNotice",
 					"AI draft generated below. Assistive only—you retain final judgment.");
+		}
+		catch (NoSuchElementException ex) {
+			redirectAttributes.addFlashAttribute("reviewError", "Submission not found. It may have been removed.");
 		}
 		catch (IllegalStateException ex) {
 			redirectAttributes.addFlashAttribute("reviewError", ex.getMessage());
@@ -257,5 +265,13 @@ public class TaskSubmissionMentorController {
 			case OK -> "OK";
 			case ERROR -> GitRetrievalUiMessage.forErrorCode(s.getGitRetrievalErrorCode());
 		};
+	}
+
+	private String truncateForFlash(String draft) {
+		int max = aiDraftAssessmentProperties.getMaxFlashChars();
+		if (draft.length() <= max) {
+			return draft;
+		}
+		return draft.substring(0, max) + "\n\n[... truncated for display/session size; persist drafts in story 5.2 ...]";
 	}
 }

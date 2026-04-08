@@ -3,23 +3,17 @@ package com.examinai.app.integration.ai;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import com.examinai.app.domain.task.GitRetrievalState;
-import com.examinai.app.domain.task.Submission;
-import com.examinai.app.domain.task.SubmissionRepository;
-
 /**
- * Mentor assistive draft via Spring AI only (FR18). Sends minimized payload: task brief + truncated
- * normalized source already stored on the submission—no repo URLs, tokens, or environment (NFR7).
+ * Mentor assistive draft via Spring AI only (FR18). Inference runs outside any database transaction;
+ * payload assembly is {@link AiDraftPayloadLoader} (NFR4).
  */
 @Service
 public class AiDraftAssessmentService {
@@ -32,40 +26,22 @@ public class AiDraftAssessmentService {
 
 	private final ChatClient chatClient;
 
-	private final SubmissionRepository submissionRepository;
+	private final AiDraftPayloadLoader payloadLoader;
 
 	private final AiDraftAssessmentProperties properties;
 
-	private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+	private final ExecutorService aiDraftExecutor;
 
-	public AiDraftAssessmentService(ChatClient chatClient, SubmissionRepository submissionRepository,
-			AiDraftAssessmentProperties properties) {
+	public AiDraftAssessmentService(ChatClient chatClient, AiDraftPayloadLoader payloadLoader,
+			AiDraftAssessmentProperties properties, ExecutorService aiDraftExecutor) {
 		this.chatClient = chatClient;
-		this.submissionRepository = submissionRepository;
+		this.payloadLoader = payloadLoader;
 		this.properties = properties;
+		this.aiDraftExecutor = aiDraftExecutor;
 	}
 
-	@Transactional(readOnly = true)
 	public String generateDraft(UUID submissionId) {
-		Submission submission = submissionRepository.findById(submissionId).orElseThrow();
-		if (submission.getGitRetrievalState() != GitRetrievalState.OK) {
-			throw new IllegalStateException("Source must be fetched successfully before generating an AI draft.");
-		}
-		if (!StringUtils.hasText(submission.getGitRetrievedText())) {
-			throw new IllegalStateException("No normalized source text available for this submission.");
-		}
-
-		String source = truncate(submission.getGitRetrievedText(), properties.getMaxSourceChars());
-		var task = submission.getTask();
-		String userPayload = """
-				Task title: %s
-
-				Task instructions:
-				%s
-
-				Submission source (normalized excerpt; may be truncated):
-				%s
-				""".formatted(task.getTitle(), task.getDescription(), source);
+		String userPayload = payloadLoader.loadUserPayload(submissionId);
 
 		InferenceUnavailableException lastFailure = null;
 		int attempts = properties.getMaxRetries() + 1;
@@ -85,7 +61,7 @@ public class AiDraftAssessmentService {
 	}
 
 	private String invokeWithTimeout(String userPayload) {
-		Future<String> future = executor.submit(() -> chatClient.prompt()
+		Future<String> future = aiDraftExecutor.submit(() -> chatClient.prompt()
 			.system(SYSTEM)
 			.user(userPayload)
 			.call()
@@ -110,13 +86,6 @@ public class AiDraftAssessmentService {
 			Throwable cause = e.getCause() != null ? e.getCause() : e;
 			throw new InferenceUnavailableException("AI draft failed: " + cause.getMessage(), cause);
 		}
-	}
-
-	private static String truncate(String text, int maxChars) {
-		if (text.length() <= maxChars) {
-			return text;
-		}
-		return text.substring(0, maxChars) + "\n\n[... truncated for pilot size limits ...]";
 	}
 
 	private static void sleepQuietly(long ms) {

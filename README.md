@@ -22,7 +22,7 @@ Mentors can request an **assistive** draft from **Spring AI** (Ollama-backed `Ch
 
 **Data minimization:** The prompt includes the **task title and instructions** plus **truncated normalized source** already stored on the submission after a successful fetch. It does **not** include Git provider tokens, `.env` or credential material, or other deployment secrets.
 
-Configure inference with **`OLLAMA_BASE_URL`**, **`OLLAMA_MODEL`**, and optional bounds: **`EXAMINAI_AI_DRAFT_MAX_SOURCE_CHARS`**, **`EXAMINAI_AI_DRAFT_TIMEOUT_SECONDS`**, **`EXAMINAI_AI_DRAFT_MAX_RETRIES`**, **`EXAMINAI_AI_DRAFT_RETRY_BACKOFF_MS`** (see `application.yml`).
+Configure inference with **`OLLAMA_BASE_URL`**, **`OLLAMA_MODEL`**, and optional bounds: **`EXAMINAI_AI_DRAFT_MAX_SOURCE_CHARS`**, **`EXAMINAI_AI_DRAFT_TIMEOUT_SECONDS`**, **`EXAMINAI_AI_DRAFT_MAX_RETRIES`**, **`EXAMINAI_AI_DRAFT_RETRY_BACKOFF_MS`**, **`EXAMINAI_AI_DRAFT_MAX_FLASH_CHARS`** (flash display until drafts are persisted; see `application.yml`).
 
 Example local database with Docker:
 

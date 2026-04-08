@@ -5,6 +5,7 @@ examinai:
       request-timeout-seconds: ${EXAMINAI_AI_DRAFT_TIMEOUT_SECONDS:120}
       max-retries: ${EXAMINAI_AI_DRAFT_MAX_RETRIES:2}
       retry-backoff-ms: ${EXAMINAI_AI_DRAFT_RETRY_BACKOFF_MS:400}
+      max-flash-chars: ${EXAMINAI_AI_DRAFT_MAX_FLASH_CHARS:32768}
   git:
     # Deployment-only: set via environment (see .env.example). Never collect from UI or database.
     base-url: ${GIT_PROVIDER_BASE_URL:}
