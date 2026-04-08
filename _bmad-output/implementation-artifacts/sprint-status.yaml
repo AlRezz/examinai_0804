@@ -58,9 +58,9 @@ development_status:
   epic-2-retrospective: optional
 
   epic-3: in-progress
-  3-1-version-control-configuration-and-secret-hygiene: ready-for-dev
-  3-2-git-integration-client-and-source-fetch: ready-for-dev
-  3-3-retrieval-status-safe-diagnostics-and-retry-ux: ready-for-dev
+  3-1-version-control-configuration-and-secret-hygiene: review
+  3-2-git-integration-client-and-source-fetch: review
+  3-3-retrieval-status-safe-diagnostics-and-retry-ux: review
   epic-3-retrospective: optional
 
   epic-4: in-progress

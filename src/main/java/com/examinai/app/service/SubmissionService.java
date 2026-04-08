@@ -44,6 +44,25 @@ public class SubmissionService {
 		if (!internTaskService.isAssigned(taskId, internUserId)) {
 			throw new IllegalArgumentException("Not assigned to this task.");
 		}
+		return persistCoordinates(taskId, internUserId, repoIdentifier, commitSha, pathScope, status);
+	}
+
+	/**
+	 * Mentor/admin coordinate fix without intern assignment check (Story 3.3).
+	 */
+	@Transactional
+	public Submission mentorUpsertCoordinates(UUID taskId, UUID internUserId, String repoIdentifier, String commitSha,
+			String pathScope, SubmissionStatus status) {
+		return persistCoordinates(taskId, internUserId, repoIdentifier, commitSha, pathScope, status);
+	}
+
+	@Transactional(readOnly = true)
+	public Submission findForTaskAndInternOrNull(UUID taskId, UUID internUserId) {
+		return submissionRepository.findByTask_IdAndIntern_Id(taskId, internUserId).orElse(null);
+	}
+
+	private Submission persistCoordinates(UUID taskId, UUID internUserId, String repoIdentifier, String commitSha,
+			String pathScope, SubmissionStatus status) {
 		Task task = taskRepository.findById(taskId).orElseThrow();
 		User intern = userRepository.findById(internUserId).orElseThrow();
 		String repo = trimRequired(repoIdentifier, "Repository is required.");

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8"/>
+	<title>Submissions</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+</head>
+<body>
+<main>
+	<h1>Submissions</h1>
+	<p>Task: <strong th:text="${task.title}">task</strong></p>
+	<p><a th:href="@{/tasks}">Back to tasks</a></p>
+	<table border="1" cellpadding="6" cellspacing="0">
+		<thead>
+		<tr>
+			<th>Intern</th>
+			<th>Retrieval</th>
+			<th>Actions</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr th:each="r : ${rows}">
+			<td th:text="${r.internEmail}">email</td>
+			<td th:text="${r.retrievalSummary}">status</td>
+			<td>
+				<a th:href="@{/tasks/{tid}/submissions/{iid}(tid=${task.id},iid=${r.internId})}">Open</a>
+			</td>
+		</tr>
+		<tr th:if="${#lists.isEmpty(rows)}">
+			<td colspan="3">No interns assigned to this task.</td>
+		</tr>
+		</tbody>
+	</table>
+</main>
+</body>
+</html>

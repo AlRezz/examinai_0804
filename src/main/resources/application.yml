@@ -1,3 +1,12 @@
+examinai:
+  git:
+    # Deployment-only: set via environment (see .env.example). Never collect from UI or database.
+    base-url: ${GIT_PROVIDER_BASE_URL:}
+    token: ${GIT_PROVIDER_TOKEN:}
+    read-timeout-seconds: ${GIT_READ_TIMEOUT_SECONDS:22}
+    max-retries: ${GIT_MAX_RETRIES:2}
+    retry-backoff-ms: ${GIT_RETRY_BACKOFF_MS:350}
+
 spring:
   application:
     name: examinai

@@ -1,6 +1,6 @@
 # Story 3.3: Retrieval status, safe diagnostics, and retry UX
 
-Status: ready-for-dev
+Status: review
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -28,10 +28,10 @@ so that **I can recover without guessing**.
 
 ## Tasks / Subtasks
 
-- [ ] Surface retrieval status on mentor review/submission views; map `GitProviderException` (etc.) to stable user-facing codes/messages.
-- [ ] Controller actions: retry fetch (POST + redirect), coordinate update wired to **3.2** service (**CSRF**).
-- [ ] Thymeleaf fragments for success / failure / in-progress.
-- [ ] Tests: web slice—403/404 mapped; no token substrings in model error text.
+- [x] Surface retrieval status on mentor review/submission views; map `GitProviderException` (etc.) to stable user-facing codes/messages.
+- [x] Controller actions: retry fetch (POST + redirect), coordinate update wired to **3.2** service (**CSRF**).
+- [x] Thymeleaf fragments for success / failure / in-progress.
+- [x] Tests: web slice—403/404 mapped; no token substrings in model error text.
 
 ## Dev Notes
 
@@ -50,12 +50,22 @@ so that **I can recover without guessing**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+Composer (Cursor agent)
 ### Debug Log References
 ### Completion Notes List
+- **`TaskSubmissionMentorController`**: `/tasks/{taskId}/submissions` hub, per-intern detail, POST `coordinates` (mentor bypasses intern assignment check via `SubmissionService.mentorUpsertCoordinates`), POST `fetch` calls `SourceRetrievalService` with CSRF tokens on forms.
+- **`GitRetrievalUiMessage`** maps persisted `GitFailureKind` names to stable mentor-safe copy; fragments show OK / ERROR / NOT_STARTED / IN_PROGRESS.
+- Integration test **`Epic3GitMentorIntegrationTest`** covers mentor access, intern forbidden, and HTML after failed fetch omits token-like substrings.
 ### File List
-_(filled by dev agent on completion)_
+- `src/main/java/com/examinai/app/web/task/TaskSubmissionMentorController.java`
+- `src/main/java/com/examinai/app/web/task/GitRetrievalUiMessage.java`
+- `src/main/java/com/examinai/app/service/SubmissionService.java`
+- `src/main/resources/templates/tasks/submissions.html`
+- `src/main/resources/templates/tasks/submission-detail.html`
+- `src/main/resources/templates/tasks/fragments/git-retrieval.html`
+- `src/main/resources/templates/tasks/list.html`
+- `src/test/java/com/examinai/app/web/Epic3GitMentorIntegrationTest.java`
 
 ---
 
-**Story completion status:** `ready-for-dev` — Ultimate context engine analysis completed.
+**Story completion status:** `review` — Implementation complete; run `code-review` workflow next.

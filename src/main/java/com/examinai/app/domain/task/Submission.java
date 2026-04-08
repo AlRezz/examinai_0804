@@ -51,6 +51,25 @@ public class Submission {
 	@Column(name = "status", nullable = false, length = 32)
 	private SubmissionStatus status;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "git_retrieval_state", nullable = false, length = 32)
+	private GitRetrievalState gitRetrievalState = GitRetrievalState.NOT_STARTED;
+
+	@Column(name = "git_retrieval_error_code", length = 64)
+	private String gitRetrievalErrorCode;
+
+	@Column(name = "git_retrieved_text", columnDefinition = "text")
+	private String gitRetrievedText;
+
+	@Column(name = "git_last_success_at")
+	private Instant gitLastSuccessAt;
+
+	@Column(name = "git_last_attempt_at")
+	private Instant gitLastAttemptAt;
+
+	@Column(name = "git_fetch_version", nullable = false)
+	private int gitFetchVersion;
+
 	@Column(name = "created_at", nullable = false)
 	private Instant createdAt;
 
@@ -124,6 +143,54 @@ public class Submission {
 
 	public void setStatus(SubmissionStatus status) {
 		this.status = status;
+	}
+
+	public GitRetrievalState getGitRetrievalState() {
+		return gitRetrievalState;
+	}
+
+	public void setGitRetrievalState(GitRetrievalState gitRetrievalState) {
+		this.gitRetrievalState = gitRetrievalState;
+	}
+
+	public String getGitRetrievalErrorCode() {
+		return gitRetrievalErrorCode;
+	}
+
+	public void setGitRetrievalErrorCode(String gitRetrievalErrorCode) {
+		this.gitRetrievalErrorCode = gitRetrievalErrorCode;
+	}
+
+	public String getGitRetrievedText() {
+		return gitRetrievedText;
+	}
+
+	public void setGitRetrievedText(String gitRetrievedText) {
+		this.gitRetrievedText = gitRetrievedText;
+	}
+
+	public Instant getGitLastSuccessAt() {
+		return gitLastSuccessAt;
+	}
+
+	public void setGitLastSuccessAt(Instant gitLastSuccessAt) {
+		this.gitLastSuccessAt = gitLastSuccessAt;
+	}
+
+	public Instant getGitLastAttemptAt() {
+		return gitLastAttemptAt;
+	}
+
+	public void setGitLastAttemptAt(Instant gitLastAttemptAt) {
+		this.gitLastAttemptAt = gitLastAttemptAt;
+	}
+
+	public int getGitFetchVersion() {
+		return gitFetchVersion;
+	}
+
+	public void setGitFetchVersion(int gitFetchVersion) {
+		this.gitFetchVersion = gitFetchVersion;
 	}
 
 	public Instant getCreatedAt() {

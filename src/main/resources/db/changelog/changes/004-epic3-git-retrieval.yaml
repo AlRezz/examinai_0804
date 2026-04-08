@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-01-submissions-git-retrieval
+      author: examinai
+      comment: Git source snapshot metadata and normalized text (Stories 3.2–3.3)
+      changes:
+        - addColumn:
+            tableName: submissions
+            columns:
+              - column:
+                  name: git_retrieval_state
+                  type: varchar(32)
+                  defaultValue: NOT_STARTED
+                  constraints:
+                    nullable: false
+              - column:
+                  name: git_retrieval_error_code
+                  type: varchar(64)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: git_retrieved_text
+                  type: text
+                  constraints:
+                    nullable: true
+              - column:
+                  name: git_last_success_at
+                  type: timestamptz
+                  constraints:
+                    nullable: true
+              - column:
+                  name: git_last_attempt_at
+                  type: timestamptz
+                  constraints:
+                    nullable: true
+              - column:
+                  name: git_fetch_version
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false

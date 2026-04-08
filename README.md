@@ -12,7 +12,9 @@ Full stack and sequencing are described in [`_bmad-output/planning-artifacts/arc
 
 ## Configuration (secrets)
 
-Use **environment variables** for credentials—do not commit secrets. See **`.env.example`** for key names (`SPRING_DATASOURCE_*`, and optional `DATABASE_*` aliases in **`prod`**).
+Use **environment variables** for credentials—do not commit secrets. See **`.env.example`** for key names (`SPRING_DATASOURCE_*`, optional `DATABASE_*` aliases in **`prod`**, and **`GIT_PROVIDER_*`** for Git integration).
+
+Git HTTP calls use **Spring `RestClient` only** (not `WebClient`); configure **`GIT_PROVIDER_BASE_URL`** to a GitHub REST v3–compatible API root when ingesting source (e.g. `https://api.github.com`).
 
 Example local database with Docker:
 

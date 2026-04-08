@@ -26,6 +26,8 @@
 				<a th:href="@{/tasks/{id}/edit(id=${t.id})}">Edit</a>
 				·
 				<a th:href="@{/tasks/{id}/assignments(id=${t.id})}">Assign interns</a>
+				·
+				<a th:href="@{/tasks/{id}/submissions(id=${t.id})}">Submissions</a>
 			</td>
 		</tr>
 		<tr th:if="${#lists.isEmpty(tasks)}">

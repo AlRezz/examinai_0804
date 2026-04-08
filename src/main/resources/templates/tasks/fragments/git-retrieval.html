@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="status(submission)">
+	<section th:if="${submission != null}">
+		<h2>Source retrieval</h2>
+		<p th:switch="${submission.gitRetrievalState.name()}">
+			<th:block th:case="'NOT_STARTED'">Not fetched yet. Save coordinates, then use <strong>Fetch / re-fetch source</strong>.</th:block>
+			<th:block th:case="'IN_PROGRESS'">Fetch in progress…</th:block>
+			<th:block th:case="'OK'">
+				Last success: <span th:text="${submission.gitLastSuccessAt}">ts</span>
+				(fetch version <span th:text="${submission.gitFetchVersion}">0</span>).
+			</th:block>
+			<th:block th:case="'ERROR'">
+				<span style="color: crimson;" th:text="${gitRetrievalMessage}">error</span>
+				(fetch version <span th:text="${submission.gitFetchVersion}">0</span>).
+				Prior snapshot text is kept if a previous fetch succeeded.
+			</th:block>
+		</p>
+		<details th:if="${submission != null and submission.gitRetrievalState != null and submission.gitRetrievalState.name() == 'OK'
+		and submission.gitRetrievedText != null}">
+			<summary>Retrieved text</summary>
+			<pre th:text="${submission.gitRetrievedText}" style="max-height:24em;overflow:auto;background:#f6f6f6;padding:0.75em;">text</pre>
+		</details>
+	</section>
+</th:block>
+</body>
+</html>
