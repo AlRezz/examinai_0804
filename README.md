@@ -7,6 +7,7 @@ Spring Boot baseline for the Examinai product: Java **21**, **Maven**, Thymeleaf
 - JDK 21 or newer
 - Maven (or use the included **`./mvnw`** wrapper)
 - **PostgreSQL** for the **`dev`** profile (local or container)
+- **Docker Compose v2** (optional) for the tri-service pilot stack: app + Postgres + Ollama (**story 7.2**, **FR32**)
 
 Full stack and sequencing are described in [`_bmad-output/planning-artifacts/architecture.md`](_bmad-output/planning-artifacts/architecture.md).
 
@@ -34,6 +35,27 @@ docker run -d --name examinai-pg \
   -p 5432:5432 \
   postgres:16-alpine
 ```
+
+## Docker Compose (app + database + LLM)
+
+Pilot topology matches **FR32**: separate containers for the Spring Boot app, **PostgreSQL 16**, and **Ollama** so each piece can be replaced or scaled independently.
+
+1. Copy **`.env.example`** to **`.env`** and set **`GIT_PROVIDER_TOKEN`** (and any non-default DB credentials).
+2. From the repo root (use **`docker-compose up --build`** if your install only provides the standalone Compose v1 binary):
+
+```bash
+docker compose up --build
+```
+
+3. Smoke-check Actuator from the host:
+
+```bash
+curl -sSf http://localhost:8080/actuator/health
+```
+
+The app runs with profile **`dev`** by default under Compose (HTTP sessions without requiring TLS on localhost). **`OLLAMA_BASE_URL`** defaults to **`http://llm:11434`** inside the stack; JDBC targets host **`db`**. If the **LLM** container is stopped, mentor flows follow **Epic 5** degraded behavior (inference banner, mentor-only publish — **NFR8**). Ensure the configured **`OLLAMA_MODEL`** is pulled in Ollama (`docker compose exec llm ollama pull llama3.2`) before expecting draft inference to succeed.
+
+Published ports default to **8080** (app), **5432** (Postgres), **11434** (Ollama); override with **`APP_PUBLISH_PORT`**, **`POSTGRES_PUBLISH_PORT`**, **`OLLAMA_PUBLISH_PORT`** in **`.env`** (see **`.env.example`**).
 
 ## Run locally (dev profile)
 

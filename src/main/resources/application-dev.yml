@@ -16,7 +16,8 @@ spring:
       ddl-auto: none
   ai:
     ollama:
-      base-url: http://127.0.0.1:11434
+      # Allow Compose / tunnel overrides; default stays local Ollama.
+      base-url: ${OLLAMA_BASE_URL:http://127.0.0.1:11434}
 
 management:
   endpoints:
