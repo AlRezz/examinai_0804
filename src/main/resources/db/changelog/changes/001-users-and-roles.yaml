@@ -1,0 +1,147 @@
+databaseChangeLog:
+  # Domain model: users, roles, user_roles (many-to-many). PKs are UUID (see architecture — decided in story 1.3).
+  # Bootstrap admin password is never stored in repo plaintext; only BCrypt hash below matches README-documented dev-only phrase.
+
+  - changeSet:
+      id: 001-01-create-users-roles-user_roles
+      author: examinai
+      comment: Users, roles, and join table (snake_case, plural users per architecture)
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(320)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: password_hash
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: roles
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(64)
+                  constraints:
+                    nullable: false
+                    unique: true
+        - createTable:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: user_roles
+            columnNames: user_id, role_id
+            constraintName: pk_user_roles
+        - addForeignKeyConstraint:
+            baseTableName: user_roles
+            baseColumnNames: user_id
+            constraintName: fk_user_roles_user
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: user_roles
+            baseColumnNames: role_id
+            constraintName: fk_user_roles_role
+            referencedTableName: roles
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+  - changeSet:
+      id: 001-02-seed-role-codes
+      author: examinai
+      changes:
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: id
+                  value: 11111111-1111-1111-1111-111111111101
+              - column:
+                  name: name
+                  value: intern
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: id
+                  value: 11111111-1111-1111-1111-111111111102
+              - column:
+                  name: name
+                  value: mentor
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: id
+                  value: 11111111-1111-1111-1111-111111111103
+              - column:
+                  name: name
+                  value: administrator
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: id
+                  value: 11111111-1111-1111-1111-111111111104
+              - column:
+                  name: name
+                  value: coordinator
+
+  - changeSet:
+      id: 001-03-seed-bootstrap-admin
+      author: examinai
+      comment: Dev/pilot only — BCrypt (cost 10) for README phrase; rotate before any shared environment
+      changes:
+        - sql:
+            sql: |
+              INSERT INTO users (id, email, password_hash, created_at, updated_at) VALUES (
+                '22222222-2222-2222-2222-222222222201',
+                'admin@examinai.local',
+                '$2a$10$PcK.FcP5Zvubie.H7XAsAOcwYiAc54sPjXJ6Ix14.qNpzRrWZIr1S',
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              )
+        - sql:
+            sql: |
+              INSERT INTO user_roles (user_id, role_id) VALUES (
+                '22222222-2222-2222-2222-222222222201',
+                '11111111-1111-1111-1111-111111111103'
+              )

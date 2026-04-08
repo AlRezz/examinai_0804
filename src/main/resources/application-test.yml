@@ -1,6 +1,7 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:examinai_test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    # Unique DB name per process + Liquibase + H2/DATABASE_TO_LOWER avoids stale DATABASECHANGELOG between test contexts.
+    url: jdbc:h2:mem:examinai_test_${random.uuid};DB_CLOSE_DELAY=0;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password: ""

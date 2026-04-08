@@ -47,13 +47,22 @@ Smoke-style run (set **`SPRING_DATASOURCE_*`** or **`DATABASE_URL`** / **`DATABA
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=prod
 ```
 
+## Local pilot admin (story 1.3)
+
+After migrations run, a **bootstrap administrator** exists for development and automated tests only:
+
+- **Email:** `admin@examinai.local`
+- **Temporary password:** `ChangeMe!Dev1` (documented here only; **not** stored as plaintext in the database or migrations)
+
+The row stores a **BCrypt** hash. **Change this password** (or drop the user) before any shared or production-like environment. Spring Security login wiring arrives in story **1.4**; until then you can inspect the account via tests or SQL tools.
+
 ## Tests
 
 ```bash
 ./mvnw verify
 ```
 
-The **`test`** profile uses **H2** (in PostgreSQL compatibility mode) plus the same Liquibase changelog. **`PostgresLiquibaseIntegrationTest`** uses **Testcontainers** against PostgreSQL when **Docker** is available; it is **skipped** otherwise so `mvn verify` still passes.
+The **`test`** profile uses **H2** (in PostgreSQL compatibility mode) plus the same Liquibase changelog. Each Spring test context gets its own in-memory database name (`examinai_test_<random>`) so Liquibase always starts from a clean state. **`PostgresLiquibaseIntegrationTest`** uses **Testcontainers** against PostgreSQL when **Docker** is available; it is **skipped** otherwise so `mvn verify` still passes.
 
 ## Spring Boot version note
 
