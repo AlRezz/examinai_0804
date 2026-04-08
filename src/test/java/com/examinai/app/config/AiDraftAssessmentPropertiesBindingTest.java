@@ -18,7 +18,8 @@ class AiDraftAssessmentPropertiesBindingTest {
 		runner.withPropertyValues("examinai.ai.draft-assessment.max-source-chars=5000",
 				"examinai.ai.draft-assessment.request-timeout-seconds=60", "examinai.ai.draft-assessment.max-retries=1",
 				"examinai.ai.draft-assessment.retry-backoff-ms=200", "examinai.ai.draft-assessment.max-flash-chars=8192",
-				"examinai.ai.draft-assessment.max-inference-wall-seconds=240")
+				"examinai.ai.draft-assessment.max-inference-wall-seconds=240",
+				"examinai.ai.draft-assessment.audit-model-version=custom-tag")
 			.run(ctx -> {
 				assertThat(ctx).hasSingleBean(AiDraftAssessmentProperties.class);
 				AiDraftAssessmentProperties p = ctx.getBean(AiDraftAssessmentProperties.class);
@@ -28,6 +29,7 @@ class AiDraftAssessmentPropertiesBindingTest {
 				assertThat(p.getRetryBackoffMs()).isEqualTo(200);
 				assertThat(p.getMaxFlashChars()).isEqualTo(8192);
 				assertThat(p.getMaxInferenceWallSeconds()).isEqualTo(240);
+				assertThat(p.getAuditModelVersion()).isEqualTo("custom-tag");
 			});
 	}
 

@@ -7,6 +7,7 @@ examinai:
       retry-backoff-ms: ${EXAMINAI_AI_DRAFT_RETRY_BACKOFF_MS:400}
       max-inference-wall-seconds: ${EXAMINAI_AI_DRAFT_MAX_INFERENCE_WALL_SECONDS:300}
       max-flash-chars: ${EXAMINAI_AI_DRAFT_MAX_FLASH_CHARS:32768}
+      audit-model-version: ${EXAMINAI_AI_AUDIT_MODEL_VERSION:}
   git:
     # Deployment-only: set via environment (see .env.example). Never collect from UI or database.
     base-url: ${GIT_PROVIDER_BASE_URL:}

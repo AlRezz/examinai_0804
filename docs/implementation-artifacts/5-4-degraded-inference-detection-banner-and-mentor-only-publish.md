@@ -40,6 +40,12 @@ so that **reviews do not stall on infrastructure issues**.
 
 - Use **consistent** model attribute / flash key namespace once introduced [Source: architecture **Process Patterns**].
 
+### Current codebase (before 5.4)
+
+- **5.1** failures raise `InferenceUnavailableException`; `TaskSubmissionMentorController.generateAiDraft` sets flash `reviewError` with a short message (no persistent degraded flag).
+- **5.2** persists drafts **only** on successful inference; no partial/degraded row is written when the model is down.
+- **4.4** publish remains available regardless of AI outcome—this story adds a visible **degraded** banner / shared fragment, softens the “Generate AI draft” CTA when appropriate, and optional health alignment (NFR8).
+
 ### References
 
 - [Source: `_bmad-output/planning-artifacts/epics.md` — Story 5.4]

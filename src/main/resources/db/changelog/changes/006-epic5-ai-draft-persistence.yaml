@@ -1,0 +1,91 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-01-model-invocations
+      author: examinai
+      comment: Audit row per successful AI draft inference (Story 5.2, FR20)
+      changes:
+        - createTable:
+            tableName: model_invocations
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: submission_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: invoked_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: model_name
+                  type: varchar(256)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: model_version
+                  type: varchar(256)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: prompt_hash
+                  type: varchar(64)
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            baseTableName: model_invocations
+            baseColumnNames: submission_id
+            constraintName: fk_model_invocations_submission
+            referencedTableName: submissions
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - createIndex:
+            indexName: idx_model_invocations_submission_invoked
+            tableName: model_invocations
+            columns:
+              - column:
+                  name: submission_id
+              - column:
+                  name: invoked_at
+
+  - changeSet:
+      id: 006-02-ai-drafts
+      author: examinai
+      comment: AI assessment text separate from published mentor reviews (Story 5.2, FR19)
+      changes:
+        - createTable:
+            tableName: ai_drafts
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: model_invocation_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: assessment_text
+                  type: text
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: ai_drafts
+            columnNames: model_invocation_id
+            constraintName: uk_ai_drafts_model_invocation
+        - addForeignKeyConstraint:
+            baseTableName: ai_drafts
+            baseColumnNames: model_invocation_id
+            constraintName: fk_ai_drafts_model_invocation
+            referencedTableName: model_invocations
+            referencedColumnNames: id
+            onDelete: CASCADE

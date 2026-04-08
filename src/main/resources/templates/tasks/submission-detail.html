@@ -106,9 +106,19 @@
 	<section class="card shadow-sm" th:if="${submission != null and (submission.status.name() == 'SUBMITTED' or submission.status.name() == 'UNDER_REVIEW')}">
 		<div class="card-body">
 			<h2 class="h5 card-title">Rubric &amp; narrative (unpublished until you publish)</h2>
-			<div class="alert alert-light border mb-3" th:if="${aiDraftAssessment}">
-				<h3 class="h6">AI draft (assistive — not published)</h3>
-				<div class="text-body small" style="white-space: pre-wrap;" th:text="${aiDraftAssessment}">draft</div>
+			<div class="alert alert-warning border border-warning mb-3 shadow-sm" th:if="${latestAiDraft != null}">
+				<h3 class="h6 mb-2">
+					<span class="badge text-bg-warning me-1">Not final</span>
+					AI-generated draft (not the published review)
+				</h3>
+				<p class="small text-secondary mb-2">
+					Model <code th:text="${latestAiDraft.modelName}">model</code>
+					<span th:if="${latestAiDraft.modelDisplayVersion != null}"> · version/tag <code th:text="${latestAiDraft.modelDisplayVersion}">v</code></span>
+					· invoked <span th:text="${latestAiDraft.invokedAt}">time</span>
+					<span th:if="${latestAiDraft.promptHash != null}"> · prompt SHA-256 <code class="small" th:text="${#strings.substring(latestAiDraft.promptHash, 0, 12)}">abc</code>…</span>
+				</p>
+				<div class="text-body small" style="white-space: pre-wrap;" th:text="${latestAiDraft.assessmentText}">draft</div>
+				<p class="small mb-0 mt-2 text-secondary fw-semibold">Official outcome is only what you enter below and publish—not this panel.</p>
 			</div>
 			<form class="mb-3" method="post"
 			      th:action="@{/tasks/{tid}/submissions/{iid}/ai-draft-assessment(tid=${task.id},iid=${internId})}"

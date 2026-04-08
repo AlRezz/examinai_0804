@@ -17,3 +17,6 @@ databaseChangeLog:
   - include:
       file: changes/005-epic4-mentor-review.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/006-epic5-ai-draft-persistence.yaml
+      relativeToChangelogFile: true

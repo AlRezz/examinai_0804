@@ -34,6 +34,12 @@ so that **I am never forced to rely on the model**.
 
 - **5.2** draft persistence; **4.4** publish.
 
+### Current codebase (after 5.2)
+
+- **4.4** `MentorReviewService.publish` does not read AI tables; only `mentor_review_drafts` is cleared on publish.
+- AI text appears only when `latestAiDraft` is present; mentor rubric and publish have no validation tied to AI.
+- Remaining story work: explicit regression tests for “publish with zero AI rows” and UX polish (optional collapse / copy) if product wants it.
+
 ### References
 
 - [Source: `_bmad-output/planning-artifacts/epics.md` — Story 5.3]

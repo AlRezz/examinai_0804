@@ -24,8 +24,8 @@ import com.examinai.app.domain.task.Task;
 import com.examinai.app.domain.task.TaskAssignment;
 import com.examinai.app.domain.user.User;
 import com.examinai.app.domain.user.UserRepository;
-import com.examinai.app.integration.ai.AiDraftAssessmentProperties;
 import com.examinai.app.integration.ai.AiDraftAssessmentService;
+import com.examinai.app.service.AiDraftPersistenceService;
 import com.examinai.app.security.RoleBasedAuthenticationSuccessHandler;
 import com.examinai.app.service.MentorReviewService;
 import com.examinai.app.service.SourceRetrievalService;
@@ -59,7 +59,7 @@ class TaskSubmissionMentorAiDraftWebMvcTest {
 	private AiDraftAssessmentService aiDraftAssessmentService;
 
 	@MockBean
-	private AiDraftAssessmentProperties aiDraftAssessmentProperties;
+	private AiDraftPersistenceService aiDraftPersistenceService;
 
 	@MockBean
 	private UserRepository userRepository;
@@ -67,7 +67,6 @@ class TaskSubmissionMentorAiDraftWebMvcTest {
 	@Test
 	@WithMockUser(roles = "MENTOR")
 	void mentorCanTriggerAiDraft() throws Exception {
-		when(aiDraftAssessmentProperties.getMaxFlashChars()).thenReturn(32_768);
 		UUID taskId = UUID.randomUUID();
 		UUID internId = UUID.randomUUID();
 		UUID submissionId = UUID.randomUUID();
@@ -91,6 +90,7 @@ class TaskSubmissionMentorAiDraftWebMvcTest {
 			.andExpect(redirectedUrl("/tasks/" + taskId + "/submissions/" + internId));
 
 		verify(aiDraftAssessmentService).generateDraft(submissionId);
+		verify(aiDraftPersistenceService).persistSuccessfulDraft(submissionId, "Draft text");
 	}
 
 	@Test

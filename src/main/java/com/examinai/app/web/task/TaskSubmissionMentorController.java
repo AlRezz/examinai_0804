@@ -23,9 +23,9 @@ import com.examinai.app.domain.task.GitRetrievalState;
 import com.examinai.app.domain.task.Submission;
 import com.examinai.app.domain.task.SubmissionStatus;
 import com.examinai.app.domain.user.UserRepository;
-import com.examinai.app.integration.ai.AiDraftAssessmentProperties;
 import com.examinai.app.integration.ai.AiDraftAssessmentService;
 import com.examinai.app.integration.ai.InferenceUnavailableException;
+import com.examinai.app.service.AiDraftPersistenceService;
 import com.examinai.app.service.MentorReviewService;
 import com.examinai.app.service.SourceRetrievalService;
 import com.examinai.app.service.SubmissionService;
@@ -51,21 +51,21 @@ public class TaskSubmissionMentorController {
 
 	private final AiDraftAssessmentService aiDraftAssessmentService;
 
-	private final AiDraftAssessmentProperties aiDraftAssessmentProperties;
+	private final AiDraftPersistenceService aiDraftPersistenceService;
 
 	private final UserRepository userRepository;
 
 	public TaskSubmissionMentorController(TaskService taskService, TaskAssignmentService taskAssignmentService,
 			SubmissionService submissionService, SourceRetrievalService sourceRetrievalService,
 			MentorReviewService mentorReviewService, AiDraftAssessmentService aiDraftAssessmentService,
-			AiDraftAssessmentProperties aiDraftAssessmentProperties, UserRepository userRepository) {
+			AiDraftPersistenceService aiDraftPersistenceService, UserRepository userRepository) {
 		this.taskService = taskService;
 		this.taskAssignmentService = taskAssignmentService;
 		this.submissionService = submissionService;
 		this.sourceRetrievalService = sourceRetrievalService;
 		this.mentorReviewService = mentorReviewService;
 		this.aiDraftAssessmentService = aiDraftAssessmentService;
-		this.aiDraftAssessmentProperties = aiDraftAssessmentProperties;
+		this.aiDraftPersistenceService = aiDraftPersistenceService;
 		this.userRepository = userRepository;
 	}
 
@@ -106,6 +106,8 @@ public class TaskSubmissionMentorController {
 		if (submission != null) {
 			List<PublishedReview> history = mentorReviewService.listPublishedHistory(submission.getId());
 			model.addAttribute("publishedReviewHistory", history);
+			model.addAttribute("latestAiDraft",
+					aiDraftPersistenceService.findLatestForSubmission(submission.getId()).orElse(null));
 			if (!model.containsAttribute("mentorReviewForm")) {
 				model.addAttribute("mentorReviewForm", mentorReviewFormFromDraft(submission.getId()));
 			}
@@ -159,9 +161,9 @@ public class TaskSubmissionMentorController {
 		}
 		try {
 			String draft = aiDraftAssessmentService.generateDraft(submission.getId());
-			redirectAttributes.addFlashAttribute("aiDraftAssessment", truncateForFlash(draft));
+			aiDraftPersistenceService.persistSuccessfulDraft(submission.getId(), draft);
 			redirectAttributes.addFlashAttribute("submissionNotice",
-					"AI draft generated below. Assistive only—you retain final judgment.");
+					"AI draft saved below. Assistive only—not final until you publish.");
 		}
 		catch (NoSuchElementException ex) {
 			redirectAttributes.addFlashAttribute("reviewError", "Submission not found. It may have been removed.");
@@ -170,7 +172,7 @@ public class TaskSubmissionMentorController {
 			redirectAttributes.addFlashAttribute("reviewError", ex.getMessage());
 		}
 		catch (InferenceUnavailableException ex) {
-			String suffix = flashSafeMessage(ex.getMessage());
+			String suffix = ex.getMessage() == null ? "" : ex.getMessage().trim();
 			redirectAttributes.addFlashAttribute("reviewError",
 					"AI draft unavailable. You can edit feedback manually. (" + suffix + ")");
 		}
@@ -229,6 +231,8 @@ public class TaskSubmissionMentorController {
 		}
 		if (submission != null) {
 			model.addAttribute("publishedReviewHistory", mentorReviewService.listPublishedHistory(submission.getId()));
+			model.addAttribute("latestAiDraft",
+					aiDraftPersistenceService.findLatestForSubmission(submission.getId()).orElse(null));
 			model.addAttribute("mentorReviewForm", mentorReviewFormFromDraft(submission.getId()));
 		}
 	}
@@ -269,27 +273,4 @@ public class TaskSubmissionMentorController {
 		};
 	}
 
-	private String truncateForFlash(String draft) {
-		int max = aiDraftAssessmentProperties.getMaxFlashChars();
-		if (draft.length() <= max) {
-			return draft;
-		}
-		return draft.substring(0, max) + "\n\n[... truncated for display/session size; persist drafts in story 5.2 ...]";
-	}
-
-	/**
-	 * Keep flash attributes within {@link AiDraftAssessmentProperties#getMaxFlashChars()} (reserves room for a fixed mentor prefix).
-	 */
-	private String flashSafeMessage(String message) {
-		if (message == null) {
-			return "";
-		}
-		String t = message.trim();
-		int reserve = 120;
-		int max = Math.max(64, aiDraftAssessmentProperties.getMaxFlashChars() - reserve);
-		if (t.length() <= max) {
-			return t;
-		}
-		return t.substring(0, max) + "…";
-	}
 }

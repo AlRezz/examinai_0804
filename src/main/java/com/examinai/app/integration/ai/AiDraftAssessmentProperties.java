@@ -49,6 +49,11 @@ public class AiDraftAssessmentProperties {
 	@Max(2_000_000)
 	private int maxFlashChars = 32_768;
 
+	/**
+	 * Optional version tag recorded with each model invocation for audits (e.g. image digest); loaded model name comes from Spring AI config (FR20).
+	 */
+	private String auditModelVersion = "";
+
 	public int getMaxSourceChars() {
 		return maxSourceChars;
 	}
@@ -95,5 +100,13 @@ public class AiDraftAssessmentProperties {
 
 	public void setMaxInferenceWallSeconds(int maxInferenceWallSeconds) {
 		this.maxInferenceWallSeconds = maxInferenceWallSeconds;
+	}
+
+	public String getAuditModelVersion() {
+		return auditModelVersion;
+	}
+
+	public void setAuditModelVersion(String auditModelVersion) {
+		this.auditModelVersion = auditModelVersion == null ? "" : auditModelVersion;
 	}
 }
