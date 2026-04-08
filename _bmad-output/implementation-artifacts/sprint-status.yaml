@@ -79,10 +79,10 @@ development_status:
   epic-5-retrospective: optional
 
   epic-6: in-progress
-  6-1-intern-feedback-view-for-published-outcomes: ready-for-dev
-  6-2-draft-vs-published-labeling-for-interns: ready-for-dev
-  6-3-submission-lifecycle-status: ready-for-dev
-  6-4-privacy-isolation-between-interns: ready-for-dev
+  6-1-intern-feedback-view-for-published-outcomes: review
+  6-2-draft-vs-published-labeling-for-interns: review
+  6-3-submission-lifecycle-status: review
+  6-4-privacy-isolation-between-interns: review
   epic-6-retrospective: optional
 
   epic-7: in-progress

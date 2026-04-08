@@ -1,6 +1,6 @@
 # Story 6.1: Intern feedback view for published outcomes
 
-Status: ready-for-dev
+Status: review
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -24,10 +24,10 @@ so that **I know what the mentor decided**.
 
 ## Tasks / Subtasks
 
-- [ ] Route + controller: intern-only; load submission by id with **ownership check** (precursor to **6.4**).
-- [ ] Thymeleaf: feedback template; bind published outcome fields only.
-- [ ] Reuse submission lifecycle hook from **6.3** when both land—coordinate attribute names.
-- [ ] Tests: intern sees own published review; without publish, no fake-final UI.
+- [x] Route + controller: intern-only; load submission by id with **ownership check** (precursor to **6.4**).
+- [x] Thymeleaf: feedback template; bind published outcome fields only.
+- [x] Reuse submission lifecycle hook from **6.3** when both land—coordinate attribute names.
+- [x] Tests: intern sees own published review; without publish, no fake-final UI.
 
 ## Dev Notes
 
@@ -46,12 +46,35 @@ so that **I know what the mentor decided**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+
+Composer (Cursor agent)
+
 ### Debug Log References
+
+_(none)_
+
 ### Completion Notes List
+
+- Added `GET /intern/submissions/{submissionId}/feedback` with ownership enforced via `SubmissionRepository.findByIdAndIntern_IdWithTask`; cross-tenant access returns **404**.
+- Official block shows only `PublishedReview` rows whose snapshot matches the submission’s current commit, fetch version, and path scope (`MentorReviewService.findLatestPublishedForCurrentRevision`).
+- Unpublished mentor draft is never exposed on intern pages.
+
 ### File List
-_(filled by dev agent on completion)_
+
+- `src/main/java/com/examinai/app/web/intern/InternSubmissionFeedbackController.java`
+- `src/main/java/com/examinai/app/service/InternFeedbackService.java`
+- `src/main/java/com/examinai/app/service/InternFeedbackBundle.java`
+- `src/main/java/com/examinai/app/service/MentorReviewService.java`
+- `src/main/java/com/examinai/app/domain/task/SubmissionRepository.java`
+- `src/main/resources/templates/intern/submissions/feedback.html`
+- `src/main/resources/templates/intern/tasks/list.html`
+- `src/main/resources/templates/intern/tasks/detail.html`
+- `src/test/java/com/examinai/app/web/Epic6InternSurfacesIntegrationTest.java`
+
+## Change Log
+
+- 2026-04-08: Implemented intern feedback page tied to submission id + current-revision published outcome; integration tests for publish visibility and post-resubmit empty official state.
 
 ---
 
-**Story completion status:** `ready-for-dev` — Ultimate context engine analysis completed.
+**Story completion status:** `review` — Implementation complete; ready for code review.

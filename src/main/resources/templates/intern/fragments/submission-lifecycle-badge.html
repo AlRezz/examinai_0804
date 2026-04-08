@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="badge" class="mb-2">
+	<span class="badge rounded-pill" th:classappend="${submissionLifecycle.badgeClass}" th:text="${submissionLifecycle.label}">status</span>
+	<span class="text-secondary small ms-2">Review status</span>
+</div>
+</body>
+</html>

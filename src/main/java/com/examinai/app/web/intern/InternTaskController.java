@@ -15,9 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.examinai.app.domain.task.Submission;
 import com.examinai.app.domain.task.SubmissionStatus;
+import com.examinai.app.domain.task.Task;
 import com.examinai.app.domain.user.UserRepository;
 import com.examinai.app.service.InternTaskService;
+import com.examinai.app.service.SubmissionLifecycleService;
+import com.examinai.app.service.SubmissionLifecycleView;
 import com.examinai.app.service.SubmissionService;
 import com.examinai.app.service.TaskService;
 
@@ -32,18 +36,27 @@ public class InternTaskController {
 	private final TaskService taskService;
 	private final SubmissionService submissionService;
 
+	private final SubmissionLifecycleService submissionLifecycleService;
+
 	public InternTaskController(UserRepository userRepository, InternTaskService internTaskService,
-			TaskService taskService, SubmissionService submissionService) {
+			TaskService taskService, SubmissionService submissionService, SubmissionLifecycleService submissionLifecycleService) {
 		this.userRepository = userRepository;
 		this.internTaskService = internTaskService;
 		this.taskService = taskService;
 		this.submissionService = submissionService;
+		this.submissionLifecycleService = submissionLifecycleService;
+	}
+
+	public record TaskWithLifecycle(Task task, Submission submission, SubmissionLifecycleView lifecycle) {
 	}
 
 	@GetMapping
 	public String list(Authentication authentication, Model model) {
 		UUID internId = requireUserId(authentication);
-		model.addAttribute("tasks", internTaskService.listAssignedTasksForIntern(internId));
+		model.addAttribute("taskRows", internTaskService.listAssignedTasksForIntern(internId).stream().map(t -> {
+			Submission s = submissionService.findForInternTask(t.getId(), internId);
+			return new TaskWithLifecycle(t, s, submissionLifecycleService.viewForIntern(s));
+		}).toList());
 		return "intern/tasks/list";
 	}
 
@@ -56,6 +69,7 @@ public class InternTaskController {
 		model.addAttribute("task", taskService.requireTask(taskId));
 		var existing = submissionService.findForInternTask(taskId, internId);
 		model.addAttribute("submission", existing);
+		model.addAttribute("submissionLifecycle", submissionLifecycleService.viewForIntern(existing));
 		if (!model.containsAttribute("submissionForm")) {
 			var form = new SubmissionForm();
 			if (existing != null) {

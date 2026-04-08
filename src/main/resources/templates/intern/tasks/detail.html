@@ -4,53 +4,55 @@
 	<meta charset="UTF-8" />
 	<title th:text="${task.title}">Task</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+	      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"/>
 </head>
-<body>
-<main>
-	<h1 th:text="${task.title}">Task</h1>
+<body class="bg-body-secondary">
+<main class="container py-4">
+	<h1 class="h3" th:text="${task.title}">Task</h1>
 	<p><a th:href="@{/intern/tasks}">← My tasks</a></p>
-	<p th:if="${submissionNotice}" th:text="${submissionNotice}">notice</p>
-	<section>
+	<p class="alert alert-success py-2" th:if="${submissionNotice}" th:text="${submissionNotice}">notice</p>
+	<th:block th:replace="~{intern/fragments/submission-lifecycle-badge :: badge}"/>
+	<p class="mb-2" th:if="${submission != null}">
+		<a class="btn btn-sm btn-primary" th:href="@{/intern/submissions/{sid}/feedback(sid=${submission.id})}">View mentor feedback</a>
+	</p>
+	<section class="mb-3">
 		<p><strong>Due:</strong> <span th:text="${task.dueDate}">due</span></p>
-		<pre th:text="${task.description}">description</pre>
+		<pre class="border rounded p-3 bg-white" th:text="${task.description}">description</pre>
 	</section>
-	<section th:if="${submission != null}">
-		<h2>Current submission</h2>
-		<ul>
+	<section class="mb-3" th:if="${submission != null}">
+		<h2 class="h5">Current submission</h2>
+		<ul class="list-unstyled small">
 			<li>Repository: <code th:text="${submission.repoIdentifier}">repo</code></li>
 			<li>Commit: <code th:text="${submission.commitSha}">sha</code></li>
 			<li th:if="${submission.pathScope != null}">Path scope: <code th:text="${submission.pathScope}">path</code></li>
-			<li>Status: <span th:text="${submission.status}">status</span></li>
-			<li>Updated: <span th:text="${submission.updatedAt}">ts</span></li>
+			<li>Coordinates updated: <span th:text="${submission.updatedAt}">ts</span></li>
 		</ul>
 	</section>
-	<h2 th:text="${submission != null} ? 'Update submission coordinates' : 'Attach submission'">Form</h2>
-	<form th:action="@{/intern/tasks/{id}/submission(id=${task.id})}" th:object="${submissionForm}" method="post">
-		<div>
-			<label>Repository identifier (URL or slug)<br />
-				<input type="text" th:field="*{repoIdentifier}" size="80" maxlength="2048" />
-			</label>
-			<p th:if="${#fields.hasErrors('repoIdentifier')}" th:errors="*{repoIdentifier}">err</p>
+	<h2 class="h5" th:text="${submission != null} ? 'Update submission coordinates' : 'Attach submission'">Form</h2>
+	<form class="card card-body shadow-sm mb-3" th:action="@{/intern/tasks/{id}/submission(id=${task.id})}" th:object="${submissionForm}" method="post">
+		<div class="mb-2">
+			<label class="form-label">Repository identifier (URL or slug)</label>
+			<input class="form-control" type="text" th:field="*{repoIdentifier}" size="80" maxlength="2048" />
+			<p class="text-danger small" th:if="${#fields.hasErrors('repoIdentifier')}" th:errors="*{repoIdentifier}">err</p>
 		</div>
-		<div>
-			<label>Commit SHA<br />
-				<input type="text" th:field="*{commitSha}" maxlength="64" />
-			</label>
-			<p th:if="${#fields.hasErrors('commitSha')}" th:errors="*{commitSha}">err</p>
+		<div class="mb-2">
+			<label class="form-label">Commit SHA</label>
+			<input class="form-control" type="text" th:field="*{commitSha}" maxlength="64" />
+			<p class="text-danger small" th:if="${#fields.hasErrors('commitSha')}" th:errors="*{commitSha}">err</p>
 		</div>
-		<div>
-			<label>Optional path scope<br />
-				<input type="text" th:field="*{pathScope}" maxlength="512" />
-			</label>
-			<p th:if="${#fields.hasErrors('pathScope')}" th:errors="*{pathScope}">err</p>
+		<div class="mb-2">
+			<label class="form-label">Optional path scope</label>
+			<input class="form-control" type="text" th:field="*{pathScope}" maxlength="512" />
+			<p class="text-danger small" th:if="${#fields.hasErrors('pathScope')}" th:errors="*{pathScope}">err</p>
 		</div>
 		<div th:if="${#fields.hasGlobalErrors()}">
-			<p th:each="err : ${#fields.globalErrors()}" th:text="${err}">global</p>
+			<p class="text-danger small" th:each="err : ${#fields.globalErrors()}" th:text="${err}">global</p>
 		</div>
-		<button type="submit">Save coordinates</button>
+		<button class="btn btn-primary" type="submit">Save coordinates</button>
 	</form>
 	<form th:action="@{/logout}" method="post">
-		<button type="submit">Sign out</button>
+		<button class="btn btn-outline-secondary" type="submit">Sign out</button>
 	</form>
 </main>
 </body>

@@ -1,6 +1,6 @@
 # Story 6.4: Privacy isolation between interns
 
-Status: ready-for-dev
+Status: review
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -24,9 +24,9 @@ so that **peer grades stay private**.
 
 ## Tasks / Subtasks
 
-- [ ] Audit **all** intern-facing queries: filter by `currentUser` / assignment ownership.
-- [ ] Security tests: user A cannot open user B submission UUID.
-- [ ] Optional: randomized 404 vs 403—pick one and document (avoid enumeration if 404 chosen for all).
+- [x] Audit **all** intern-facing queries: filter by `currentUser` / assignment ownership.
+- [x] Security tests: user A cannot open user B submission UUID.
+- [x] Optional: randomized 404 vs 403—pick one and document (avoid enumeration if 404 chosen for all).
 
 ## Dev Notes
 
@@ -38,6 +38,10 @@ so that **peer grades stay private**.
 
 - **Authorization** at service boundary [Source: architecture **Architectural Boundaries**].
 
+### Policy (this implementation)
+
+- Intern feedback URLs use **`404 Not Found`** for unknown submission ids and for ids owned by another intern (uniform response to reduce id enumeration).
+
 ### References
 
 - [Source: `_bmad-output/planning-artifacts/epics.md` — Story 6.4]
@@ -45,12 +49,29 @@ so that **peer grades stay private**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+
+Composer (Cursor agent)
+
 ### Debug Log References
+
+_(none)_
+
 ### Completion Notes List
+
+- Intern routes audited: `/intern/tasks` (assignments only), `/intern/tasks/{taskId}` (assignment guard), `/intern/submissions/{id}/feedback` (`findByIdAndIntern_IdWithTask`).
+- Integration test: intern A receives 404 when requesting intern B’s submission feedback URL.
+
 ### File List
-_(filled by dev agent on completion)_
+
+- `src/main/java/com/examinai/app/domain/task/SubmissionRepository.java` (`findByIdAndIntern_Id`, `findByIdAndIntern_IdWithTask`)
+- `src/main/java/com/examinai/app/service/InternFeedbackService.java`
+- `src/main/java/com/examinai/app/web/intern/InternSubmissionFeedbackController.java`
+- `src/test/java/com/examinai/app/web/Epic6InternSurfacesIntegrationTest.java`
+
+## Change Log
+
+- 2026-04-08: Submission ownership repository guards + IDOR integration test; documented 404 policy.
 
 ---
 
-**Story completion status:** `ready-for-dev` — Ultimate context engine analysis completed.
+**Story completion status:** `review` — Implementation complete; ready for code review.

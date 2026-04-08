@@ -1,4 +1,7 @@
 examinai:
+  intern:
+    # When true, interns see the latest persisted AI draft as a non-official panel on the feedback page (Epic 6.2).
+    show-ai-draft-to-intern: ${EXAMINAI_INTERN_SHOW_AI_DRAFT:true}
   ai:
     llm-health-probe:
       enabled: ${EXAMINAI_LLM_HEALTH_PROBE_ENABLED:false}

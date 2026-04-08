@@ -1,6 +1,6 @@
 # Story 6.3: Submission lifecycle status
 
-Status: ready-for-dev
+Status: review
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -22,9 +22,9 @@ so that **I know whether I should wait or revise**.
 
 ## Tasks / Subtasks
 
-- [ ] Domain/service: compute `SubmissionLifecycleStatus` from existing tables (no fantasy states).
-- [ ] Thymeleaf fragment for status badge; include on intern task/submission views.
-- [ ] Tests: state transitions—mock aggregate shows expected label after publish.
+- [x] Domain/service: compute `SubmissionLifecycleStatus` from existing tables (no fantasy states).
+- [x] Thymeleaf fragment for status badge; include on intern task/submission views.
+- [x] Tests: state transitions—mock aggregate shows expected label after publish.
 
 ## Dev Notes
 
@@ -39,12 +39,35 @@ so that **I know whether I should wait or revise**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+
+Composer (Cursor agent)
+
 ### Debug Log References
+
+_(none)_
+
 ### Completion Notes List
+
+- `SubmissionLifecycleService` documents precedence in Javadoc and maps `Submission` + `GitRetrievalState` + `SubmissionStatus` to `SubmissionLifecycleView` (label + Bootstrap badge class).
+- Fragment `intern/fragments/submission-lifecycle-badge.html` included on task list, task detail, and feedback pages; model attribute name **`submissionLifecycle`** for reuse.
+
 ### File List
-_(filled by dev agent on completion)_
+
+- `src/main/java/com/examinai/app/service/SubmissionLifecycleStatus.java`
+- `src/main/java/com/examinai/app/service/SubmissionLifecycleView.java`
+- `src/main/java/com/examinai/app/service/SubmissionLifecycleService.java`
+- `src/main/java/com/examinai/app/web/intern/InternTaskController.java`
+- `src/main/resources/templates/intern/fragments/submission-lifecycle-badge.html`
+- `src/main/resources/templates/intern/tasks/list.html`
+- `src/main/resources/templates/intern/tasks/detail.html`
+- `src/main/resources/templates/intern/submissions/feedback.html`
+- `src/test/java/com/examinai/app/service/SubmissionLifecycleServiceTest.java`
+- `src/test/java/com/examinai/app/web/Epic6InternSurfacesIntegrationTest.java`
+
+## Change Log
+
+- 2026-04-08: Lifecycle computation service + badge fragment on intern surfaces; unit + integration coverage.
 
 ---
 
-**Story completion status:** `ready-for-dev` — Ultimate context engine analysis completed.
+**Story completion status:** `review` — Implementation complete; ready for code review.

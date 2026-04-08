@@ -2,6 +2,8 @@ package com.examinai.app.service;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -46,6 +48,33 @@ public class MentorReviewService {
 	@Transactional(readOnly = true)
 	public List<PublishedReview> listPublishedHistory(UUID submissionId) {
 		return publishedReviewRepository.findBySubmission_IdOrderByPublishedAtDesc(submissionId);
+	}
+
+	/**
+	 * Latest published outcome whose snapshot matches the submission's current coordinates and fetch version (Story 6.1).
+	 */
+	@Transactional(readOnly = true)
+	public Optional<PublishedReview> findLatestPublishedForCurrentRevision(Submission submission) {
+		for (PublishedReview pr : publishedReviewRepository.findBySubmission_IdOrderByPublishedAtDesc(submission.getId())) {
+			if (revisionMatches(pr, submission)) {
+				return Optional.of(pr);
+			}
+		}
+		return Optional.empty();
+	}
+
+	private static boolean revisionMatches(PublishedReview published, Submission submission) {
+		if (!Objects.equals(published.getSnapshotCommitSha(), submission.getCommitSha())) {
+			return false;
+		}
+		if (published.getSnapshotGitFetchVersion() != submission.getGitFetchVersion()) {
+			return false;
+		}
+		return Objects.equals(normalizePath(published.getSnapshotPathScope()), normalizePath(submission.getPathScope()));
+	}
+
+	private static String normalizePath(String pathScope) {
+		return pathScope == null ? null : pathScope.trim().isEmpty() ? null : pathScope.trim();
 	}
 
 	@Transactional(readOnly = true)
