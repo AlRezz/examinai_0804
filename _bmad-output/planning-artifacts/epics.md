@@ -24,6 +24,20 @@ This document provides the complete epic and story breakdown for examinai_0804, 
 
 **Inputs used:** PRD (`prd.md`) and Architecture (`architecture.md`). No separate UX specification file was found under `planning-artifacts`; UX-oriented requirements were taken from the PRD **Web application specific requirements** and **Domain-specific requirements**.
 
+## Implementation status (sprint tracking)
+
+Authoritative per-story keys: [`_bmad-output/implementation-artifacts/sprint-status.yaml`](../implementation-artifacts/sprint-status.yaml). Story markdown lives under `_bmad-output/implementation-artifacts/`.
+
+| Epic | Engineering status | Notes |
+|------|-------------------|--------|
+| **1** — Secure access and administration | **Done** | Stories **1.1–1.5** **done** (bootstrap, Liquibase, users/roles, login/CSRF, admin UI). |
+| **2** — Program tasks and intern submissions | **Done** | Stories **2.1–2.4** **done** (tasks, assignments, intern list, submissions). |
+| **3** — Trusted source retrieval from Git | **Done** | Stories **3.1–3.3** **done** (Git config/hygiene, fetch client, diagnostics UX). |
+| **4** — Mentor review workspace and official outcomes | **Done** | Stories **4.1–4.5** **done** (queue, detail + source, draft rubric, publish w/ provenance, outcome history). |
+| **5** — AI-assisted drafts and resilient inference | In progress | Stories **5.1–5.4** **ready-for-dev**. |
+| **6** — Intern transparency and privacy-safe feedback | In progress | Stories **6.1–6.4** **ready-for-dev**. |
+| **7** — Audit visibility and pilot-ready deployment | In progress | Stories **7.1–7.3** **ready-for-dev**. |
+
 ## Requirements Inventory
 
 ### Functional Requirements
@@ -196,36 +210,50 @@ FR32: Epic 7 — Split deployment topology (app / db / inference)
 ## Epic List
 
 ### Epic 1: Secure access and administration
+**Tracking:** **Done** — `sprint-status.yaml`; stories **1.1–1.5**.
+
 People can sign in with organization accounts, administrators can manage users and roles, and the project has a verified Spring Boot baseline with health checks ready for the rest of the product.
 
 **FRs covered:** FR1, FR2, FR3, FR4, FR5, FR6
 
 ### Epic 2: Program tasks and intern submissions
+**Tracking:** **Done** — `sprint-status.yaml`; stories **2.1–2.4**.
+
 Mentors or administrators can define internship tasks, assign them to interns, and interns can see their work and attach version-control coordinates to a submission.
 
 **FRs covered:** FR7, FR8, FR9
 
 ### Epic 3: Trusted source retrieval from Git
+**Tracking:** **Done** — `sprint-status.yaml`; stories **3.1–3.3**.
+
 The system pulls the right source for a submission using organization-configured access, records success or safe diagnostics, and lets authorized users recover from failures.
 
 **FRs covered:** FR10, FR11, FR12, FR31
 
 ### Epic 4: Mentor review workspace and official outcomes
+**Tracking:** **Done** — stories 4.1–4.5 implemented; artifacts marked `done`. Details in `_bmad-output/implementation-artifacts/4-*.md`.
+
 Mentors can work through a queue, read code in context, score and comment, publish the official outcome with clear ownership and history—even before any AI assistance is enabled.
 
 **FRs covered:** FR13, FR14, FR15, FR16, FR17, FR21 (publish path without AI), FR27, FR28
 
 ### Epic 5: AI-assisted drafts and resilient inference
+**Tracking:** In progress — see `sprint-status.yaml` (stories 5.1–5.4 ready-for-dev).
+
 The product requests and stores model drafts separately from mentor verdicts, captures audit metadata, and degrades gracefully when inference is unavailable—without blocking mentor publish.
 
 **FRs covered:** FR18, FR19, FR20, FR21 (optional draft path), FR29, FR30
 
 ### Epic 6: Intern transparency and privacy-safe feedback
+**Tracking:** In progress — see `sprint-status.yaml` (stories 6.1–6.4 ready-for-dev).
+
 Interns see lifecycle status, published mentor judgment, and clearly labeled drafts; they never see other interns’ outcomes.
 
 **FRs covered:** FR22, FR23, FR24, FR25
 
 ### Epic 7: Audit visibility and pilot-ready deployment
+**Tracking:** In progress — see `sprint-status.yaml` (stories 7.1–7.3 ready-for-dev).
+
 Coordinators can inspect a case record for accountability, and operators can run the app, database, and model as separate composable services.
 
 **FRs covered:** FR26, FR32
@@ -233,6 +261,8 @@ Coordinators can inspect a case record for accountability, and operators can run
 ---
 
 ## Epic 1: Secure access and administration
+
+**Tracking:** **Done** — `sprint-status.yaml`; stories **1.1–1.5**.
 
 People can sign in with organization accounts, administrators can manage users and roles, and the project has a verified Spring Boot baseline with health checks ready for the rest of the product.
 
@@ -343,6 +373,8 @@ So that **interns, mentors, and coordinators exist with correct permissions**.
 
 ## Epic 2: Program tasks and intern submissions
 
+**Tracking:** **Done** — `sprint-status.yaml`; stories **2.1–2.4**.
+
 Mentors or administrators can define internship tasks, assign them to interns, and interns can see their work and attach version-control coordinates to a submission.
 
 ### Story 2.1: Create and edit tasks
@@ -415,6 +447,8 @@ So that **mentors can review the exact code I point to**.
 
 ## Epic 3: Trusted source retrieval from Git
 
+**Tracking:** **Done** — `sprint-status.yaml`; stories **3.1–3.3**.
+
 The system pulls the right source for a submission using organization-configured access, records success or safe diagnostics, and lets authorized users recover from failures.
 
 ### Story 3.1: Version-control configuration and secret hygiene
@@ -480,6 +514,8 @@ So that **I can recover without guessing**.
 ---
 
 ## Epic 4: Mentor review workspace and official outcomes
+
+**Tracking:** **Done** — `sprint-status.yaml`; implementation artifacts `4-1` … `4-5`.
 
 Mentors can work through a queue, read code in context, score and comment, publish the official outcome with clear ownership and history—even before any AI assistance is enabled.
 
@@ -583,6 +619,8 @@ So that **resubmissions are explainable over time**.
 
 ## Epic 5: AI-assisted drafts and resilient inference
 
+**Tracking:** In progress — `sprint-status.yaml` (stories 5.1–5.4 ready-for-dev).
+
 The product requests and stores model drafts separately from mentor verdicts, captures audit metadata, and degrades gracefully when inference is unavailable—without blocking mentor publish.
 
 ### Story 5.1: Request AI draft assessment via Spring AI
@@ -666,6 +704,8 @@ So that **reviews do not stall on infrastructure issues**.
 
 ## Epic 6: Intern transparency and privacy-safe feedback
 
+**Tracking:** In progress — `sprint-status.yaml` (stories 6.1–6.4 ready-for-dev).
+
 Interns see lifecycle status, published mentor judgment, and clearly labeled drafts; they never see other interns’ outcomes.
 
 ### Story 6.1: Intern feedback view for published outcomes
@@ -745,6 +785,8 @@ So that **peer grades stay private**.
 ---
 
 ## Epic 7: Audit visibility and pilot-ready deployment
+
+**Tracking:** In progress — `sprint-status.yaml` (stories 7.1–7.3 ready-for-dev).
 
 Coordinators can inspect a case record for accountability, and operators can run the app, database, and model as separate composable services.
 
@@ -826,6 +868,6 @@ So that **new laptops can join the pilot safely**.
 
 ---
 
-**Workflow note:** Epics and stories are ready for development. For BMad **help** with next steps, use the `bmad-help` skill.
+**Workflow note:** Planning epics and stories are complete. **Delivery status** is maintained in `_bmad-output/implementation-artifacts/sprint-status.yaml` and summarized in **Implementation status** above. For BMad **help** with next steps, use the `bmad-help` skill.
 
 **Select an Option:** [A] Advanced Elicitation · [P] Party Mode · [C] **Complete Workflow** (acknowledge final validation; no further automated steps in this document)

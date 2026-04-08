@@ -1,6 +1,6 @@
 # Story 1.5: Role-based access and administrator user management UI
 
-Status: review
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -95,4 +95,4 @@ Auto (Cursor agent)
 
 ---
 
-**Story completion status:** `review` — Implementation complete; ready for code review.
+**Story completion status:** `done` — Marked done; aligns with `sprint-status.yaml`.

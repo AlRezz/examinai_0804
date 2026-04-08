@@ -1,6 +1,6 @@
 # Story 3.3: Retrieval status, safe diagnostics, and retry UX
 
-Status: review
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -68,4 +68,4 @@ Composer (Cursor agent)
 
 ---
 
-**Story completion status:** `review` — Implementation complete; run `code-review` workflow next.
+**Story completion status:** `done` — Marked done; aligns with `sprint-status.yaml`.

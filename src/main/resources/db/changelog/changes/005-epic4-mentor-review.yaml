@@ -1,0 +1,155 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-01-mentor-review-drafts
+      author: examinai
+      comment: Mentor rubric WIP drafts (Story 4.3)
+      changes:
+        - createTable:
+            tableName: mentor_review_drafts
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: submission_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: mentor_user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quality_score
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: readability_score
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: correctness_score
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: narrative_feedback
+                  type: text
+                  constraints:
+                    nullable: true
+              - column:
+                  name: updated_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: mentor_review_drafts
+            columnNames: submission_id
+            constraintName: uk_mentor_review_drafts_submission
+        - addForeignKeyConstraint:
+            baseTableName: mentor_review_drafts
+            baseColumnNames: submission_id
+            constraintName: fk_mentor_review_drafts_submission
+            referencedTableName: submissions
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: mentor_review_drafts
+            baseColumnNames: mentor_user_id
+            constraintName: fk_mentor_review_drafts_mentor
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+  - changeSet:
+      id: 005-02-published-reviews
+      author: examinai
+      comment: Published outcomes with provenance and revision snapshot (Stories 4.4–4.5)
+      changes:
+        - createTable:
+            tableName: published_reviews
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: submission_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: publishing_mentor_user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: published_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quality_score
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: readability_score
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: correctness_score
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: narrative_feedback
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: snapshot_commit_sha
+                  type: varchar(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: snapshot_git_fetch_version
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: snapshot_path_scope
+                  type: varchar(512)
+                  constraints:
+                    nullable: true
+        - addForeignKeyConstraint:
+            baseTableName: published_reviews
+            baseColumnNames: submission_id
+            constraintName: fk_published_reviews_submission
+            referencedTableName: submissions
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: published_reviews
+            baseColumnNames: publishing_mentor_user_id
+            constraintName: fk_published_reviews_mentor
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - createIndex:
+            indexName: idx_published_reviews_submission_published
+            tableName: published_reviews
+            columns:
+              - column:
+                  name: submission_id
+              - column:
+                  name: published_at

@@ -4,44 +4,139 @@
 	<meta charset="UTF-8"/>
 	<title>Submission detail</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+	      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"/>
 </head>
-<body>
-<main>
-	<h1>Submission</h1>
-	<p>Task: <strong th:text="${task.title}">task</strong></p>
-	<p th:if="${submissionNotice}" th:text="${submissionNotice}">notice</p>
-	<p th:if="${submissionError}" th:text="${submissionError}" style="color: crimson;">err</p>
+<body class="bg-body-secondary">
+<div class="container py-4">
+	<header class="mb-3">
+		<h1 class="h2">Submission review</h1>
+		<p class="mb-0">Task: <strong th:text="${task.title}">task</strong></p>
+		<p class="mb-0"><a th:href="@{/review/queue}">Review queue</a> ·
+			<a th:href="@{/tasks/{tid}/submissions(tid=${task.id})}">Submissions for task</a></p>
+	</header>
 
-	<section th:replace="~{tasks/fragments/git-retrieval :: status(${submission})}"></section>
+	<p class="alert alert-success py-2" th:if="${submissionNotice}" th:text="${submissionNotice}">notice</p>
+	<p class="alert alert-danger py-2" th:if="${submissionError}" th:text="${submissionError}">err</p>
+	<p class="alert alert-danger py-2" th:if="${reviewError}" th:text="${reviewError}">rev</p>
 
-	<h2>Coordinates</h2>
-	<form th:action="@{/tasks/{tid}/submissions/{iid}/coordinates(tid=${task.id},iid=${internId})}" th:object="${submissionForm}"
+	<!-- Task brief + source (Story 4.2) -->
+	<div class="row g-3 mb-4">
+		<div class="col-lg-6">
+			<div class="card shadow-sm h-100">
+				<div class="card-body">
+					<h2 class="h5 card-title">Task instructions</h2>
+					<div class="border rounded p-3 bg-light text-body"
+					     th:text="${task.description}"
+					     style="white-space: pre-wrap; max-height: 32rem; overflow: auto;">desc</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-6" th:if="${submission != null}">
+			<div class="card shadow-sm h-100">
+				<div class="card-body">
+					<section th:replace="~{tasks/fragments/git-retrieval :: status(${submission})}"></section>
+				</div>
+			</div>
+		</div>
+		<div class="col-lg-6" th:if="${submission == null}">
+			<div class="card shadow-sm h-100">
+				<div class="card-body">
+					<h2 class="h5 card-title">Source</h2>
+					<p class="text-secondary mb-0">No submission coordinates yet — source cannot be retrieved.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<h2 class="h5">Coordinates</h2>
+	<form class="card card-body shadow-sm mb-4"
+	      th:action="@{/tasks/{tid}/submissions/{iid}/coordinates(tid=${task.id},iid=${internId})}" th:object="${submissionForm}"
 	      method="post">
 		<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-		<p>
-			<label>Repository (owner/name) <input type="text" th:field="*{repoIdentifier}" size="60"/></label>
-		</p>
-		<p th:if="${#fields.hasErrors('repoIdentifier')}" th:errors="*{repoIdentifier}" style="color: crimson;">err</p>
-		<p>
-			<label>Commit SHA <input type="text" th:field="*{commitSha}" size="48"/></label>
-		</p>
-		<p th:if="${#fields.hasErrors('commitSha')}" th:errors="*{commitSha}" style="color: crimson;">err</p>
-		<p>
-			<label>Path scope (optional file path) <input type="text" th:field="*{pathScope}" size="48"/><br/>
-				<small>Leave blank to use README.md at repository root (GitHub-style hosts).</small>
-			</label>
-		</p>
-		<p th:if="${#fields.hasErrors('pathScope')}" th:errors="*{pathScope}" style="color: crimson;">err</p>
-		<button type="submit">Save coordinates</button>
+		<div class="mb-2">
+			<label class="form-label">Repository (owner/name)</label>
+			<input class="form-control" type="text" th:field="*{repoIdentifier}"/>
+		</div>
+		<p class="text-danger small" th:if="${#fields.hasErrors('repoIdentifier')}" th:errors="*{repoIdentifier}">err</p>
+		<div class="mb-2">
+			<label class="form-label">Commit SHA</label>
+			<input class="form-control" type="text" th:field="*{commitSha}"/>
+		</div>
+		<p class="text-danger small" th:if="${#fields.hasErrors('commitSha')}" th:errors="*{commitSha}">err</p>
+		<div class="mb-2">
+			<label class="form-label">Path scope (optional)</label>
+			<input class="form-control" type="text" th:field="*{pathScope}"/>
+			<div class="form-text">Leave blank to use README.md at repository root (GitHub-style hosts).</div>
+		</div>
+		<p class="text-danger small" th:if="${#fields.hasErrors('pathScope')}" th:errors="*{pathScope}">err</p>
+		<button class="btn btn-secondary" type="submit">Save coordinates</button>
 	</form>
 
-	<form th:if="${submission != null}"
-	      th:action="@{/tasks/{tid}/submissions/{iid}/fetch(tid=${task.id},iid=${internId})}" method="post" style="margin-top:1em;">
+	<form class="mb-4" th:if="${submission != null}"
+	      th:action="@{/tasks/{tid}/submissions/{iid}/fetch(tid=${task.id},iid=${internId})}" method="post">
 		<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-		<button type="submit">Fetch / re-fetch source</button>
+		<button class="btn btn-outline-primary" type="submit">Fetch / re-fetch source</button>
 	</form>
 
-	<p><a th:href="@{/tasks/{tid}/submissions(tid=${task.id})}">Back to list</a></p>
-</main>
+	<!-- Published history (Story 4.5) -->
+	<section class="mb-4" th:if="${submission != null and !#lists.isEmpty(publishedReviewHistory)}">
+		<h2 class="h5">Published outcome history</h2>
+		<p class="text-secondary small">Each entry is tied to the submission revision (commit + fetch version) at publish time.</p>
+		<div class="list-group">
+			<div class="list-group-item" th:each="h : ${publishedReviewHistory}">
+				<div class="d-flex w-100 justify-content-between">
+					<strong class="mb-1" th:text="${h.publishingMentor.email}">mentor</strong>
+					<small th:text="${h.publishedAt}">ts</small>
+				</div>
+				<p class="mb-1 small text-secondary">
+					Revision: commit <code th:text="${h.snapshotCommitSha}">sha</code>,
+					fetch v<span th:text="${h.snapshotGitFetchVersion}">0</span>
+					<span th:if="${h.snapshotPathScope}">, path <code th:text="${h.snapshotPathScope}">p</code></span>
+				</p>
+				<p class="mb-1">Scores — quality <span th:text="${h.qualityScore}">0</span>,
+					readability <span th:text="${h.readabilityScore}">0</span>,
+					correctness <span th:text="${h.correctnessScore}">0</span></p>
+				<div style="white-space: pre-wrap;" th:text="${h.narrativeFeedback}">feedback</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Draft + publish (Stories 4.3–4.4) -->
+	<section class="card shadow-sm" th:if="${submission != null and (submission.status.name() == 'SUBMITTED' or submission.status.name() == 'UNDER_REVIEW')}">
+		<div class="card-body">
+			<h2 class="h5 card-title">Rubric &amp; narrative (unpublished until you publish)</h2>
+			<form th:object="${mentorReviewForm}" method="post">
+				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+				<div class="row g-2 mb-2">
+					<div class="col-md-4">
+						<label class="form-label">Quality (1–5)</label>
+						<input class="form-control" type="number" min="1" max="5" th:field="*{qualityScore}"/>
+					</div>
+					<div class="col-md-4">
+						<label class="form-label">Readability (1–5)</label>
+						<input class="form-control" type="number" min="1" max="5" th:field="*{readabilityScore}"/>
+					</div>
+					<div class="col-md-4">
+						<label class="form-label">Correctness (1–5)</label>
+						<input class="form-control" type="number" min="1" max="5" th:field="*{correctnessScore}"/>
+					</div>
+				</div>
+				<div class="mb-2">
+					<label class="form-label">Feedback</label>
+					<textarea class="form-control" rows="5" th:field="*{narrativeFeedback}"></textarea>
+				</div>
+				<p class="text-secondary small mb-2">Publishing records the official outcome, your identity, a timestamp, and the current commit / fetch snapshot. All scores and feedback are required.</p>
+				<button class="btn btn-secondary me-2" type="submit"
+				        th:formaction="@{/tasks/{tid}/submissions/{iid}/review-draft(tid=${task.id},iid=${internId})}">Save draft</button>
+				<button class="btn btn-primary" type="submit"
+				        th:formaction="@{/tasks/{tid}/submissions/{iid}/publish-review(tid=${task.id},iid=${internId})}">Publish official review</button>
+			</form>
+		</div>
+	</section>
+
+	<p class="text-secondary mt-3" th:if="${submission != null and submission.status.name() == 'OUTCOME_PUBLISHED'}">
+		This submission has a published outcome. When the intern submits a new revision, it will return to your queue.</p>
+</div>
 </body>
 </html>

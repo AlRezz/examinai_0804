@@ -30,6 +30,8 @@ public class SecurityConfig {
 			.permitAll()
 			.requestMatchers("/admin/**")
 			.hasRole("ADMINISTRATOR")
+			.requestMatchers("/review/**")
+			.hasAnyRole("MENTOR", "ADMINISTRATOR")
 			.requestMatchers("/tasks/**")
 			.hasAnyRole("MENTOR", "ADMINISTRATOR")
 			.requestMatchers("/intern/**")

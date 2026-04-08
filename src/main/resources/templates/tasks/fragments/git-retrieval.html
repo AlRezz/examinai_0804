@@ -17,11 +17,11 @@
 				Prior snapshot text is kept if a previous fetch succeeded.
 			</th:block>
 		</p>
-		<details th:if="${submission != null and submission.gitRetrievalState != null and submission.gitRetrievalState.name() == 'OK'
-		and submission.gitRetrievedText != null}">
-			<summary>Retrieved text</summary>
+		<div th:if="${submission.gitRetrievalState != null and submission.gitRetrievalState.name() == 'OK'
+		and submission.gitRetrievedText != null}" class="mt-2">
+			<h3 class="h6">Retrieved text</h3>
 			<pre th:text="${submission.gitRetrievedText}" style="max-height:24em;overflow:auto;background:#f6f6f6;padding:0.75em;">text</pre>
-		</details>
+		</div>
 	</section>
 </th:block>
 </body>

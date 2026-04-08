@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.examinai.app.domain.review.MentorReviewDraftRepository;
 import com.examinai.app.domain.task.Submission;
 import com.examinai.app.domain.task.SubmissionRepository;
 import com.examinai.app.domain.task.SubmissionStatus;
@@ -24,13 +25,16 @@ public class SubmissionService {
 	private final UserRepository userRepository;
 	private final SubmissionRepository submissionRepository;
 	private final InternTaskService internTaskService;
+	private final MentorReviewDraftRepository mentorReviewDraftRepository;
 
 	public SubmissionService(TaskRepository taskRepository, UserRepository userRepository,
-			SubmissionRepository submissionRepository, InternTaskService internTaskService) {
+			SubmissionRepository submissionRepository, InternTaskService internTaskService,
+			MentorReviewDraftRepository mentorReviewDraftRepository) {
 		this.taskRepository = taskRepository;
 		this.userRepository = userRepository;
 		this.submissionRepository = submissionRepository;
 		this.internTaskService = internTaskService;
+		this.mentorReviewDraftRepository = mentorReviewDraftRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -70,11 +74,16 @@ public class SubmissionService {
 		String scope = trimToNull(pathScope);
 
 		return submissionRepository.findByTask_IdAndIntern_Id(taskId, internUserId).map(existing -> {
+			SubmissionStatus previous = existing.getStatus();
 			existing.setRepoIdentifier(repo);
 			existing.setCommitSha(sha);
 			existing.setPathScope(scope);
 			existing.setStatus(status);
-			return submissionRepository.save(existing);
+			Submission saved = submissionRepository.save(existing);
+			if (previous == SubmissionStatus.OUTCOME_PUBLISHED && status == SubmissionStatus.SUBMITTED) {
+				mentorReviewDraftRepository.deleteBySubmission_Id(saved.getId());
+			}
+			return saved;
 		}).orElseGet(() -> submissionRepository.save(new Submission(task, intern, repo, sha, scope, status)));
 	}
 

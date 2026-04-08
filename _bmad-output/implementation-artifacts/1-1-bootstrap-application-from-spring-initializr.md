@@ -1,6 +1,6 @@
 # Story 1.1: Bootstrap application from Spring Initializr
 
-Status: review
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -144,4 +144,4 @@ Cursor Agent
 
 ---
 
-**Story completion status:** `review` — Implementation complete; ready for code review.
+**Story completion status:** `done` — Marked done; aligns with `sprint-status.yaml`.

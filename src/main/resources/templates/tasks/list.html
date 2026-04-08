@@ -9,7 +9,7 @@
 <main>
 	<h1>Program tasks</h1>
 	<p th:if="${taskNotice}" th:text="${taskNotice}">notice</p>
-	<p><a th:href="@{/tasks/new}">New task</a> · <a th:href="@{/home}">Home</a></p>
+	<p><a th:href="@{/tasks/new}">New task</a> · <a th:href="@{/review/queue}">Review queue</a> · <a th:href="@{/home}">Home</a></p>
 	<table border="1" cellpadding="6" cellspacing="0">
 		<thead>
 		<tr>

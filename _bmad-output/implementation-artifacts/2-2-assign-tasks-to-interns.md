@@ -1,6 +1,6 @@
 # Story 2.2: Assign tasks to interns
 
-Status: review
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -76,4 +76,4 @@ Composer (Cursor agent)
 
 ---
 
-**Story completion status:** `review` — Implementation complete; run independent code review per workflow.
+**Story completion status:** `done` — Marked done; aligns with `sprint-status.yaml`.

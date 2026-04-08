@@ -1,6 +1,6 @@
 # Story 3.1: Version-control configuration and secret hygiene
 
-Status: review
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -69,4 +69,4 @@ Composer (Cursor agent)
 
 ---
 
-**Story completion status:** `review` — Implementation complete; run `code-review` workflow next.
+**Story completion status:** `done` — Marked done; aligns with `sprint-status.yaml`.

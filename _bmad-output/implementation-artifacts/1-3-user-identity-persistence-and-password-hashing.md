@@ -1,6 +1,6 @@
 # Story 1.3: User identity persistence and password hashing
 
-Status: review
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -107,4 +107,4 @@ Auto (Cursor agent)
 
 ---
 
-**Story completion status:** `review` — Implementation complete; ready for code review.
+**Story completion status:** `done` — Marked done; aligns with `sprint-status.yaml`.

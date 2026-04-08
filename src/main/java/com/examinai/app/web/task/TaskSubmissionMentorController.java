@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,9 +17,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.examinai.app.domain.review.PublishedReview;
 import com.examinai.app.domain.task.GitRetrievalState;
 import com.examinai.app.domain.task.Submission;
 import com.examinai.app.domain.task.SubmissionStatus;
+import com.examinai.app.domain.user.UserRepository;
+import com.examinai.app.service.MentorReviewService;
 import com.examinai.app.service.SourceRetrievalService;
 import com.examinai.app.service.SubmissionService;
 import com.examinai.app.service.TaskAssignmentService;
@@ -39,12 +43,19 @@ public class TaskSubmissionMentorController {
 
 	private final SourceRetrievalService sourceRetrievalService;
 
+	private final MentorReviewService mentorReviewService;
+
+	private final UserRepository userRepository;
+
 	public TaskSubmissionMentorController(TaskService taskService, TaskAssignmentService taskAssignmentService,
-			SubmissionService submissionService, SourceRetrievalService sourceRetrievalService) {
+			SubmissionService submissionService, SourceRetrievalService sourceRetrievalService,
+			MentorReviewService mentorReviewService, UserRepository userRepository) {
 		this.taskService = taskService;
 		this.taskAssignmentService = taskAssignmentService;
 		this.submissionService = submissionService;
 		this.sourceRetrievalService = sourceRetrievalService;
+		this.mentorReviewService = mentorReviewService;
+		this.userRepository = userRepository;
 	}
 
 	@GetMapping("/{taskId}/submissions")
@@ -81,6 +92,13 @@ public class TaskSubmissionMentorController {
 		if (submission != null && submission.getGitRetrievalState() == GitRetrievalState.ERROR) {
 			model.addAttribute("gitRetrievalMessage", GitRetrievalUiMessage.forErrorCode(submission.getGitRetrievalErrorCode()));
 		}
+		if (submission != null) {
+			List<PublishedReview> history = mentorReviewService.listPublishedHistory(submission.getId());
+			model.addAttribute("publishedReviewHistory", history);
+			if (!model.containsAttribute("mentorReviewForm")) {
+				model.addAttribute("mentorReviewForm", mentorReviewFormFromDraft(submission.getId()));
+			}
+		}
 		return "tasks/submission-detail";
 	}
 
@@ -91,9 +109,7 @@ public class TaskSubmissionMentorController {
 		taskService.requireTask(taskId);
 		requireAssignment(taskId, internId);
 		if (binding.hasErrors()) {
-			model.addAttribute("task", taskService.requireTask(taskId));
-			model.addAttribute("internId", internId);
-			model.addAttribute("submission", submissionService.findForTaskAndInternOrNull(taskId, internId));
+			populateDetailModel(taskId, internId, model);
 			return "tasks/submission-detail";
 		}
 		try {
@@ -121,7 +137,78 @@ public class TaskSubmissionMentorController {
 		return "redirect:/tasks/" + taskId + "/submissions/" + internId;
 	}
 
+	@PostMapping("/{taskId}/submissions/{internId}/review-draft")
+	public String saveReviewDraft(@PathVariable UUID taskId, @PathVariable UUID internId, Authentication authentication,
+			@ModelAttribute("mentorReviewForm") MentorReviewForm form, RedirectAttributes redirectAttributes) {
+		taskService.requireTask(taskId);
+		requireAssignment(taskId, internId);
+		Submission submission = submissionService.findForTaskAndInternOrNull(taskId, internId);
+		if (submission == null) {
+			redirectAttributes.addFlashAttribute("reviewError", "Save submission coordinates before working on a review.");
+			return "redirect:/tasks/" + taskId + "/submissions/" + internId;
+		}
+		UUID mentorId = requireUserId(authentication);
+		mentorReviewService.saveDraft(submission.getId(), mentorId, form.getQualityScore(), form.getReadabilityScore(),
+				form.getCorrectnessScore(), form.getNarrativeFeedback());
+		redirectAttributes.addFlashAttribute("submissionNotice", "Review draft saved.");
+		return "redirect:/tasks/" + taskId + "/submissions/" + internId;
+	}
+
+	@PostMapping("/{taskId}/submissions/{internId}/publish-review")
+	public String publishReview(@PathVariable UUID taskId, @PathVariable UUID internId, Authentication authentication,
+			@ModelAttribute("mentorReviewForm") MentorReviewForm form, RedirectAttributes redirectAttributes) {
+		taskService.requireTask(taskId);
+		requireAssignment(taskId, internId);
+		Submission submission = submissionService.findForTaskAndInternOrNull(taskId, internId);
+		if (submission == null) {
+			redirectAttributes.addFlashAttribute("reviewError", "Save submission coordinates before publishing.");
+			return "redirect:/tasks/" + taskId + "/submissions/" + internId;
+		}
+		UUID mentorId = requireUserId(authentication);
+		try {
+			mentorReviewService.publish(submission.getId(), mentorId, form.getQualityScore(), form.getReadabilityScore(),
+					form.getCorrectnessScore(), form.getNarrativeFeedback());
+			redirectAttributes.addFlashAttribute("submissionNotice", "Official review published.");
+		}
+		catch (IllegalArgumentException ex) {
+			redirectAttributes.addFlashAttribute("reviewError", ex.getMessage());
+		}
+		return "redirect:/tasks/" + taskId + "/submissions/" + internId;
+	}
+
 	public record Row(UUID internId, String internEmail, Submission submission, String retrievalSummary) {
+	}
+
+	private void populateDetailModel(UUID taskId, UUID internId, Model model) {
+		model.addAttribute("task", taskService.requireTask(taskId));
+		model.addAttribute("internId", internId);
+		Submission submission = submissionService.findForTaskAndInternOrNull(taskId, internId);
+		model.addAttribute("submission", submission);
+		if (submission != null && submission.getGitRetrievalState() == GitRetrievalState.ERROR) {
+			model.addAttribute("gitRetrievalMessage", GitRetrievalUiMessage.forErrorCode(submission.getGitRetrievalErrorCode()));
+		}
+		if (submission != null) {
+			model.addAttribute("publishedReviewHistory", mentorReviewService.listPublishedHistory(submission.getId()));
+			model.addAttribute("mentorReviewForm", mentorReviewFormFromDraft(submission.getId()));
+		}
+	}
+
+	private MentorReviewForm mentorReviewFormFromDraft(UUID submissionId) {
+		MentorReviewForm rf = new MentorReviewForm();
+		var draft = mentorReviewService.findDraftOrNull(submissionId);
+		if (draft != null) {
+			rf.setQualityScore(draft.getQualityScore());
+			rf.setReadabilityScore(draft.getReadabilityScore());
+			rf.setCorrectnessScore(draft.getCorrectnessScore());
+			rf.setNarrativeFeedback(draft.getNarrativeFeedback());
+		}
+		return rf;
+	}
+
+	private UUID requireUserId(Authentication authentication) {
+		return userRepository.findByEmail(authentication.getName())
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED))
+			.getId();
 	}
 
 	private void requireAssignment(UUID taskId, UUID internId) {
