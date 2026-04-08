@@ -89,6 +89,7 @@ Composer (Cursor agent)
 - 2026-04-08: Implemented Spring AI draft assessment (story 5.1); sprint status → review.
 - 2026-04-08: Senior Developer Review (AI) recorded below.
 - 2026-04-08: Correct Course workflow — Sprint Change Proposal + engineering fixes for review findings.
+- 2026-04-08: Second Senior Developer Review (AI) recorded below.
 
 ---
 
@@ -123,6 +124,32 @@ The feature meets the story’s intent (Spring AI behind `integration.ai`, minim
 ### Review Follow-ups (AI)
 
 Addressed in codebase 2026-04-08; run a fresh **CR** pass to confirm.
+
+---
+
+## Second Senior Developer Review (AI)
+
+**Reviewer:** Code review workflow (second pass)  
+**Date:** 2026-04-08  
+**Outcome:** **Changes Requested** (no High findings)
+
+### Findings
+
+- **Medium** — AI draft generation still runs fully on the request thread. With defaults of `request-timeout-seconds: 120` and `max-retries: 2`, the mentor POST can block for minutes before redirecting, which risks browser/proxy timeouts and weakens practical NFR4 behavior.
+- **Medium** — Error-path flash payload is still unbounded. Success responses go through `truncateForFlash(...)`, but `InferenceUnavailableException` appends `ex.getMessage()` directly to `reviewError`, so large upstream messages can still bloat the session/flash payload.
+- **Low** — UI/backend guard mismatch: the button is shown for non-empty `gitRetrievedText`, while backend requires `hasText(...)`. Whitespace-only retrieved text could show the button and then fail.
+- **Low** — `requestTimeoutSeconds` still permits `0`, which behaves as immediate timeout and is an easy misconfiguration footgun.
+
+### Action Items
+
+- [ ] Add an overall request-time budget or move draft generation off the synchronous servlet path.
+- [ ] Truncate or normalize AI error messages before placing them in flash/session state.
+- [ ] Align the template guard with backend `hasText(...)` semantics.
+- [ ] Tighten timeout property validation to `>= 1` unless `0` is intentionally supported/documented.
+
+### Residual Risk
+
+No new blockers were found in the transaction split, property validation, executor lifecycle, or timeout test changes. The remaining concerns are primarily **operational UX / robustness** rather than architecture-boundary violations.
 
 ---
 
