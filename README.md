@@ -57,6 +57,8 @@ The app runs with profile **`dev`** by default under Compose (HTTP sessions with
 
 Published ports default to **8080** (app), **5432** (Postgres), **11434** (Ollama); override with **`APP_PUBLISH_PORT`**, **`POSTGRES_PUBLISH_PORT`**, **`OLLAMA_PUBLISH_PORT`** in **`.env`** (see **`.env.example`**).
 
+Operator smoke path, Git-safe diagnostics, and prod Actuator notes: **[`docs/runbook-pilot.md`](docs/runbook-pilot.md)** (story **7.3**).
+
 ## Run locally (dev profile)
 
 The **`dev`** profile expects PostgreSQL at **`jdbc:postgresql://localhost:5432/examinai`** with user **`examinai`** and password **`examinai`** by default. Override with **`SPRING_DATASOURCE_URL`**, **`SPRING_DATASOURCE_USERNAME`**, and **`SPRING_DATASOURCE_PASSWORD`**.

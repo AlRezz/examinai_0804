@@ -1,0 +1,75 @@
+# Pilot operations runbook
+
+Short guide for operators bringing up the **Examinai** pilot stack (story **7.3**), aligned with **Docker Compose** story **7.2** and ops NFRs (**NFR6**, **NFR8**, **NFR12**).
+
+## Prerequisites
+
+- Repo root: copy **`.env.example`** to **`.env`** and set secrets there only (never commit **`.env`**).
+- **Docker Compose v2** (`docker compose`). See **`.env.example`** for port overrides and JDBC / Ollama / Git keys.
+- Pull the configured Ollama model once inside the LLM container, for example:
+
+  `docker compose exec llm ollama pull llama3.2`
+
+## Health checks
+
+| Target | Check | Notes |
+|--------|--------|--------|
+| Spring Boot app | `GET /actuator/health` | Default base path `/actuator` (see `application.yml`). Compose healthcheck uses this on port **8080** inside the app container. |
+| PostgreSQL | Compose `db` service `healthcheck` | `pg_isready`; app waits on `depends_on: condition: service_healthy`. |
+| Ollama | Host port **11434** (default) | No Spring Actuator integration required for pilot; inference uses **`OLLAMA_BASE_URL`**. |
+
+Example from the host (default app port):
+
+```bash
+curl -sSf http://localhost:8080/actuator/health
+```
+
+## Git integration: HTTP status → safe diagnostics
+
+The app maps provider HTTP results to internal **`GitFailureKind`** values and **user-safe** copy (no raw bodies or tokens in the UI). When troubleshooting, use **category + HTTP pattern** in tickets—**not** tokens or full error payloads (**NFR12**).
+
+| Typical upstream signal | `GitFailureKind` | Operator hint (no secrets in logs) |
+|-------------------------|------------------|-----------------------------------|
+| `GIT_PROVIDER_BASE_URL` missing / empty | `CONFIG_MISSING` | Set base URL + token in env; redeploy. |
+| HTTP **403** | `ACCESS_DENIED` | Token scope / repo visibility / org SSO. |
+| HTTP **404** | `NOT_FOUND` | Wrong owner/repo, ref, or path scope. |
+| HTTP **429** | `RATE_LIMIT` | Back off; retried in client. |
+| HTTP **5xx** | `UPSTREAM_ERROR` | Provider outage; retried when retriable. |
+| Timeout / transport failure | `TIMEOUT` | Network, firewall, or host downtime. |
+| Other 4xx (e.g. **401**), parse issues | `INVALID_RESPONSE` | Treat as misconfiguration or unexpected API shape; check base URL and token type. |
+
+Logs use redaction helpers so provider bodies and secrets are not printed verbatim.
+
+## Degraded LLM (**NFR8**)
+
+When the LLM service is down or unreachable (e.g. stop the **`llm`** container):
+
+- Mentor submission pages show **degraded inference** messaging (story **5.4**).
+- **Publish official review** remains available; AI draft generation is **assistive** only—mentors can proceed without a successful model call.
+
+Verify degraded mode without sharing credentials: stop **`llm`**, open a mentor submission detail, confirm banner / CTA behavior, then `docker compose start llm` (or `up`) and re-check optional draft flow.
+
+## Smoke path: login → retrieval → optional AI
+
+1. **Stack up:** `docker compose up --build` (or your orchestration equivalent).
+2. **Health:** `GET /actuator/health` returns **UP**.
+3. **Login:** `GET /login` → sign in (see **README** for bootstrap dev admin—rotate before shared environments).
+4. **Retrieval:** As a mentor, open **`/tasks/{taskId}/submissions/{internId}`** for a submission that has version-control coordinates; use the UI control that triggers **fetch** (posts to **`…/fetch`**). Confirm source text or the safe Git error panel if coordinates are wrong.
+5. **Optional AI:** With **`llm`** healthy and model pulled, use **generate AI draft** on the same page; confirm draft or degraded messaging if inference fails.
+
+## Production-oriented profile (**NFR6**, Actuator)
+
+- **`application-prod.yml`** sets **`server.error.include-stacktrace: never`** so default error responses do not expose stack traces to browsers.
+- **Actuator** web exposure in **`prod`** is limited to **`health`** only (broader exposure in **`dev`** is **`health`, `info`**). Rationale: architecture **Observability** in [`docs/planning-artifacts/architecture.md`](planning-artifacts/architecture.md) (restrict full actuator in production; use network boundaries or separate management access in real deployments).
+
+## CI / release checklist (snippet)
+
+- [ ] **`.env`** / secrets store populated from **`.env.example`** keys (no real values in repo).
+- [ ] **`./mvnw verify`** green on the release revision.
+- [ ] Compose smoke: **`docker compose up --build`**, then **`/actuator/health`** and login smoke (or equivalent in target environment).
+- [ ] Optional: stop **`llm`**, confirm **NFR8** degraded UI; restart **`llm`**.
+
+## Traceability
+
+- **NFR8:** Health and documented degraded LLM behavior in pilot.
+- **NFR12:** Env keys documented without values; Git/LLM diagnostics remain secret-safe.

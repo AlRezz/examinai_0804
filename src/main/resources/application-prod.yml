@@ -1,4 +1,5 @@
 # Production-oriented defaults; supply credentials via environment (no secrets in-repo).
+# NFR6: no stack traces in default error responses. Actuator: health only — see Observability notes in docs/planning-artifacts/architecture.md
 server:
   servlet:
     session:

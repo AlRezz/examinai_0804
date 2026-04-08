@@ -1,6 +1,6 @@
 # Story 7.3: Pilot operations runbook and environment documentation
 
-Status: ready-for-dev
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -22,10 +22,10 @@ so that **new laptops can join the pilot safely**.
 
 ## Tasks / Subtasks
 
-- [ ] Add/update `.env.example` at repo root; cross-check **3.1** Git vars, datasource, Spring AI.
-- [ ] `docs/runbook-pilot.md` (or `RUNBOOK.md`) — short operator-focused.
-- [ ] Verify `application-prod.yml` (or pilot) hides sensitive Actuator; link to architecture ADR.
-- [ ] Optional: CI checklist snippet.
+- [x] Add/update `.env.example` at repo root; cross-check **3.1** Git vars, datasource, Spring AI.
+- [x] `docs/runbook-pilot.md` (or `RUNBOOK.md`) — short operator-focused.
+- [x] Verify `application-prod.yml` (or pilot) hides sensitive Actuator; link to architecture ADR.
+- [x] Optional: CI checklist snippet.
 
 ## Dev Notes
 
@@ -40,12 +40,33 @@ so that **new laptops can join the pilot safely**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+
+Composer (Cursor agent)
+
 ### Debug Log References
+
 ### Completion Notes List
+
+- Expanded **`.env.example`** with **`DATABASE_*`** aliases for **`prod`**, optional **`examinai.*` / AI draft** env keys, and NFR12 reminder; aligned with **`docker-compose.yml`** and **`application.yml`**.
+- Added **`docs/runbook-pilot.md`**: health table, Git HTTP → **`GitFailureKind`** mapping (secret-safe), degraded LLM (**NFR8**), smoke path through mentor **`…/fetch`**, **`prod`** NFR6 + Actuator vs **`architecture.md`**, CI snippet, NFR8/NFR12 traceability.
+- **`application-prod.yml`**: top comment cross-links NFR6 and architecture observability; verified **`management.endpoints.web.exposure.include: health`** only.
+- **`README.md`**: link to runbook.
+
 ### File List
-_(filled by dev agent on completion)_
+
+- `.env.example`
+- `docs/runbook-pilot.md`
+- `src/main/resources/application-prod.yml`
+- `README.md`
+- `_bmad-output/implementation-artifacts/7-3-pilot-operations-runbook-and-environment-documentation.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `docs/implementation-artifacts/7-3-pilot-operations-runbook-and-environment-documentation.md`
+
+## Change Log
+
+- **2026-04-08** — Story 7.3: pilot runbook, `.env.example` alignment, prod Actuator verification note, sprint → review.
+- **2026-04-08** — Story 7.3 marked **done** after review.
 
 ---
 
-**Story completion status:** `ready-for-dev` — Ultimate context engine analysis completed.
+**Story completion status:** `done` — completed.
