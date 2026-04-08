@@ -1,6 +1,6 @@
 # Story 7.1: Coordinator read-only case record
 
-Status: ready-for-dev
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -26,10 +26,10 @@ so that **I can answer audit questions without write access**.
 
 ## Tasks / Subtasks
 
-- [ ] Role: `COORDINATOR` (or architecture-aligned name); seed/migration in **1.3** lineage if not present.
-- [ ] Read-only controller + service: aggregate queries across submission, retrieval, **5.2** draft/invocation, **4.4** published review.
-- [ ] Thymeleaf read-only template; no POST mutating review.
-- [ ] Tests: coordinator 200; mentor/intern/coordinator-denied cases.
+- [x] Role: `COORDINATOR` (or architecture-aligned name); seed/migration in **1.3** lineage if not present.
+- [x] Read-only controller + service: aggregate queries across submission, retrieval, **5.2** draft/invocation, **4.4** published review.
+- [x] Thymeleaf read-only template; no POST mutating review.
+- [x] Tests: coordinator 200; mentor/intern/coordinator-denied cases.
 
 ## Dev Notes
 
@@ -48,12 +48,34 @@ so that **I can answer audit questions without write access**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+
+Cursor agent (implementation session)
+
 ### Debug Log References
+
+- `./mvnw test` (all tests pass)
+
 ### Completion Notes List
+
+- Added `COORDINATOR`-only `/coordinator/**` security rule; login success redirects to `/coordinator`.
+- `CoordinatorCaseRecordService` aggregates submission, retrieval (via existing git fragment + message), latest AI draft + invocation metadata, mentor draft (unpublished), and published history with provenance (mentor email, `publishedAt`, snapshot).
+- Read-only templates `coordinator/index.html` and `coordinator/case-record.html` (no review POST endpoints).
+- Integration tests: coordinator 200 + 404 for unknown id; mentor and intern receive 403; login redirect test for coordinator.
+
 ### File List
-_(filled by dev agent on completion)_
+
+- `src/main/java/com/examinai/app/service/CoordinatorCaseRecordModel.java`
+- `src/main/java/com/examinai/app/service/CoordinatorCaseRecordService.java`
+- `src/main/java/com/examinai/app/web/coordinator/CoordinatorCaseRecordController.java`
+- `src/main/java/com/examinai/app/config/SecurityConfig.java`
+- `src/main/java/com/examinai/app/security/RoleBasedAuthenticationSuccessHandler.java`
+- `src/main/resources/templates/coordinator/index.html`
+- `src/main/resources/templates/coordinator/case-record.html`
+- `src/main/resources/templates/home.html`
+- `src/test/java/com/examinai/app/web/CoordinatorCaseRecordIntegrationTest.java`
+- `src/test/java/com/examinai/app/web/LoginAndSecurityIntegrationTest.java`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
 
 ---
 
-**Story completion status:** `ready-for-dev` — Ultimate context engine analysis completed.
+**Story completion status:** `done` — Accepted and closed.

@@ -18,6 +18,8 @@ public class RoleBasedAuthenticationSuccessHandler extends SimpleUrlAuthenticati
 
 	private static final String INTERN_HOME = "/intern/tasks";
 
+	private static final String COORDINATOR_HOME = "/coordinator";
+
 	private static final String DEFAULT_HOME = "/home";
 
 	@Override
@@ -30,6 +32,9 @@ public class RoleBasedAuthenticationSuccessHandler extends SimpleUrlAuthenticati
 		}
 		else if (authorities.stream().anyMatch(a -> UserRoleAuthorities.toAuthority("mentor").equals(a.getAuthority()))) {
 			target = MENTOR_HOME;
+		}
+		else if (authorities.stream().anyMatch(a -> UserRoleAuthorities.toAuthority("coordinator").equals(a.getAuthority()))) {
+			target = COORDINATOR_HOME;
 		}
 		else if (authorities.stream().anyMatch(a -> UserRoleAuthorities.toAuthority("intern").equals(a.getAuthority()))) {
 			target = INTERN_HOME;

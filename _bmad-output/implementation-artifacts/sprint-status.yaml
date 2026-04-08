@@ -86,7 +86,7 @@ development_status:
   epic-6-retrospective: optional
 
   epic-7: in-progress
-  7-1-coordinator-read-only-case-record: ready-for-dev
+  7-1-coordinator-read-only-case-record: done
   7-2-docker-compose-for-application-database-and-llm: ready-for-dev
   7-3-pilot-operations-runbook-and-environment-documentation: ready-for-dev
   epic-7-retrospective: optional

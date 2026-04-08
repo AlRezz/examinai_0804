@@ -53,6 +53,11 @@ class LoginAndSecurityIntegrationTest {
 			mentor.addRole(roleRepository.findByName("mentor").orElseThrow());
 			userRepository.save(mentor);
 		}
+		if (userRepository.findByEmail("itest-coordinator-login@examinai.local").isEmpty()) {
+			User coordinator = new User("itest-coordinator-login@examinai.local", passwordEncoder.encode("ItestCoordLogin!8"));
+			coordinator.addRole(roleRepository.findByName("coordinator").orElseThrow());
+			userRepository.save(coordinator);
+		}
 	}
 
 	@Test
@@ -77,6 +82,14 @@ class LoginAndSecurityIntegrationTest {
 				formLogin("/login").user("itest-mentor@examinai.local").password("ItestMentor!8"))
 			.andExpect(authenticated())
 			.andExpect(redirectedUrl("/tasks"));
+	}
+
+	@Test
+	void loginSuccessRedirectsCoordinatorToCoordinatorHome() throws Exception {
+		mockMvc.perform(
+				formLogin("/login").user("itest-coordinator-login@examinai.local").password("ItestCoordLogin!8"))
+			.andExpect(authenticated())
+			.andExpect(redirectedUrl("/coordinator"));
 	}
 
 	@Test

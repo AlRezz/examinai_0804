@@ -15,6 +15,7 @@
 		<li sec:authorize="hasAnyRole('MENTOR', 'ADMINISTRATOR')"><a th:href="@{/review/queue}">Review queue</a></li>
 		<li sec:authorize="hasRole('INTERN')"><a th:href="@{/intern/tasks}">My assigned tasks</a></li>
 		<li sec:authorize="hasRole('ADMINISTRATOR')"><a th:href="@{/admin/users}" href="#">User management</a></li>
+		<li sec:authorize="hasRole('COORDINATOR')"><a th:href="@{/coordinator}">Coordinator case lookup</a></li>
 	</ul>
 	<form th:action="@{/logout}" method="post">
 		<button type="submit">Sign out</button>
