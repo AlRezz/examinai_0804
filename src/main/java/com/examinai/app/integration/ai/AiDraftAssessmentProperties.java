@@ -20,9 +20,9 @@ public class AiDraftAssessmentProperties {
 	/**
 	 * Per-attempt wall-clock timeout for the chat call (NFR4).
 	 */
-	@Min(0)
+	@Min(1)
 	@Max(86400)
-	private int requestTimeoutSeconds = 120;
+	private int requestTimeoutSeconds = 90;
 
 	/**
 	 * Retries after a failed or timed-out attempt (NFR4).
@@ -34,6 +34,13 @@ public class AiDraftAssessmentProperties {
 	@Min(0)
 	@Max(600_000)
 	private long retryBackoffMs = 400L;
+
+	/**
+	 * Hard cap on wall-clock time for all inference attempts (including retries), after the DB read (NFR4 / proxy safety).
+	 */
+	@Min(1)
+	@Max(86400)
+	private int maxInferenceWallSeconds = 300;
 
 	/**
 	 * Max characters placed in flash/session for one AI draft until persistence exists (story 5.2).
@@ -80,5 +87,13 @@ public class AiDraftAssessmentProperties {
 
 	public void setMaxFlashChars(int maxFlashChars) {
 		this.maxFlashChars = maxFlashChars;
+	}
+
+	public int getMaxInferenceWallSeconds() {
+		return maxInferenceWallSeconds;
+	}
+
+	public void setMaxInferenceWallSeconds(int maxInferenceWallSeconds) {
+		this.maxInferenceWallSeconds = maxInferenceWallSeconds;
 	}
 }

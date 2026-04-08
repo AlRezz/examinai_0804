@@ -112,7 +112,7 @@
 			</div>
 			<form class="mb-3" method="post"
 			      th:action="@{/tasks/{tid}/submissions/{iid}/ai-draft-assessment(tid=${task.id},iid=${internId})}"
-			      th:if="${submission.gitRetrievalState.name() == 'OK' and submission.gitRetrievedText != null and !#strings.isEmpty(submission.gitRetrievedText)}">
+			      th:if="${submission.gitRetrievalState.name() == 'OK' and submission.gitRetrievedText != null and !#strings.isEmpty(#strings.trim(submission.gitRetrievedText))}">
 				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 				<button class="btn btn-outline-secondary" type="submit">Generate AI draft</button>
 				<span class="text-secondary small ms-2">Send stored source + task brief to the model (bounded size/time; see README).</span>

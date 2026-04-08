@@ -2,9 +2,10 @@ examinai:
   ai:
     draft-assessment:
       max-source-chars: ${EXAMINAI_AI_DRAFT_MAX_SOURCE_CHARS:100000}
-      request-timeout-seconds: ${EXAMINAI_AI_DRAFT_TIMEOUT_SECONDS:120}
+      request-timeout-seconds: ${EXAMINAI_AI_DRAFT_TIMEOUT_SECONDS:90}
       max-retries: ${EXAMINAI_AI_DRAFT_MAX_RETRIES:2}
       retry-backoff-ms: ${EXAMINAI_AI_DRAFT_RETRY_BACKOFF_MS:400}
+      max-inference-wall-seconds: ${EXAMINAI_AI_DRAFT_MAX_INFERENCE_WALL_SECONDS:300}
       max-flash-chars: ${EXAMINAI_AI_DRAFT_MAX_FLASH_CHARS:32768}
   git:
     # Deployment-only: set via environment (see .env.example). Never collect from UI or database.

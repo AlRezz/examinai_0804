@@ -42,6 +42,7 @@ class AiDraftAssessmentServiceTest {
 		properties = new AiDraftAssessmentProperties();
 		properties.setRequestTimeoutSeconds(30);
 		properties.setMaxRetries(1);
+		properties.setMaxInferenceWallSeconds(600);
 		executor = Executors.newVirtualThreadPerTaskExecutor();
 		service = new AiDraftAssessmentService(chatClient, payloadLoader, properties, executor);
 	}
@@ -86,6 +87,26 @@ class AiDraftAssessmentServiceTest {
 	void timesOutWhenModelDoesNotReturnWithinDeadline() {
 		when(payloadLoader.loadUserPayload(submissionId)).thenReturn("payload");
 		properties.setRequestTimeoutSeconds(1);
+		when(chatClient.prompt().system(anyString()).user(anyString()).call().content()).thenAnswer(invocation -> {
+			try {
+				new java.util.concurrent.CountDownLatch(1).await();
+			}
+			catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+			return "never normally";
+		});
+
+		assertThatThrownBy(() -> service.generateDraft(submissionId)).isInstanceOf(InferenceUnavailableException.class)
+			.hasMessageContaining("timed out");
+	}
+
+	@Test
+	void respectsTotalWallBudgetEvenWhenPerAttemptTimeoutIsHigher() {
+		when(payloadLoader.loadUserPayload(submissionId)).thenReturn("payload");
+		properties.setMaxInferenceWallSeconds(1);
+		properties.setRequestTimeoutSeconds(120);
+		properties.setMaxRetries(0);
 		when(chatClient.prompt().system(anyString()).user(anyString()).call().content()).thenAnswer(invocation -> {
 			try {
 				new java.util.concurrent.CountDownLatch(1).await();

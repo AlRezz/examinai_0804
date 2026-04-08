@@ -42,15 +42,22 @@ public class AiDraftAssessmentService {
 
 	public String generateDraft(UUID submissionId) {
 		String userPayload = payloadLoader.loadUserPayload(submissionId);
-
+		long deadlineNs = System.nanoTime() + TimeUnit.SECONDS.toNanos(properties.getMaxInferenceWallSeconds());
 		InferenceUnavailableException lastFailure = null;
 		int attempts = properties.getMaxRetries() + 1;
 		for (int i = 0; i < attempts; i++) {
 			if (i > 0) {
 				sleepQuietly(properties.getRetryBackoffMs());
+				if (Thread.currentThread().isInterrupted()) {
+					throw new InferenceUnavailableException("AI draft interrupted.");
+				}
+			}
+			if (System.nanoTime() >= deadlineNs) {
+				throw lastFailure != null ? lastFailure
+						: new InferenceUnavailableException("AI draft total time budget exceeded.");
 			}
 			try {
-				return invokeWithTimeout(userPayload);
+				return invokeWithTimeout(userPayload, deadlineNs);
 			}
 			catch (InferenceUnavailableException ex) {
 				lastFailure = ex;
@@ -60,14 +67,22 @@ public class AiDraftAssessmentService {
 				: new InferenceUnavailableException("AI draft failed after " + attempts + " attempts.");
 	}
 
-	private String invokeWithTimeout(String userPayload) {
+	private String invokeWithTimeout(String userPayload, long deadlineNs) {
+		long remainingNs = deadlineNs - System.nanoTime();
+		if (remainingNs <= 0) {
+			throw new InferenceUnavailableException("AI draft total time budget exceeded.");
+		}
+		long perCallNs = Math.min(TimeUnit.SECONDS.toNanos(properties.getRequestTimeoutSeconds()), remainingNs);
+		if (perCallNs < 1_000_000L) {
+			throw new InferenceUnavailableException("AI draft total time budget exceeded.");
+		}
 		Future<String> future = aiDraftExecutor.submit(() -> chatClient.prompt()
 			.system(SYSTEM)
 			.user(userPayload)
 			.call()
 			.content());
 		try {
-			String out = future.get(properties.getRequestTimeoutSeconds(), TimeUnit.SECONDS);
+			String out = future.get(perCallNs, TimeUnit.NANOSECONDS);
 			if (!StringUtils.hasText(out)) {
 				throw new InferenceUnavailableException("Model returned an empty response.");
 			}
@@ -84,7 +99,11 @@ public class AiDraftAssessmentService {
 		}
 		catch (ExecutionException e) {
 			Throwable cause = e.getCause() != null ? e.getCause() : e;
-			throw new InferenceUnavailableException("AI draft failed: " + cause.getMessage(), cause);
+			String detail = cause.getMessage();
+			if (!StringUtils.hasText(detail)) {
+				detail = cause.getClass().getSimpleName();
+			}
+			throw new InferenceUnavailableException("AI draft failed: " + detail, cause);
 		}
 	}
 

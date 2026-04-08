@@ -170,7 +170,9 @@ public class TaskSubmissionMentorController {
 			redirectAttributes.addFlashAttribute("reviewError", ex.getMessage());
 		}
 		catch (InferenceUnavailableException ex) {
-			redirectAttributes.addFlashAttribute("reviewError", "AI draft unavailable. You can edit feedback manually. (" + ex.getMessage() + ")");
+			String suffix = flashSafeMessage(ex.getMessage());
+			redirectAttributes.addFlashAttribute("reviewError",
+					"AI draft unavailable. You can edit feedback manually. (" + suffix + ")");
 		}
 		return "redirect:/tasks/" + taskId + "/submissions/" + internId;
 	}
@@ -273,5 +275,21 @@ public class TaskSubmissionMentorController {
 			return draft;
 		}
 		return draft.substring(0, max) + "\n\n[... truncated for display/session size; persist drafts in story 5.2 ...]";
+	}
+
+	/**
+	 * Keep flash attributes within {@link AiDraftAssessmentProperties#getMaxFlashChars()} (reserves room for a fixed mentor prefix).
+	 */
+	private String flashSafeMessage(String message) {
+		if (message == null) {
+			return "";
+		}
+		String t = message.trim();
+		int reserve = 120;
+		int max = Math.max(64, aiDraftAssessmentProperties.getMaxFlashChars() - reserve);
+		if (t.length() <= max) {
+			return t;
+		}
+		return t.substring(0, max) + "…";
 	}
 }

@@ -1,6 +1,6 @@
 # Story 5.1: Request AI draft assessment via Spring AI
 
-Status: review
+Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
 
@@ -29,6 +29,7 @@ so that **I get assistive signals without ceding final judgment**.
 - [x] Controller action: POST trigger draft generation (mentor-only); delegate to service.
 - [x] Tests: mock `ChatClient` / Spring AI test doubles; verify timeout configuration present.
 - [x] **Correct-course (2026-04-08):** transaction split, flash cap, missing-submission handling, validated properties, executor bean, timeout test — see Sprint Change Proposal and Senior Review action items (all addressed in code).
+- [x] **Second CR follow-ups:** overall inference wall budget, bounded error flash text, Thymeleaf `trim` guard vs `hasText`, `request-timeout-seconds` ≥ 1, README env for wall cap.
 
 ## Dev Notes
 
@@ -66,6 +67,7 @@ Composer (Cursor agent)
 - README pilot section for NFR7 / env vars; `application.yml`: `spring.ai.ollama` (base URL, model, init), `examinai.ai.draft-assessment.*`.
 - Tests: `AiDraftAssessmentServiceTest`, `AiDraftPayloadLoaderTest`, `AiDraftAssessmentPropertiesBindingTest`, `TaskSubmissionMentorAiDraftWebMvcTest`.
 - **Post-review:** `AiDraftPayloadLoader`, executor bean, flash cap + env `EXAMINAI_AI_DRAFT_MAX_FLASH_CHARS`, controller hardening, validated properties.
+- **Second CR:** `max-inference-wall-seconds` (default 300) caps total inference wall time; per-attempt timeout trimmed to remaining budget; default per-attempt timeout 90s; `flashSafeMessage` for `InferenceUnavailableException`; Thymeleaf uses `#strings.trim(gitRetrievedText)` for button visibility; `@Min(1)` on `requestTimeoutSeconds`; safer `ExecutionException` detail when message null.
 
 ### File List
 - `src/main/java/com/examinai/app/integration/ai/AiDraftAssessmentService.java`
@@ -90,6 +92,8 @@ Composer (Cursor agent)
 - 2026-04-08: Senior Developer Review (AI) recorded below.
 - 2026-04-08: Correct Course workflow — Sprint Change Proposal + engineering fixes for review findings.
 - 2026-04-08: Second Senior Developer Review (AI) recorded below.
+- 2026-04-08: Dev story pass — second CR action items implemented; tests green.
+- 2026-04-08: Story and sprint status set to **done**; review outcomes finalized.
 
 ---
 
@@ -97,7 +101,7 @@ Composer (Cursor agent)
 
 **Reviewer:** Code review workflow (adversarial layers: acceptance, blind paths, edge cases)  
 **Date:** 2026-04-08  
-**Outcome:** **Changes Requested** → resolved in code (2026-04-08); **ready for re-review**
+**Outcome:** **Approve** — findings addressed in code (2026-04-08); story closed after second CR pass.
 
 ### Summary
 
@@ -110,7 +114,7 @@ The feature meets the story’s intent (Spring AI behind `integration.ai`, minim
 | AC1 Spring AI + timeout/retry | **Pass** (post-fix) | Timeout + retries; **inference outside DB transaction** via `AiDraftPayloadLoader` + non-transactional service. |
 | AC2 Payload / NFR7 | **Pass** | Prompt omits repo/coordinates; README documents policy. Retrieved file *content* can still contain secrets if scope pointed at sensitive files—operational, not a new bypass. |
 | AC3 Boundary | **Pass** | Controller delegates to `AiDraftAssessmentService` only. |
-| AC4 Traceability | **Pass** | README + property/env surface (+ `EXAMINAI_AI_DRAFT_MAX_FLASH_CHARS`). |
+| AC4 Traceability | **Pass** | README + property/env surface (`EXAMINAI_AI_DRAFT_MAX_FLASH_CHARS`, `EXAMINAI_AI_DRAFT_MAX_INFERENCE_WALL_SECONDS`, etc.). |
 
 ### Action items (by severity)
 
@@ -123,7 +127,7 @@ The feature meets the story’s intent (Spring AI behind `integration.ai`, minim
 
 ### Review Follow-ups (AI)
 
-Addressed in codebase 2026-04-08; run a fresh **CR** pass to confirm.
+Addressed in codebase 2026-04-08.
 
 ---
 
@@ -131,26 +135,28 @@ Addressed in codebase 2026-04-08; run a fresh **CR** pass to confirm.
 
 **Reviewer:** Code review workflow (second pass)  
 **Date:** 2026-04-08  
-**Outcome:** **Changes Requested** (no High findings)
+**Outcome:** **Approve** — action items addressed in code (2026-04-08)
 
-### Findings
+### Findings (historical — as filed before fixes)
 
-- **Medium** — AI draft generation still runs fully on the request thread. With defaults of `request-timeout-seconds: 120` and `max-retries: 2`, the mentor POST can block for minutes before redirecting, which risks browser/proxy timeouts and weakens practical NFR4 behavior.
-- **Medium** — Error-path flash payload is still unbounded. Success responses go through `truncateForFlash(...)`, but `InferenceUnavailableException` appends `ex.getMessage()` directly to `reviewError`, so large upstream messages can still bloat the session/flash payload.
-- **Low** — UI/backend guard mismatch: the button is shown for non-empty `gitRetrievedText`, while backend requires `hasText(...)`. Whitespace-only retrieved text could show the button and then fail.
-- **Low** — `requestTimeoutSeconds` still permits `0`, which behaves as immediate timeout and is an easy misconfiguration footgun.
+- **Medium** — Synchronous request thread risk with long cumulative timeouts.
+- **Medium** — Unbounded error detail in flash for `InferenceUnavailableException`.
+- **Low** — UI `isEmpty` vs backend `hasText` for `gitRetrievedText`.
+- **Low** — `requestTimeoutSeconds` allowed `0`.
+
+**Resolution:** `max-inference-wall-seconds` + per-attempt timeout capped to remaining budget; default per-attempt timeout **90s**; `flashSafeMessage`; Thymeleaf `#strings.trim` on retrieved text; `@Min(1)` on request timeout.
 
 ### Action Items
 
-- [ ] Add an overall request-time budget or move draft generation off the synchronous servlet path.
-- [ ] Truncate or normalize AI error messages before placing them in flash/session state.
-- [ ] Align the template guard with backend `hasText(...)` semantics.
-- [ ] Tighten timeout property validation to `>= 1` unless `0` is intentionally supported/documented.
+- [x] Add an overall request-time budget or move draft generation off the synchronous servlet path.
+- [x] Truncate or normalize AI error messages before placing them in flash/session state.
+- [x] Align the template guard with backend `hasText(...)` semantics.
+- [x] Tighten timeout property validation to `>= 1` unless `0` is intentionally supported/documented.
 
 ### Residual Risk
 
-No new blockers were found in the transaction split, property validation, executor lifecycle, or timeout test changes. The remaining concerns are primarily **operational UX / robustness** rather than architecture-boundary violations.
+Synchronous servlet work remains (acceptable for story 5.1; async/job could be a later enhancement). **Very large task title/description** in the prompt is not separately capped (operational / optional follow-up).
 
 ---
 
-**Story completion status:** `review` — Correct-course fixes merged; **re-run code review** before marking `done`.
+**Story completion status:** `done` — ACs satisfied; reviews closed; `./mvnw test` green in dev session.
