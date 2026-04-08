@@ -3,7 +3,10 @@ package com.examinai.app.web;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
@@ -102,6 +105,34 @@ class Epic5AiDraftPersistenceIntegrationTest {
 	}
 
 	@Test
+	void publishReviewViaWebSucceedsWithNoAiInvocationRows() throws Exception {
+		var sub = submissionRepository.findByTask_IdAndIntern_Id(taskId, intern.getId()).orElseThrow();
+		assertThat(modelInvocationRepository.countBySubmission_Id(sub.getId())).isZero();
+
+		var login = mockMvc.perform(formLogin("/login").user("epic5-mentor@examinai.local").password("Epic5Mentor!9"))
+			.andExpect(authenticated())
+			.andReturn();
+		MockHttpSession session = (MockHttpSession) login.getRequest().getSession();
+		String detailUrl = "/tasks/" + taskId + "/submissions/" + intern.getId();
+
+		mockMvc.perform(post(detailUrl + "/publish-review").with(csrf())
+			.session(session)
+			.param("qualityScore", "3")
+			.param("readabilityScore", "4")
+			.param("correctnessScore", "5")
+			.param("narrativeFeedback", "Published without any AI draft."))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(redirectedUrl(detailUrl));
+
+		var updated = submissionRepository.findById(sub.getId()).orElseThrow();
+		assertThat(updated.getStatus()).isEqualTo(SubmissionStatus.OUTCOME_PUBLISHED);
+		var published = publishedReviewRepository.findBySubmission_IdOrderByPublishedAtDesc(sub.getId());
+		assertThat(published).hasSize(1);
+		assertThat(published.getFirst().getNarrativeFeedback()).isEqualTo("Published without any AI draft.");
+		assertThat(modelInvocationRepository.countBySubmission_Id(sub.getId())).isZero();
+	}
+
+	@Test
 	void aiDraftAndInvocationPersistedSeparatelyFromPublishedReview() {
 		var sub = submissionRepository.findByTask_IdAndIntern_Id(taskId, intern.getId()).orElseThrow();
 		aiDraftPersistenceService.persistSuccessfulDraft(sub.getId(), "Strengths: clarity. Gaps: tests.");
@@ -131,6 +162,7 @@ class Epic5AiDraftPersistenceIntegrationTest {
 		String detailUrl = "/tasks/" + taskId + "/submissions/" + intern.getId();
 		MvcResult page = mockMvc.perform(get(detailUrl).session(session)).andExpect(status().isOk()).andReturn();
 		String html = page.getResponse().getContentAsString();
-		assertThat(html).contains("Not final").contains("Model draft content for UX.").contains("Official outcome is only");
+		assertThat(html).contains("Not final").contains("collapsed").contains("Model draft content for UX.")
+			.contains("Official outcome is only");
 	}
 }
