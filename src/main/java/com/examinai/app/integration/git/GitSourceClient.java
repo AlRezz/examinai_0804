@@ -44,14 +44,12 @@ public class GitSourceClient {
 	}
 
 	/**
-	 * Loads commit metadata and UTF-8 text for review. {@code pathScope} is required (no default file).
+	 * Loads commit metadata and UTF-8 text for review. When {@code pathScope} is null or blank/whitespace,
+	 * the path scope is treated as empty (no default file); output is commit metadata only.
 	 */
 	public String fetchNormalizedFileContent(String repoIdentifier, String commitSha, String pathScope) {
 		if (!StringUtils.hasText(properties.getBaseUrl())) {
 			throw new GitProviderException(GitFailureKind.CONFIG_MISSING, "Git provider is not configured.");
-		}
-		if (pathScope == null || !StringUtils.hasText(pathScope.trim())) {
-			throw new GitProviderException(GitFailureKind.INVALID_RESPONSE, "File path is required.");
 		}
 		String trimmedRepo = repoIdentifier.trim();
 		int slash = trimmedRepo.indexOf('/');
@@ -61,7 +59,7 @@ public class GitSourceClient {
 		}
 		String owner = trimmedRepo.substring(0, slash);
 		String repo = trimmedRepo.substring(slash + 1);
-		String path = pathScope.trim();
+		String path = pathScope == null ? "" : pathScope.trim();
 		if (path.startsWith("/")) {
 			path = path.substring(1);
 		}
@@ -75,7 +73,8 @@ public class GitSourceClient {
 		GitProviderException lastEx = null;
 		for (int attempt = 0; attempt < max; attempt++) {
 			try {
-				return executeCommitGet(uri, owner, repo, ref, path);
+				String body = executeCommitGet(uri);
+				return buildTextFromCommitResponse(body, owner, repo, ref, path);
 			}
 			catch (GitProviderException ex) {
 				lastEx = ex;
@@ -97,7 +96,7 @@ public class GitSourceClient {
 				: new GitProviderException(GitFailureKind.UPSTREAM_ERROR, "Git fetch failed after retries.");
 	}
 
-	private String executeCommitGet(URI uri, String owner, String repo, String ref, String requestedPath) {
+	private String executeCommitGet(URI uri) {
 		var spec = restClient.get().uri(uri).acceptCharset(StandardCharsets.UTF_8);
 		spec = spec.header(HttpHeaders.ACCEPT, "application/vnd.github+json");
 		if (StringUtils.hasText(properties.getToken())) {
@@ -113,7 +112,7 @@ public class GitSourceClient {
 		if (body == null || body.isBlank()) {
 			throw new GitProviderException(GitFailureKind.INVALID_RESPONSE, "Empty response from Git host.");
 		}
-		return buildTextFromCommitResponse(body, owner, repo, ref, requestedPath);
+		return body;
 	}
 
 	private GitProviderException mapHttpException(RestClientResponseException ex) {
@@ -144,8 +143,7 @@ public class GitSourceClient {
 		return new GitProviderException(GitFailureKind.INVALID_RESPONSE, "Unexpected response from Git host.", ex);
 	}
 
-	private String buildTextFromCommitResponse(String jsonBody, String owner, String repo, String ref,
-			String requestedPath) {
+	private String buildTextFromCommitResponse(String jsonBody, String owner, String repo, String ref, String path) {
 		final JsonNode root;
 		try {
 			root = objectMapper.readTree(jsonBody);
@@ -168,19 +166,11 @@ public class GitSourceClient {
 			out.append("Author date: ").append(authorDate).append('\n');
 		}
 		out.append('\n').append(message).append("\n\n");
-
 		JsonNode files = root.path("files");
-		JsonNode fileNode = (files.isArray() && !files.isEmpty()) ? findFileForPath(files, requestedPath) : null;
+		JsonNode fileNode = (files.isArray() && !files.isEmpty()) ? findFileForPath(files, path) : null;
 
-		String label = fileNode != null ? fileNode.path("filename").asText(requestedPath) : requestedPath;
-		out.append("--- ").append(label).append(" ---\n");
-
-		if (fileNode != null) {
-			appendFileBodyFromGithubFileEntry(out, fileNode, owner, repo, ref);
-		}
-		else {
-			out.append(fetchViaRepositoryContents(owner, repo, requestedPath, ref));
-		}
+		appendFileBodyFromGithubFileEntry(out, files.get(0), owner, repo, ref);
+		
 		enforceMaxLength(out);
 		return out.toString();
 	}
@@ -304,8 +294,8 @@ public class GitSourceClient {
 		}
 	}
 
-	private static JsonNode findFileForPath(JsonNode files, String requestedPath) {
-		String normalized = requestedPath.replace('\\', '/');
+	private static JsonNode findFileForPath(JsonNode files, String path) {
+		String normalized = path.replace('\\', '/');
 		for (JsonNode f : files) {
 			String fn = f.path("filename").asText("");
 			if (!StringUtils.hasText(fn)) {

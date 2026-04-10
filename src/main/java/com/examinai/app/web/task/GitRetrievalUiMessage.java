@@ -30,7 +30,7 @@ public final class GitRetrievalUiMessage {
 			case RATE_LIMIT -> "The Git host rate limit was hit. Wait a few minutes, then try again.";
 			case TIMEOUT -> "Fetching source timed out. Try again or narrow the file path scope.";
 			case UPSTREAM_ERROR -> "The Git host had a temporary error. Try again shortly.";
-			case INVALID_RESPONSE -> "The Git response could not be used, or path scope is missing. Set a file path and try again.";
+			case INVALID_RESPONSE -> "The Git response could not be used. Try a different path scope or coordinates.";
 		};
 	}
 }

@@ -41,9 +41,9 @@
 			<p class="text-danger small" th:if="${#fields.hasErrors('commitSha')}" th:errors="*{commitSha}">err</p>
 		</div>
 		<div class="mb-2">
-			<label class="form-label">Path scope</label>
+			<label class="form-label">Path scope (optional)</label>
 			<input class="form-control" type="text" th:field="*{pathScope}" maxlength="512" placeholder="e.g. src/Main.java" />
-			<p class="form-text small">Required for source fetch (no default file).</p>
+			<p class="form-text small">Leave blank for commit metadata only (no file path for fetch).</p>
 			<p class="text-danger small" th:if="${#fields.hasErrors('pathScope')}" th:errors="*{pathScope}">err</p>
 		</div>
 		<div th:if="${#fields.hasGlobalErrors()}">

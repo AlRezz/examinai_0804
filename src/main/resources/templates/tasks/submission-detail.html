@@ -65,9 +65,9 @@
 		</div>
 		<p class="text-danger small" th:if="${#fields.hasErrors('commitSha')}" th:errors="*{commitSha}">err</p>
 		<div class="mb-2">
-			<label class="form-label">Path scope</label>
+			<label class="form-label">Path scope (optional)</label>
 			<input class="form-control" type="text" th:field="*{pathScope}" placeholder="e.g. src/Main.java"/>
-			<div class="form-text">Required for fetch. Resolution order: <strong>patch</strong> from the commit&rsquo;s file entry, else <strong>raw_url</strong> / <strong>contents_url</strong>, else repository <strong>contents</strong> at this ref.</div>
+			<div class="form-text">Leave blank for commit metadata only (no file body). When set, fetch resolves <strong>patch</strong>, then <strong>raw_url</strong> / <strong>contents_url</strong>, then repository <strong>contents</strong>.</div>
 		</div>
 		<p class="text-danger small" th:if="${#fields.hasErrors('pathScope')}" th:errors="*{pathScope}">err</p>
 		<button class="btn btn-secondary" type="submit">Save coordinates</button>
