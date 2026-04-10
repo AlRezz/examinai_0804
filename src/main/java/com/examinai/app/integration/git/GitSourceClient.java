@@ -170,7 +170,7 @@ public class GitSourceClient {
 		JsonNode fileNode = (files.isArray() && !files.isEmpty()) ? findFileForPath(files, path) : null;
 
 		appendFileBodyFromGithubFileEntry(out, files.get(0), owner, repo, ref);
-		
+
 		enforceMaxLength(out);
 		return out.toString();
 	}
