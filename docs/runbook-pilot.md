@@ -55,7 +55,8 @@ Postgres does **not** create a `root` superuser. This usually means the **client
 
 1. Ensure **`POSTGRES_USER`** matches **`SPRING_DATASOURCE_USERNAME`** (Compose passes JDBC from the same `POSTGRES_*` defaults when `SPRING_DATASOURCE_*` are unset; see **`.env.example`**).
 2. If you changed **`POSTGRES_USER`** after the DB volume was created, the old role may still be in the volume. **Remove the named volume** (destructive) and bring the stack up again, or connect with the **original** role name. Example: `docker compose down -v` (drops local pilot data) then `docker compose up --build`.
-3. When using **`psql`**, pass **`-U "$POSTGRES_USER"`** (or `-U examinai`)—do not assume the shell user maps to a Postgres role.
+3. When using **`psql`** or **`pg_isready`**, pass **`-U "$POSTGRES_USER"`** (or `-U examinai`)—these tools default the DB user to the **current OS user** (often `root` inside containers), which is not a Postgres role unless you created it.
+4. The bundled **`db`** healthcheck uses **`pg_isready -U "$POSTGRES_USER"`** so it does not probe as `root`.
 
 ## Smoke path: login → retrieval → optional AI
 

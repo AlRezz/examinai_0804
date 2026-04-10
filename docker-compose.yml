@@ -21,8 +21,9 @@ services:
       - examinai_pg_data:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    # pg_isready defaults -U to the *OS* user; healthcheck often runs as root → FATAL "role \"root\" does not exist".
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -q"]
+      test: ["CMD-SHELL", "pg_isready -h localhost -U \"$$POSTGRES_USER\" -q"]
       interval: 5s
       timeout: 5s
       retries: 10

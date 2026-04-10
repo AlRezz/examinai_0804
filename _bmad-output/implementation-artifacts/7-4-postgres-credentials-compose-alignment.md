@@ -23,6 +23,7 @@ Likely contributors to investigate:
 - **Missing or empty `POSTGRES_*` / `SPRING_DATASOURCE_*`** in `.env`, while an existing volume already initialized the cluster with a different user.
 - **Compose interpolation**: nested defaults (e.g. `SPRING_DATASOURCE_USERNAME` falling through to another var) behaving differently across Compose versions or leaving an empty value where the JDBC stack then picks an unsafe default.
 - **Operational confusion**: running `psql` inside a container as UID 0 and relying on peer/OS defaults instead of `-U` matching `POSTGRES_USER`.
+- **`db` healthcheck**: `pg_isready` without **`-U`** uses the **OS user** (often **`root`** in the healthcheck process), producing the same `FATAL` even when JDBC is correct — fixed with **`pg_isready -U "$POSTGRES_USER"`** in Compose.
 
 ## Acceptance Criteria
 
@@ -65,8 +66,9 @@ Composer (Cursor agent)
 ### Completion Notes List
 
 - **`docker-compose.yml`**: `POSTGRES_USER` / `PASSWORD` / `DB` default to **`examinai`** when unset; **`SPRING_PROFILES_ACTIVE`** defaults to **`dev`**. App JDBC URL uses **`${POSTGRES_DB:-examinai}`** in the default path; **`SPRING_DATASOURCE_USERNAME`** / **`PASSWORD`** use **`${SPRING_DATASOURCE_*:-${POSTGRES_*:-examinai}}`** so optional `SPRING_*` overrides still work, and empty `POSTGRES_*` no longer yields a blank JDBC user.
+- **`db` healthcheck**: **`pg_isready -U "$POSTGRES_USER"`** so probes do not default to OS user **`root`** (see comment in `docker-compose.yml`).
 - **`.env.example`**: Notes single-source **`POSTGRES_*`** and that Postgres has no `root` role.
-- **`docs/runbook-pilot.md`**: Troubleshooting for **`FATAL: role "root" does not exist`** (align users, volume reset, `psql -U`).
+- **`docs/runbook-pilot.md`**: Troubleshooting for **`FATAL: role "root" does not exist`** (align users, volume reset, `psql` / `pg_isready -U`, bundled healthcheck behavior).
 
 ### File List
 
@@ -80,3 +82,4 @@ Composer (Cursor agent)
 | ---------- | ------------- |
 | 2026-04-10 | Story created |
 | 2026-04-10 | Implemented: Compose defaults, docs, runbook troubleshooting |
+| 2026-04-10 | `db` healthcheck: `pg_isready -U "$POSTGRES_USER"` (avoids root probe) |
