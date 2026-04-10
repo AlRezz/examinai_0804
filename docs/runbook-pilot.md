@@ -5,6 +5,7 @@ Short guide for operators bringing up the **Examinai** pilot stack (story **7.3*
 ## Prerequisites
 
 - Repo root: copy **`.env.example`** to **`.env`** and set secrets there only (never commit **`.env`**).
+- **UI (story 8.1):** Bootstrap **5** is served from **WebJars** (`/webjars/bootstrap/...`); no CDN required for styles in pilot or offline use. Spring Security permits **`/webjars/**`** for public routes (e.g. `/login`).
 - **Docker Compose v2** (`docker compose`). See **`.env.example`** for port overrides, **`OLLAMA_IMAGE`**, **`OLLAMA_MODEL`**, JDBC, and Git keys.
 - With the bundled **`docker-compose.yml`**, the **`llm`** service starts **`ollama serve`**, then runs **`ollama pull "$OLLAMA_MODEL"`** (default **`deepseek-r1:8b`**). The first pull can take several minutes; the **`llm`** healthcheck waits until that model appears in **`ollama list`** before **`app`** starts. To refresh or add a model manually: `docker compose exec llm ollama pull <model>`.
 
@@ -83,3 +84,4 @@ Postgres does **not** create a `root` superuser. This usually means the **client
 - **NFR8:** Health and documented degraded LLM behavior in pilot.
 - **NFR12:** Env keys documented without values; Git/LLM diagnostics remain secret-safe.
 - **7.4:** Postgres role / JDBC alignment and troubleshooting for `FATAL: role "root" does not exist`.
+- **8.1:** Bootstrap WebJars on all Thymeleaf pages; **`/webjars/**`** documented for operators verifying static asset access.

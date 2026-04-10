@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!-- Reusable Bootstrap 5 CSS (WebJar — works without CDN). Include in <head>: th:replace="~{fragments/head-bootstrap :: styles}" -->
+<head>
+	<th:block th:fragment="styles">
+		<link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}" />
+	</th:block>
+</head>
+</html>

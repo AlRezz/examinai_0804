@@ -34,9 +34,10 @@ Authoritative per-story keys: [`_bmad-output/implementation-artifacts/sprint-sta
 | **2** — Program tasks and intern submissions | **Done** | Stories **2.1–2.4** **done** (tasks, assignments, intern list, submissions). |
 | **3** — Trusted source retrieval from Git | **Done** | Stories **3.1–3.3** **done** (Git config/hygiene, fetch client, diagnostics UX). |
 | **4** — Mentor review workspace and official outcomes | **Done** | Stories **4.1–4.5** **done** (queue, detail + source, draft rubric, publish w/ provenance, outcome history). |
-| **5** — AI-assisted drafts and resilient inference | In progress | Stories **5.1–5.4** **ready-for-dev**. |
-| **6** — Intern transparency and privacy-safe feedback | In progress | Stories **6.1–6.4** **ready-for-dev**. |
+| **5** — AI-assisted drafts and resilient inference | **Done** | Stories **5.1–5.4** **done**. |
+| **6** — Intern transparency and privacy-safe feedback | **Done** | Stories **6.1–6.4** **done**. |
 | **7** — Audit visibility and pilot-ready deployment | **Done** | Stories **7.1–7.4** **done** (includes **7.4** Postgres credentials / Compose alignment). |
+| **8** — UI foundations (cross-cutting) | **Done** | Story **8.1** **done** — Bootstrap **WebJars** on all Thymeleaf pages; **`/webjars/**`** permitted for static CSS. |
 
 ## Requirements Inventory
 
@@ -238,14 +239,14 @@ Mentors can work through a queue, read code in context, score and comment, publi
 **FRs covered:** FR13, FR14, FR15, FR16, FR17, FR21 (publish path without AI), FR27, FR28
 
 ### Epic 5: AI-assisted drafts and resilient inference
-**Tracking:** In progress — see `sprint-status.yaml` (stories 5.1–5.4 ready-for-dev).
+**Tracking:** Done — see `sprint-status.yaml` (stories 5.1–5.4 done).
 
 The product requests and stores model drafts separately from mentor verdicts, captures audit metadata, and degrades gracefully when inference is unavailable—without blocking mentor publish.
 
 **FRs covered:** FR18, FR19, FR20, FR21 (optional draft path), FR29, FR30
 
 ### Epic 6: Intern transparency and privacy-safe feedback
-**Tracking:** In progress — see `sprint-status.yaml` (stories 6.1–6.4 ready-for-dev).
+**Tracking:** Done — see `sprint-status.yaml` (stories 6.1–6.4 done).
 
 Interns see lifecycle status, published mentor judgment, and clearly labeled drafts; they never see other interns’ outcomes.
 
@@ -619,7 +620,7 @@ So that **resubmissions are explainable over time**.
 
 ## Epic 5: AI-assisted drafts and resilient inference
 
-**Tracking:** In progress — `sprint-status.yaml` (stories 5.1–5.4 ready-for-dev).
+**Tracking:** Done — `sprint-status.yaml` (stories 5.1–5.4 done).
 
 The product requests and stores model drafts separately from mentor verdicts, captures audit metadata, and degrades gracefully when inference is unavailable—without blocking mentor publish.
 
@@ -704,7 +705,7 @@ So that **reviews do not stall on infrastructure issues**.
 
 ## Epic 6: Intern transparency and privacy-safe feedback
 
-**Tracking:** In progress — `sprint-status.yaml` (stories 6.1–6.4 ready-for-dev).
+**Tracking:** Done — `sprint-status.yaml` (stories 6.1–6.4 done).
 
 Interns see lifecycle status, published mentor judgment, and clearly labeled drafts; they never see other interns’ outcomes.
 
@@ -868,6 +869,26 @@ So that **connections never fail with `FATAL: role "root" does not exist` or oth
 
 **Given** `.env` is missing optional overrides  
 **Then** documented defaults still yield a consistent non-`root` database role and matching app credentials
+
+---
+
+## Epic 8: UI foundations (cross-cutting)
+
+**Tracking:** Done — `sprint-status.yaml` (story **8.1** done).
+
+### Story 8.1: Bootstrap WebJars — global styles on all pages
+
+As a **user**,
+I want **Bootstrap styling on every Thymeleaf page without depending on a CDN**,
+So that **the pilot works offline and looks consistent** (login, tasks, admin, mentor, intern, coordinator).
+
+**Implements:** Architecture guidance (Bootstrap / Thymeleaf); complements **UX-DR** layout expectations.
+
+**Acceptance Criteria:**
+
+**Given** any primary Thymeleaf view  
+**When** the page renders  
+**Then** Bootstrap **5** CSS is loaded from the application (**WebJar**), not an external host, and **Spring Security** allows **`/webjars/**`** for anonymous pages such as `/login`
 
 ---
 
