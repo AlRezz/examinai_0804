@@ -167,9 +167,23 @@ Unzip, import as Maven project. Regenerate from [start.spring.io](https://start.
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Primary client integration | **HTML** over HTTP from browser to Spring MVC | PRD MPA |
-| Provider calls | **Spring WebClient** (reactive stack) or **RestClient** for **Git HTTP** — pick one stack-wide in implementation | Non-blocking-friendly for timeouts |
+| Provider calls | **Spring `RestClient`** for **Git HTTP** (implemented in `integration.git`; do not add **WebClient** for the same integration) | Timeouts via `ClientHttpRequestFactory`; bounded retries for retriable failures |
 | DTO / error mapping | Provider errors → **domain** failures with **safe** user messages (FR11) | Security + UX |
 | Inter-service comm | **App → Postgres** JDBC; **App → LLM** via Spring AI client; **no** extra sync services in MVP | Matches Compose |
+
+#### Git provider HTTP (GitHub REST v3–compatible)
+
+All Git calls go through **`com.examinai.app.integration.git.GitSourceClient`**. Configuration: **`examinai.git`** from env **`GIT_PROVIDER_BASE_URL`**, **`GIT_PROVIDER_TOKEN`** (`GitClientConfig` wires **`RestClient`** with read/connect timeouts).
+
+**Submission coordinates:** repository as **`owner/repo`**, **`commitSha`** as **`ref`**, and **`pathScope`** as a **required** repo-relative file path (no implicit default file).
+
+**Retrieval sequence:**
+
+1. **`GET {base}/repos/{owner}/{repo}/commits/{ref}`** — [`Get a commit`](https://docs.github.com/en/rest/commits/commits); headers **`Accept: application/vnd.github+json`**, optional **`Authorization: Bearer`**.
+2. From the response, locate the **`files[]`** entry whose **`filename`** matches **path scope**. For that entry, prefer text in order: **`patch`**, else GET **`raw_url`**, else GET **`contents_url`** and decode the Contents JSON (**`type: file`**, base64 **`content`**).
+3. If there is **no** matching **`files[]`** row, **fallback:** **`GET {base}/repos/{owner}/{repo}/contents/{path}?ref={ref}`** (repository [Contents](https://docs.github.com/en/rest/repos/contents)) to load the file at that ref.
+
+Normalized text (commit header + message + resolved file body or diff) is capped (~2M chars) before persistence for mentor/AI context. Typed **`GitProviderException`** / **`GitFailureKind`** map to mentor-safe UI copy.
 
 ### Frontend Architecture
 
@@ -243,7 +257,7 @@ Unzip, import as Maven project. Regenerate from [start.spring.io](https://start.
 - **Features:** group by **bounded context** folders (`task`, `submission`, `review`, `user`) under `domain` and `web` rather than strictly layering only by technical type at the top level.
 - **Static assets:** `src/main/resources/static/` (CSS JS images); **WebJars** for Bootstrap and jQuery in Maven deps.
 - **Templates:** `src/main/resources/templates/` with subfolders mirroring areas (`tasks/`, `review/`, `fragments/`).
-- **Config:** `config` package for security, actuator restrictions, WebClient beans; profile-specific YAML: `application-dev.yml`, `application-prod.yml`.
+- **Config:** `config` package for security, actuator restrictions, **`RestClient`** (Git) and Spring AI beans; profile-specific YAML: `application-dev.yml`, `application-prod.yml`.
 
 ### Format Patterns
 
@@ -289,7 +303,7 @@ Unzip, import as Maven project. Regenerate from [start.spring.io](https://start.
 
 - Follow **DB snake_case plural** and **Java camelCase** rules above for **new** schema and code.
 - Put **Liquibase** changes only in **`db/changelog/`** with ordered includes; never hand-edit applied production schema without a changelog.
-- Use **one** HTTP client style for Git (**WebClient** or **RestClient**, not both) — first integration story locks it; later stories reference this doc.
+- Use **`RestClient` only** for Git HTTP — **`WebClient`** must **not** be introduced for the same Git integration; later stories reference this doc.
 - Route **mentor publish** and **AI draft persistence** through **transactional services** (no controller-direct repository writes for those flows).
 
 **Pattern enforcement:**
@@ -309,7 +323,7 @@ Unzip, import as Maven project. Regenerate from [start.spring.io](https://start.
 
 - Mixed `userId` / `user_id` column naming in same schema without explicit `@Column`.
 - Returning **500** with exception message text from **Git provider** to interns.
-- **RestClient** and **WebClient** both used for different Git calls in the same codebase without documented exception.
+- **`WebClient`** added for Git calls while **`RestClient`** is already used for Git in **`integration.git`** (use **`RestClient`** only).
 
 ## Project Structure & Boundaries
 
@@ -330,7 +344,7 @@ examinai/
 │   ├── config/
 │   │   ├── SecurityConfig.java
 │   │   ├── WebMvcConfig.java
-│   │   └── GitClientConfig.java          # WebClient or RestClient bean(s)
+│   │   └── GitClientConfig.java          # RestClient bean(s) for Git provider
 │   ├── domain/
 │   │   ├── user/
 │   │   │   ├── User.java
@@ -457,7 +471,7 @@ _Add files as stories introduce them; names above are illustrative anchors, not 
 
 ### Coherence Validation
 
-**Decision compatibility:** Spring **MPA**, **session security**, **PostgreSQL + Liquibase + JPA**, **Git + Spring AI** sidecars, and **Compose** triad are consistent. **WebClient** or **RestClient** (one only, per patterns) is mutually exclusive by pattern. **No SPA** assumption matches **Thymeleaf + jQuery** PRD.
+**Decision compatibility:** Spring **MPA**, **session security**, **PostgreSQL + Liquibase + JPA**, **Git + Spring AI** sidecars, and **Compose** triad are consistent. **Git HTTP** uses **`RestClient` only** (see Git provider HTTP above). **No SPA** assumption matches **Thymeleaf + jQuery** PRD.
 
 **Pattern consistency:** Naming (DB snake, Java camel, URL plural nouns), Liquibase layout, controller/service split, and integration package boundaries reinforce the core decisions.
 

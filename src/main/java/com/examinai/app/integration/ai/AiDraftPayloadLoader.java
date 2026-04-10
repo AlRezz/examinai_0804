@@ -2,6 +2,8 @@ package com.examinai.app.integration.ai;
 
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -16,6 +18,8 @@ import com.examinai.app.domain.task.SubmissionRepository;
 @Service
 public class AiDraftPayloadLoader {
 
+	private static final Logger log = LoggerFactory.getLogger(AiDraftPayloadLoader.class);
+
 	private final SubmissionRepository submissionRepository;
 
 	private final AiDraftAssessmentProperties properties;
@@ -27,6 +31,7 @@ public class AiDraftPayloadLoader {
 
 	@Transactional(readOnly = true)
 	public String loadUserPayload(UUID submissionId) {
+		log.debug("loadUserPayload: submissionId={}", submissionId);
 		Submission submission = submissionRepository.findById(submissionId).orElseThrow();
 		if (submission.getGitRetrievalState() != GitRetrievalState.OK) {
 			throw new IllegalStateException("Source must be fetched successfully before generating an AI draft.");

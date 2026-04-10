@@ -40,7 +40,7 @@
 				<dd class="col-sm-9"><code th:text="${submission.commitSha}">sha</code></dd>
 				<dt class="col-sm-3">Path scope</dt>
 				<dd class="col-sm-9"><code th:if="${submission.pathScope}" th:text="${submission.pathScope}">p</code><span
-						th:unless="${submission.pathScope}" class="text-secondary">(default / root)</span></dd>
+						th:unless="${submission.pathScope}" class="text-secondary">(not set)</span></dd>
 				<dt class="col-sm-3">Fetch version</dt>
 				<dd class="col-sm-9" th:text="${submission.gitFetchVersion}">0</dd>
 			</dl>

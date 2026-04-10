@@ -1,5 +1,7 @@
 package com.examinai.app.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.examinai.app.domain.task.GitRetrievalState;
@@ -25,12 +27,16 @@ import com.examinai.app.domain.task.SubmissionStatus;
 @Service
 public class SubmissionLifecycleService {
 
+	private static final Logger log = LoggerFactory.getLogger(SubmissionLifecycleService.class);
+
 	public SubmissionLifecycleView viewForIntern(Submission submissionOrNull) {
+		log.debug("viewForIntern: submissionId={}", submissionOrNull == null ? null : submissionOrNull.getId());
 		SubmissionLifecycleStatus status = compute(submissionOrNull);
 		return new SubmissionLifecycleView(status, label(status), badgeClass(status));
 	}
 
 	public SubmissionLifecycleStatus compute(Submission submissionOrNull) {
+		log.debug("compute: submissionId={}", submissionOrNull == null ? null : submissionOrNull.getId());
 		if (submissionOrNull == null) {
 			return SubmissionLifecycleStatus.NOT_SUBMITTED;
 		}

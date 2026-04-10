@@ -6,6 +6,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,9 +18,12 @@ import com.examinai.app.domain.user.Role;
 import com.examinai.app.domain.user.RoleRepository;
 import com.examinai.app.domain.user.User;
 import com.examinai.app.domain.user.UserRepository;
+import com.examinai.app.web.admin.EditUserRequest;
 
 @Service
 public class UserManagementService {
+
+	private static final Logger log = LoggerFactory.getLogger(UserManagementService.class);
 
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
@@ -33,26 +38,45 @@ public class UserManagementService {
 
 	@Transactional(readOnly = true)
 	public List<User> listUsers() {
+		log.debug("listUsers");
 		return userRepository.findAllWithRolesOrderedByEmail();
 	}
 
 	@Transactional(readOnly = true)
 	public User getUserById(UUID id) {
-		return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found."));
+		log.debug("getUserById: id={}", id);
+		return userRepository.findWithRolesById(id).orElseThrow(() -> new IllegalArgumentException("User not found."));
+	}
+
+	/**
+	 * Builds the admin edit form inside the transaction so role names are materialized before the
+	 * session closes (required when {@code spring.jpa.open-in-view=false}).
+	 */
+	@Transactional(readOnly = true)
+	public AdminUserEditModel loadAdminEditForm(UUID id) {
+		log.debug("loadAdminEditForm: id={}", id);
+		User user = userRepository.findWithRolesById(id).orElseThrow(() -> new IllegalArgumentException("User not found."));
+		var edit = new EditUserRequest();
+		edit.setEnabled(user.isEnabled());
+		edit.setRoles(user.getRoles().stream().map(Role::getName).sorted().toList());
+		return new AdminUserEditModel(user.getId(), user.getEmail(), edit);
 	}
 
 	@Transactional(readOnly = true)
 	public List<Role> allRolesOrdered() {
+		log.debug("allRolesOrdered");
 		return roleRepository.findAll(Sort.by("name"));
 	}
 
 	@Transactional(readOnly = true)
 	public List<User> listInternsOrderedByEmail() {
+		log.debug("listInternsOrderedByEmail");
 		return userRepository.findAllWithRoleName("intern");
 	}
 
 	@Transactional
 	public User createUser(String email, String rawPassword, Set<String> roleNames) {
+		log.debug("createUser: roleCount={}", roleNames == null ? 0 : roleNames.size());
 		String trimmed = email == null ? "" : email.trim();
 		if (!StringUtils.hasText(trimmed)) {
 			throw new IllegalArgumentException("Email is required.");
@@ -68,6 +92,8 @@ public class UserManagementService {
 
 	@Transactional
 	public void updateUser(UUID id, boolean enabled, Set<String> roleNames, String newRawPassword) {
+		log.debug("updateUser: id={}, enabled={}, roleCount={}, passwordChange={}", id, enabled,
+				roleNames == null ? 0 : roleNames.size(), StringUtils.hasText(newRawPassword));
 		User user = getUserById(id);
 		user.setEnabled(enabled);
 		user.replaceRoles(resolveRoles(roleNames));

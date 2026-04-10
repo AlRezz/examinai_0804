@@ -2,6 +2,8 @@ package com.examinai.app.service;
 
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -21,6 +23,8 @@ import com.examinai.app.domain.user.UserRepository;
 @Service
 public class SubmissionService {
 
+	private static final Logger log = LoggerFactory.getLogger(SubmissionService.class);
+
 	private final TaskRepository taskRepository;
 	private final UserRepository userRepository;
 	private final SubmissionRepository submissionRepository;
@@ -39,12 +43,14 @@ public class SubmissionService {
 
 	@Transactional(readOnly = true)
 	public Submission findForInternTask(UUID taskId, UUID internUserId) {
+		log.debug("findForInternTask: taskId={}, internUserId={}", taskId, internUserId);
 		return submissionRepository.findByTask_IdAndIntern_Id(taskId, internUserId).orElse(null);
 	}
 
 	@Transactional
 	public Submission upsertCoordinates(UUID taskId, UUID internUserId, String repoIdentifier, String commitSha,
 			String pathScope, SubmissionStatus status) {
+		log.debug("upsertCoordinates: taskId={}, internUserId={}, status={}", taskId, internUserId, status);
 		if (!internTaskService.isAssigned(taskId, internUserId)) {
 			throw new IllegalArgumentException("Not assigned to this task.");
 		}
@@ -57,11 +63,13 @@ public class SubmissionService {
 	@Transactional
 	public Submission mentorUpsertCoordinates(UUID taskId, UUID internUserId, String repoIdentifier, String commitSha,
 			String pathScope, SubmissionStatus status) {
+		log.debug("mentorUpsertCoordinates: taskId={}, internUserId={}, status={}", taskId, internUserId, status);
 		return persistCoordinates(taskId, internUserId, repoIdentifier, commitSha, pathScope, status);
 	}
 
 	@Transactional(readOnly = true)
 	public Submission findForTaskAndInternOrNull(UUID taskId, UUID internUserId) {
+		log.debug("findForTaskAndInternOrNull: taskId={}, internUserId={}", taskId, internUserId);
 		return submissionRepository.findByTask_IdAndIntern_Id(taskId, internUserId).orElse(null);
 	}
 

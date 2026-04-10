@@ -3,6 +3,8 @@ package com.examinai.app.service;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +14,8 @@ import com.examinai.app.domain.task.SubmissionRepository;
 
 @Service
 public class InternFeedbackService {
+
+	private static final Logger log = LoggerFactory.getLogger(InternFeedbackService.class);
 
 	private final SubmissionRepository submissionRepository;
 
@@ -35,6 +39,7 @@ public class InternFeedbackService {
 
 	@Transactional(readOnly = true)
 	public Optional<InternFeedbackBundle> loadFeedbackForIntern(UUID submissionId, UUID internUserId) {
+		log.debug("loadFeedbackForIntern: submissionId={}, internUserId={}", submissionId, internUserId);
 		Optional<Submission> opt = submissionRepository.findByIdAndIntern_IdWithTask(submissionId,
 				internUserId);
 		if (opt.isEmpty()) {

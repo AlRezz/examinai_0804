@@ -7,6 +7,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -17,6 +19,8 @@ import org.springframework.util.StringUtils;
  */
 @Service
 public class AiDraftAssessmentService {
+
+	private static final Logger log = LoggerFactory.getLogger(AiDraftAssessmentService.class);
 
 	private static final String SYSTEM = """
 			You are assisting a human mentor grading an intern's work. Produce a concise draft assessment only.
@@ -41,6 +45,7 @@ public class AiDraftAssessmentService {
 	}
 
 	public String generateDraft(UUID submissionId) {
+		log.debug("generateDraft: submissionId={}", submissionId);
 		String userPayload = payloadLoader.loadUserPayload(submissionId);
 		long deadlineNs = System.nanoTime() + TimeUnit.SECONDS.toNanos(properties.getMaxInferenceWallSeconds());
 		InferenceUnavailableException lastFailure = null;
@@ -68,6 +73,7 @@ public class AiDraftAssessmentService {
 	}
 
 	private String invokeWithTimeout(String userPayload, long deadlineNs) {
+		log.debug("invokeWithTimeout: payloadChars={}, remainingNs={}", userPayload.length(), deadlineNs - System.nanoTime());
 		long remainingNs = deadlineNs - System.nanoTime();
 		if (remainingNs <= 0) {
 			throw new InferenceUnavailableException("AI draft total time budget exceeded.");

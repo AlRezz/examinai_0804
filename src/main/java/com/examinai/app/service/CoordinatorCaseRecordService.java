@@ -3,6 +3,8 @@ package com.examinai.app.service;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +15,8 @@ import com.examinai.app.web.task.GitRetrievalUiMessage;
 
 @Service
 public class CoordinatorCaseRecordService {
+
+	private static final Logger log = LoggerFactory.getLogger(CoordinatorCaseRecordService.class);
 
 	private final SubmissionRepository submissionRepository;
 
@@ -29,6 +33,7 @@ public class CoordinatorCaseRecordService {
 
 	@Transactional(readOnly = true)
 	public Optional<CoordinatorCaseRecordModel> findBySubmissionId(UUID submissionId) {
+		log.debug("findBySubmissionId: submissionId={}", submissionId);
 		return submissionRepository.findById(submissionId).map(this::toModel);
 	}
 

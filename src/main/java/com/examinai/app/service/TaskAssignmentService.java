@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,8 @@ import com.examinai.app.domain.user.UserRepository;
 @Service
 public class TaskAssignmentService {
 
+	private static final Logger log = LoggerFactory.getLogger(TaskAssignmentService.class);
+
 	private static final String INTERN_ROLE = "intern";
 
 	private final TaskRepository taskRepository;
@@ -36,12 +40,15 @@ public class TaskAssignmentService {
 
 	@Transactional(readOnly = true)
 	public List<TaskAssignment> listForTask(UUID taskId) {
+		log.debug("listForTask: taskId={}", taskId);
 		taskRepository.findById(taskId).orElseThrow(() -> new IllegalArgumentException("Task not found."));
 		return assignmentRepository.findByTaskIdWithIntern(taskId);
 	}
 
 	@Transactional
 	public void replaceAssignmentsForTask(UUID taskId, List<UUID> internUserIds) {
+		log.debug("replaceAssignmentsForTask: taskId={}, internCount={}", taskId,
+				internUserIds == null ? 0 : internUserIds.size());
 		var task = taskRepository.findById(taskId).orElseThrow(() -> new IllegalArgumentException("Task not found."));
 		Set<UUID> unique = new LinkedHashSet<>();
 		if (internUserIds != null) {

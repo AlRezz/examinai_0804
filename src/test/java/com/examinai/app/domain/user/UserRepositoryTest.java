@@ -42,6 +42,13 @@ class UserRepositoryTest {
 	}
 
 	@Test
+	void findWithRolesById_initializesRolesCollection() {
+		var id = userRepository.findByEmail("admin@examinai.local").orElseThrow().getId();
+		User admin = userRepository.findWithRolesById(id).orElseThrow();
+		assertThat(admin.getRoles()).extracting(Role::getName).containsExactly("administrator");
+	}
+
+	@Test
 	void persistsNewUserWithBcryptEncodedPassword() {
 		Role intern = roleRepository.findByName("intern").orElseThrow();
 		User user = new User("intern1@examinai.local", passwordEncoder.encode("secret"));

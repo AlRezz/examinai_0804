@@ -30,6 +30,7 @@ The app maps provider HTTP results to internal **`GitFailureKind`** values and *
 | Typical upstream signal | `GitFailureKind` | Operator hint (no secrets in logs) |
 |-------------------------|------------------|-----------------------------------|
 | `GIT_PROVIDER_BASE_URL` missing / empty | `CONFIG_MISSING` | Set base URL + token in env; redeploy. |
+| Mentor UI **not found** on fetch (`NOT_FOUND`) | — | App calls **Get a commit**, then **patch** / **raw_url** / **contents_url**, then **contents** fallback. **Path scope** is required. See [REST commits](https://docs.github.com/en/rest/commits/commits?apiVersion=2026-03-10), [contents](https://docs.github.com/en/rest/repos/contents?apiVersion=2026-03-10), **README**. |
 | HTTP **403** | `ACCESS_DENIED` | Token scope / repo visibility / org SSO. |
 | HTTP **404** | `NOT_FOUND` | Wrong owner/repo, ref, or path scope. |
 | HTTP **429** | `RATE_LIMIT` | Back off; retried in client. |
@@ -59,13 +60,19 @@ Postgres does **not** create a `root` superuser. This usually means the **client
 3. When using **`psql`** or **`pg_isready`**, pass **`-U "$POSTGRES_USER"`** (or `-U examinai`)—these tools default the DB user to the **current OS user** (often `root` inside containers), which is not a Postgres role unless you created it.
 4. The bundled **`db`** healthcheck uses **`pg_isready -U "$POSTGRES_USER"`** so it does not probe as `root`.
 
+## Program tasks and user accounts
+
+- **`/tasks/**`** is authorized for **mentors and administrators** (create/edit tasks, **Assign interns**, submissions). See **README** → *User flows (by role)*.
+- **Creating user accounts** (e.g. intern logins) remains **`/admin/users`**, **administrator-only**—mentors assign only users that already have the **intern** role.
+
 ## Smoke path: login → retrieval → optional AI
 
 1. **Stack up:** `docker compose up --build` (or your orchestration equivalent).
 2. **Health:** `GET /actuator/health` returns **UP**.
 3. **Login:** `GET /login` → sign in (see **README** for bootstrap dev admin—rotate before shared environments).
-4. **Retrieval:** As a mentor, open **`/tasks/{taskId}/submissions/{internId}`** for a submission that has version-control coordinates; use the UI control that triggers **fetch** (posts to **`…/fetch`**). Confirm source text or the safe Git error panel if coordinates are wrong.
-5. **Optional AI:** With **`llm`** healthy and model pulled, use **generate AI draft** on the same page; confirm draft or degraded messaging if inference fails.
+4. **Tasks (mentor or administrator):** Open **`/tasks`**, create a task if needed (**`/tasks/new`**), then **Assign interns** (**`/tasks/{taskId}/assignments`**) so an intern can submit coordinates (intern accounts must exist first—**`/admin/users`** as administrator).
+5. **Retrieval:** As a mentor (or administrator), open **`/tasks/{taskId}/submissions/{internId}`** for a submission that has version-control coordinates; use the UI control that triggers **fetch** (posts to **`…/fetch`**). Confirm source text or the safe Git error panel if coordinates are wrong.
+6. **Optional AI:** With **`llm`** healthy and model pulled, use **generate AI draft** on the same page; confirm draft or degraded messaging if inference fails.
 
 ## Production-oriented profile (**NFR6**, Actuator)
 

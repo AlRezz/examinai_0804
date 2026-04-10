@@ -6,6 +6,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -22,6 +24,8 @@ import com.examinai.app.domain.user.UserRepository;
 
 @Service
 public class MentorReviewService {
+
+	private static final Logger log = LoggerFactory.getLogger(MentorReviewService.class);
 
 	private static final int MIN_SCORE = 1;
 	private static final int MAX_SCORE = 5;
@@ -41,12 +45,14 @@ public class MentorReviewService {
 
 	@Transactional(readOnly = true)
 	public List<Submission> listQueue() {
+		log.debug("listQueue");
 		return submissionRepository.findQueuedForMentorReview(
 				EnumSet.of(SubmissionStatus.SUBMITTED, SubmissionStatus.UNDER_REVIEW));
 	}
 
 	@Transactional(readOnly = true)
 	public List<PublishedReview> listPublishedHistory(UUID submissionId) {
+		log.debug("listPublishedHistory: submissionId={}", submissionId);
 		return publishedReviewRepository.findBySubmission_IdOrderByPublishedAtDesc(submissionId);
 	}
 
@@ -55,6 +61,7 @@ public class MentorReviewService {
 	 */
 	@Transactional(readOnly = true)
 	public Optional<PublishedReview> findLatestPublishedForCurrentRevision(Submission submission) {
+		log.debug("findLatestPublishedForCurrentRevision: submissionId={}", submission.getId());
 		for (PublishedReview pr : publishedReviewRepository.findBySubmission_IdOrderByPublishedAtDesc(submission.getId())) {
 			if (revisionMatches(pr, submission)) {
 				return Optional.of(pr);
@@ -79,12 +86,14 @@ public class MentorReviewService {
 
 	@Transactional(readOnly = true)
 	public MentorReviewDraft findDraftOrNull(UUID submissionId) {
+		log.debug("findDraftOrNull: submissionId={}", submissionId);
 		return draftRepository.findBySubmission_Id(submissionId).orElse(null);
 	}
 
 	@Transactional
 	public void saveDraft(UUID submissionId, UUID mentorUserId, Integer quality, Integer readability, Integer correctness,
 			String narrative) {
+		log.debug("saveDraft: submissionId={}, mentorUserId={}", submissionId, mentorUserId);
 		Submission submission = submissionRepository.findById(submissionId).orElseThrow();
 		User mentor = userRepository.findById(mentorUserId).orElseThrow();
 		MentorReviewDraft draft = draftRepository.findBySubmission_Id(submissionId)
@@ -105,6 +114,7 @@ public class MentorReviewService {
 	@Transactional
 	public void publish(UUID submissionId, UUID mentorUserId, Integer quality, Integer readability, Integer correctness,
 			String narrative) {
+		log.debug("publish: submissionId={}, mentorUserId={}", submissionId, mentorUserId);
 		validateScore("Quality", quality);
 		validateScore("Readability", readability);
 		validateScore("Correctness", correctness);

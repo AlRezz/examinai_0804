@@ -15,6 +15,12 @@
 				<span style="color: crimson;" th:text="${gitRetrievalMessage}">error</span>
 				(fetch version <span th:text="${submission.gitFetchVersion}">0</span>).
 				Prior snapshot text is kept if a previous fetch succeeded.
+				<p th:if="${submission.gitRetrievalErrorCode != null and submission.gitRetrievalErrorCode == 'NOT_FOUND'}"
+				   class="small text-secondary mt-2 mb-0">
+					<strong>GitHub (REST v3):</strong> Fetch loads
+					<a href="https://docs.github.com/en/rest/commits/commits?apiVersion=2026-03-10" target="_blank" rel="noopener noreferrer">Get a commit</a>, then uses <code>patch</code> when present, otherwise <code>raw_url</code> / <code>contents_url</code>, otherwise
+					<a href="https://docs.github.com/en/rest/repos/contents?apiVersion=2026-03-10" target="_blank" rel="noopener noreferrer">repository contents</a> for the path at the ref. <strong>Path scope</strong> is required.
+				</p>
 			</th:block>
 		</p>
 		<div th:if="${submission.gitRetrievalState != null and submission.gitRetrievalState.name() == 'OK'

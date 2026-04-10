@@ -34,6 +34,7 @@ public class SecurityConfig {
 			.hasRole("ADMINISTRATOR")
 			.requestMatchers("/review/**")
 			.hasAnyRole("MENTOR", "ADMINISTRATOR")
+			// Program tasks: create/edit tasks, assign interns, mentor submission workspace (FR7, Epic 2)
 			.requestMatchers("/tasks/**")
 			.hasAnyRole("MENTOR", "ADMINISTRATOR")
 			.requestMatchers("/intern/**")

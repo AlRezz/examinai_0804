@@ -65,13 +65,10 @@ public class AdminUserController {
 
 	@GetMapping("/{id}/edit")
 	public String editForm(@PathVariable UUID id, Model model) {
-		var user = userManagementService.getUserById(id);
-		var edit = new EditUserRequest();
-		edit.setEnabled(user.isEnabled());
-		edit.setRoles(user.getRoles().stream().map(r -> r.getName()).sorted().toList());
-		model.addAttribute("userId", user.getId());
-		model.addAttribute("email", user.getEmail());
-		model.addAttribute("editRequest", edit);
+		var data = userManagementService.loadAdminEditForm(id);
+		model.addAttribute("userId", data.userId());
+		model.addAttribute("email", data.email());
+		model.addAttribute("editRequest", data.editRequest());
 		model.addAttribute("allRoles", userManagementService.allRolesOrdered());
 		model.addAttribute("createMode", false);
 		return "admin/user-form";

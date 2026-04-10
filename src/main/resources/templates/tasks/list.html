@@ -9,6 +9,7 @@
 <body>
 <main>
 	<h1>Program tasks</h1>
+	<p class="text-muted small">Mentors and administrators create and edit tasks, assign interns, and open submissions from here.</p>
 	<p th:if="${taskNotice}" th:text="${taskNotice}">notice</p>
 	<p><a th:href="@{/tasks/new}">New task</a> · <a th:href="@{/review/queue}">Review queue</a> · <a th:href="@{/home}">Home</a></p>
 	<table border="1" cellpadding="6" cellspacing="0">

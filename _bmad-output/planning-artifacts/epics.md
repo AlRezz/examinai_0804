@@ -37,7 +37,7 @@ Authoritative per-story keys: [`_bmad-output/implementation-artifacts/sprint-sta
 | **5** — AI-assisted drafts and resilient inference | **Done** | Stories **5.1–5.4** **done**. |
 | **6** — Intern transparency and privacy-safe feedback | **Done** | Stories **6.1–6.4** **done**. |
 | **7** — Audit visibility and pilot-ready deployment | **Done** | Stories **7.1–7.4** **done** (includes **7.4** Postgres credentials / Compose alignment). |
-| **8** — UI foundations (cross-cutting) | **Done** | Story **8.1** **done** — Bootstrap **WebJars** on all Thymeleaf pages; **`/webjars/**`** permitted for static CSS. |
+| **8** — UI foundations (cross-cutting) | **Done** | **8.1** Bootstrap WebJars; **8.2** admin user edit **JOIN FETCH** for **`User.roles`** (fixes **LazyInitializationException** on edit form). |
 
 ## Requirements Inventory
 
@@ -874,7 +874,7 @@ So that **connections never fail with `FATAL: role "root" does not exist` or oth
 
 ## Epic 8: UI foundations (cross-cutting)
 
-**Tracking:** Done — `sprint-status.yaml` (story **8.1** done).
+**Tracking:** Done — `sprint-status.yaml` (stories **8.1–8.3** done).
 
 ### Story 8.1: Bootstrap WebJars — global styles on all pages
 
@@ -889,6 +889,46 @@ So that **the pilot works offline and looks consistent** (login, tasks, admin, m
 **Given** any primary Thymeleaf view  
 **When** the page renders  
 **Then** Bootstrap **5** CSS is loaded from the application (**WebJar**), not an external host, and **Spring Security** allows **`/webjars/**`** for anonymous pages such as `/login`
+
+### Story 8.2: Admin user edit — eager fetch roles
+
+As an **administrator**,
+I want **the user edit form to load current roles without a Hibernate error**,
+So that **I can maintain accounts** from **`/admin/users/{id}/edit`**.
+
+**Implements:** Stable admin UX (Story **1.5** area); avoids **LazyInitializationException** when the view reads **`User.roles`** outside the original transaction.
+
+**Acceptance Criteria:**
+
+**Given** a user with persisted roles  
+**When** an administrator opens the edit form  
+**Then** **`UserManagementService`** loads the user with **`roles`** initialized (e.g. **`JOIN FETCH`**) before returning to the controller
+
+### Story 8.3: Mentor program tasks — documentation, UI alignment, and Git “Get a commit”
+
+As a **mentor**,
+I want **clear documentation and on-page copy that I can create tasks and assign interns under `/tasks`**,
+So that **I use the same flows as an administrator for program work while user provisioning remains administrator-only** (`/admin/users`).
+
+As a **mentor**,
+I want **source fetch to use GitHub REST v3 `GET /repos/{owner}/{repo}/commits/{ref}`**,
+So that **coordinates and troubleshooting match the documented Commits API** (normalized text = commit metadata + unified diff for the path scope when that file appears in **`files`**).
+
+**Implements:** FR7 / Epic 2 alignment; clarifies that **`/tasks/**`** is **`MENTOR`** + **`ADMINISTRATOR`** (no security rule change required). Git integration aligns with [REST commits — Get a commit](https://docs.github.com/en/rest/commits/commits?apiVersion=2026-03-10).
+
+**Acceptance Criteria:**
+
+**Given** README and pilot runbook  
+**When** an operator or mentor reads onboarding material  
+**Then** tasks and intern assignments are described for **mentors and administrators**, and **User management** is called out as **administrator-only** for new accounts
+
+**Given** the program tasks list and assign-interns views  
+**When** a mentor or administrator opens them  
+**Then** copy reflects shared responsibility; mentors without admin role do not get a broken link to **`/admin/users`**
+
+**Given** a configured Git provider and submission coordinates  
+**When** the app fetches source  
+**Then** it calls **`…/commits/{ref}`** and builds review text from the commit payload and the **`files`** entry matching **path scope** (default **`README.md`**)
 
 ---
 

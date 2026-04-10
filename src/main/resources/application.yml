@@ -17,8 +17,8 @@ examinai:
       audit-model-version: ${EXAMINAI_AI_AUDIT_MODEL_VERSION:}
   git:
     # Deployment-only: set via environment (see .env.example). Never collect from UI or database.
-    base-url: ${GIT_PROVIDER_BASE_URL:}
-    token: ${GIT_PROVIDER_TOKEN:}
+    base-url: ${GIT_PROVIDER_BASE_URL:https://api.github.com}
+    token: ${GIT_PROVIDER_TOKEN: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}
     read-timeout-seconds: ${GIT_READ_TIMEOUT_SECONDS:22}
     max-retries: ${GIT_MAX_RETRIES:2}
     retry-backoff-ms: ${GIT_RETRY_BACKOFF_MS:350}
@@ -41,6 +41,11 @@ spring:
     hibernate:
       ddl-auto: none
     open-in-view: false
+
+logging:
+  level:
+    com.examinai.app.service: DEBUG
+    com.examinai.app.integration.ai: DEBUG
 
 management:
   endpoints:

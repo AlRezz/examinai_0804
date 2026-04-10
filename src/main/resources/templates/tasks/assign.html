@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
 	<meta charset="UTF-8" />
 	<title>Assign interns</title>
@@ -11,7 +11,7 @@
 	<h1>Assign interns</h1>
 	<p>Task: <strong th:text="${task.title}">task</strong></p>
 	<p th:if="${assignmentError}" th:text="${assignmentError}" style="color: crimson;">error</p>
-	<p>Selected interns replace all existing assignments for this task (replace-all).</p>
+	<p>Selected interns replace all existing assignments for this task (replace-all). Only users who already have the <strong>intern</strong> role appear here.</p>
 	<form th:action="@{/tasks/{id}/assignments(id=${task.id})}" method="post">
 		<div th:each="u : ${interns}">
 			<label>
@@ -20,7 +20,10 @@
 				<span th:text="${u.email}">email</span>
 			</label>
 		</div>
-		<p th:if="${#lists.isEmpty(interns)}">No intern accounts exist yet.</p>
+		<p th:if="${#lists.isEmpty(interns)}">No intern accounts exist yet.
+			<span sec:authorize="hasRole('ADMINISTRATOR')">Create them under <a th:href="@{/admin/users}">User management</a>.</span>
+			<span sec:authorize="!hasRole('ADMINISTRATOR')">Ask an administrator to create intern accounts.</span>
+		</p>
 		<button type="submit">Save assignments</button>
 		<a th:href="@{/tasks}">Back</a>
 	</form>

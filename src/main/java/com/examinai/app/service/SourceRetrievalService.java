@@ -2,6 +2,8 @@ package com.examinai.app.service;
 
 import java.time.Instant;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,8 @@ import com.examinai.app.integration.git.GitSourceClient;
 @Service
 public class SourceRetrievalService {
 
+	private static final Logger log = LoggerFactory.getLogger(SourceRetrievalService.class);
+
 	private final SubmissionRepository submissionRepository;
 
 	private final GitSourceClient gitSourceClient;
@@ -29,6 +33,7 @@ public class SourceRetrievalService {
 
 	@Transactional
 	public void retrieveAndPersist(java.util.UUID submissionId) {
+		log.debug("retrieveAndPersist: submissionId={}", submissionId);
 		Submission s = submissionRepository.findById(submissionId).orElseThrow();
 		s.setGitRetrievalState(GitRetrievalState.IN_PROGRESS);
 		s.setGitRetrievalErrorCode(null);
@@ -40,6 +45,7 @@ public class SourceRetrievalService {
 			s.setGitLastSuccessAt(Instant.now());
 		}
 		catch (GitProviderException ex) {
+			log.debug("retrieveAndPersist failed: submissionId={}, kind={}", submissionId, ex.getKind());
 			s.setGitRetrievalState(GitRetrievalState.ERROR);
 			s.setGitRetrievalErrorCode(ex.getKind().name());
 		}

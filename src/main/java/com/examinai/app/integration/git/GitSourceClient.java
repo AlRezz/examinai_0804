@@ -2,13 +2,13 @@ package com.examinai.app.integration.git;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Base64;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -16,17 +16,20 @@ import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.examinai.app.config.GitProviderProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Git provider HTTP access using a single {@link RestClient} (Story 3.2). Targets GitHub REST v3-style
- * {@code GET /repos/{owner}/{repo}/contents/{path}?ref=sha}; other hosts can work if they mirror this shape at
- * {@code examinai.git.base-url}.
+ * Git provider HTTP access using a single {@link RestClient} (Story 3.2). Loads
+ * {@code GET /repos/{owner}/{repo}/commits/{ref}}, then resolves file text by: {@code files[].patch} if present,
+ * else {@code raw_url}, else {@code contents_url} (Contents API JSON), else {@code GET …/contents/{path}?ref=}.
  */
 public class GitSourceClient {
 
 	private static final Logger log = LoggerFactory.getLogger(GitSourceClient.class);
+
+	private static final int MAX_RETRIEVED_CHARS = 2_000_000;
 
 	private final GitProviderProperties properties;
 
@@ -41,11 +44,14 @@ public class GitSourceClient {
 	}
 
 	/**
-	 * Fetches a single file as UTF-8 text. When {@code pathScope} is blank, {@code README.md} is used at the repo root.
+	 * Loads commit metadata and UTF-8 text for review. {@code pathScope} is required (no default file).
 	 */
 	public String fetchNormalizedFileContent(String repoIdentifier, String commitSha, String pathScope) {
 		if (!StringUtils.hasText(properties.getBaseUrl())) {
 			throw new GitProviderException(GitFailureKind.CONFIG_MISSING, "Git provider is not configured.");
+		}
+		if (pathScope == null || !StringUtils.hasText(pathScope.trim())) {
+			throw new GitProviderException(GitFailureKind.INVALID_RESPONSE, "File path is required.");
 		}
 		String trimmedRepo = repoIdentifier.trim();
 		int slash = trimmedRepo.indexOf('/');
@@ -55,17 +61,21 @@ public class GitSourceClient {
 		}
 		String owner = trimmedRepo.substring(0, slash);
 		String repo = trimmedRepo.substring(slash + 1);
-		String path = StringUtils.hasText(pathScope) ? pathScope.trim() : "README.md";
+		String path = pathScope.trim();
 		if (path.startsWith("/")) {
 			path = path.substring(1);
 		}
-		String sha = commitSha.trim();
-		URI uri = contentsUri(owner, repo, path, sha);
+		if (commitSha == null || !StringUtils.hasText(commitSha.trim())) {
+			throw new GitProviderException(GitFailureKind.INVALID_RESPONSE,
+					"Commit ref (SHA, branch, or tag) is required.");
+		}
+		String ref = commitSha.trim();
+		URI uri = commitUri(owner, repo, ref);
 		int max = Math.max(1, properties.getMaxRetries());
 		GitProviderException lastEx = null;
 		for (int attempt = 0; attempt < max; attempt++) {
 			try {
-				return executeGet(uri);
+				return executeCommitGet(uri, owner, repo, ref, path);
 			}
 			catch (GitProviderException ex) {
 				lastEx = ex;
@@ -87,7 +97,7 @@ public class GitSourceClient {
 				: new GitProviderException(GitFailureKind.UPSTREAM_ERROR, "Git fetch failed after retries.");
 	}
 
-	private String executeGet(URI uri) {
+	private String executeCommitGet(URI uri, String owner, String repo, String ref, String requestedPath) {
 		var spec = restClient.get().uri(uri).acceptCharset(StandardCharsets.UTF_8);
 		spec = spec.header(HttpHeaders.ACCEPT, "application/vnd.github+json");
 		if (StringUtils.hasText(properties.getToken())) {
@@ -103,15 +113,20 @@ public class GitSourceClient {
 		if (body == null || body.isBlank()) {
 			throw new GitProviderException(GitFailureKind.INVALID_RESPONSE, "Empty response from Git host.");
 		}
-		return decodeFileContent(body);
+		return buildTextFromCommitResponse(body, owner, repo, ref, requestedPath);
 	}
 
 	private GitProviderException mapHttpException(RestClientResponseException ex) {
 		HttpStatusCode s = ex.getStatusCode();
 		int code = s != null ? s.value() : 0;
 		String redacted = LogRedactionUtil.safeForLog(ex.getResponseBodyAsString(StandardCharsets.UTF_8));
+		if (code == 401) {
+			log.warn("Git provider returned 401 (body redacted/summary only): {}", redacted);
+			return new GitProviderException(GitFailureKind.ACCESS_DENIED,
+					"Authentication failed or token is not valid for this Git host.", ex);
+		}
 		if (code == 403) {
-			log.warn("Git provider returned 403 (body redacted/summary only): {}", LogRedactionUtil.safeForLog(redacted));
+			log.warn("Git provider returned 403 (body redacted/summary only): {}", redacted);
 			return new GitProviderException(GitFailureKind.ACCESS_DENIED, "Access was denied by the Git host.", ex);
 		}
 		if (code == 404) {
@@ -129,7 +144,136 @@ public class GitSourceClient {
 		return new GitProviderException(GitFailureKind.INVALID_RESPONSE, "Unexpected response from Git host.", ex);
 	}
 
-	private String decodeFileContent(String jsonBody) {
+	private String buildTextFromCommitResponse(String jsonBody, String owner, String repo, String ref,
+			String requestedPath) {
+		final JsonNode root;
+		try {
+			root = objectMapper.readTree(jsonBody);
+		}
+		catch (JsonProcessingException ex) {
+			throw new GitProviderException(GitFailureKind.INVALID_RESPONSE, "Could not parse Git host commit JSON.", ex);
+		}
+		String sha = root.path("sha").asText("");
+		String htmlUrl = root.path("html_url").asText("");
+		JsonNode commitNode = root.path("commit");
+		String message = commitNode.path("message").asText("");
+		String authorDate = commitNode.path("author").path("date").asText("");
+
+		StringBuilder out = new StringBuilder();
+		out.append("Commit ").append(sha.isEmpty() ? "(unknown)" : sha).append('\n');
+		if (!htmlUrl.isEmpty()) {
+			out.append("URL: ").append(htmlUrl).append('\n');
+		}
+		if (!authorDate.isEmpty()) {
+			out.append("Author date: ").append(authorDate).append('\n');
+		}
+		out.append('\n').append(message).append("\n\n");
+
+		JsonNode files = root.path("files");
+		JsonNode fileNode = (files.isArray() && !files.isEmpty()) ? findFileForPath(files, requestedPath) : null;
+
+		String label = fileNode != null ? fileNode.path("filename").asText(requestedPath) : requestedPath;
+		out.append("--- ").append(label).append(" ---\n");
+
+		if (fileNode != null) {
+			appendFileBodyFromGithubFileEntry(out, fileNode, owner, repo, ref);
+		}
+		else {
+			out.append(fetchViaRepositoryContents(owner, repo, requestedPath, ref));
+		}
+		enforceMaxLength(out);
+		return out.toString();
+	}
+
+	/**
+	 * Prefer {@code patch}; if empty, GET {@code raw_url}; if still empty, GET {@code contents_url} JSON; else
+	 * repository Contents API for the file path at {@code ref}.
+	 */
+	private void appendFileBodyFromGithubFileEntry(StringBuilder out, JsonNode fileNode, String owner, String repo,
+			String ref) {
+		String patch = fileNode.path("patch").asText("");
+		if (StringUtils.hasText(patch)) {
+			out.append(patch);
+			if (!patch.endsWith("\n")) {
+				out.append('\n');
+			}
+			return;
+		}
+		String rawUrl = fileNode.path("raw_url").asText("");
+		if (StringUtils.hasText(rawUrl)) {
+			try {
+				String raw = httpGetBody(URI.create(rawUrl.trim()), false);
+				appendChunk(out, raw);
+				return;
+			}
+			catch (GitProviderException ex) {
+				log.debug("raw_url fetch failed, trying contents_url: {}", LogRedactionUtil.safeForLog(ex.getMessage()));
+			}
+		}
+		String contentsUrl = fileNode.path("contents_url").asText("");
+		if (StringUtils.hasText(contentsUrl)) {
+			try {
+				String json = httpGetBody(URI.create(contentsUrl.trim()), true);
+				appendChunk(out, decodeContentsFileJson(json));
+				return;
+			}
+			catch (GitProviderException ex) {
+				log.debug("contents_url fetch failed, trying repository contents API: {}",
+						LogRedactionUtil.safeForLog(ex.getMessage()));
+			}
+		}
+		String fname = fileNode.path("filename").asText("");
+		if (StringUtils.hasText(fname)) {
+			appendChunk(out, fetchViaRepositoryContents(owner, repo, fname.replace('\\', '/'), ref));
+		}
+		else {
+			out.append("(No patch, raw_url, contents_url, or filename in Git response.)\n");
+		}
+	}
+
+	private void appendChunk(StringBuilder out, String chunk) {
+		if (chunk.length() > MAX_RETRIEVED_CHARS) {
+			throw new GitProviderException(GitFailureKind.INVALID_RESPONSE,
+					"Retrieved text exceeds size limit; narrow path scope.");
+		}
+		out.append(chunk);
+	}
+
+	private String fetchViaRepositoryContents(String owner, String repo, String path, String ref) {
+		URI u = contentsUri(owner, repo, path, ref);
+		log.debug("Git contents fallback GET: {}", u);
+		String json = httpGetBody(u, true);
+		return decodeContentsFileJson(json);
+	}
+
+	private String httpGetBody(URI uri, boolean acceptGithubJson) {
+		var spec = restClient.get().uri(uri).acceptCharset(StandardCharsets.UTF_8);
+		if (acceptGithubJson) {
+			spec = spec.header(HttpHeaders.ACCEPT, "application/vnd.github+json");
+		}
+		else {
+			spec = spec.accept(MediaType.ALL);
+		}
+		if (StringUtils.hasText(properties.getToken())) {
+			spec = spec.header(HttpHeaders.AUTHORIZATION, "Bearer " + properties.getToken());
+		}
+		try {
+			String body = spec.retrieve().body(String.class);
+			if (body == null) {
+				throw new GitProviderException(GitFailureKind.INVALID_RESPONSE, "Empty response from Git host.");
+			}
+			return body;
+		}
+		catch (RestClientResponseException ex) {
+			throw mapHttpException(ex);
+		}
+		catch (RestClientException ex) {
+			log.warn("Git HTTP client failure: {}", LogRedactionUtil.safeForLog(ex.getMessage()));
+			throw new GitProviderException(GitFailureKind.TIMEOUT, "Network error talking to Git host.", ex);
+		}
+	}
+
+	private String decodeContentsFileJson(String jsonBody) {
 		try {
 			JsonNode n = objectMapper.readTree(jsonBody);
 			String type = n.path("type").asText("");
@@ -158,6 +302,34 @@ public class GitSourceClient {
 		catch (Exception ex) {
 			throw new GitProviderException(GitFailureKind.INVALID_RESPONSE, "Could not parse Git host response.", ex);
 		}
+	}
+
+	private static JsonNode findFileForPath(JsonNode files, String requestedPath) {
+		String normalized = requestedPath.replace('\\', '/');
+		for (JsonNode f : files) {
+			String fn = f.path("filename").asText("");
+			if (!StringUtils.hasText(fn)) {
+				continue;
+			}
+			if (fn.replace('\\', '/').equals(normalized)) {
+				return f;
+			}
+		}
+		return null;
+	}
+
+	private static void enforceMaxLength(StringBuilder out) {
+		if (out.length() > MAX_RETRIEVED_CHARS) {
+			throw new GitProviderException(GitFailureKind.INVALID_RESPONSE,
+					"Retrieved text exceeds size limit; narrow path scope.");
+		}
+	}
+
+	private URI commitUri(String owner, String repo, String ref) {
+		UriComponentsBuilder b = UriComponentsBuilder.fromUriString(trimTrailingSlash(properties.getBaseUrl()))
+			.pathSegment("repos", owner, repo, "commits", ref);
+		log.debug("Git commit GET: {}", b.toUriString());
+		return b.build().encode().toUri();
 	}
 
 	private URI contentsUri(String owner, String repo, String path, String ref) {

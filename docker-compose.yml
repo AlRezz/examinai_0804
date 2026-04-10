@@ -46,26 +46,26 @@ services:
         sleep 2
         ollama pull "$OLLAMA_MODEL"
         wait
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          'ollama list 2>/dev/null | grep -Fq "$$OLLAMA_MODEL"',
-        ]
-      interval: 15s
-      timeout: 5s
-      retries: 20
-      start_period: 600s
+#    healthcheck:
+#      test:
+#        [
+#          "CMD-SHELL",
+#          'ollama list 2>/dev/null | grep -Fq "$$OLLAMA_MODEL"',
+#        ]
+#      interval: 15s
+#      timeout: 5s
+#      retries: 20
+#      start_period: 600s
 
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    depends_on:
-      db:
-        condition: service_healthy
-      llm:
-        condition: service_healthy
+#    depends_on:
+#      db:
+#        condition: service_healthy
+#      llm:
+#        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://db:5432/${POSTGRES_DB:-examinai}}

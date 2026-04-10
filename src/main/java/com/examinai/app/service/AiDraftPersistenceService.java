@@ -8,6 +8,8 @@ import java.util.HexFormat;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,8 @@ import com.examinai.app.integration.ai.AiModelAuditDescriptor;
 
 @Service
 public class AiDraftPersistenceService {
+
+	private static final Logger log = LoggerFactory.getLogger(AiDraftPersistenceService.class);
 
 	private final SubmissionRepository submissionRepository;
 
@@ -48,6 +52,8 @@ public class AiDraftPersistenceService {
 	 */
 	@Transactional
 	public void persistSuccessfulDraft(UUID submissionId, String assessmentText) {
+		log.debug("persistSuccessfulDraft: submissionId={}, assessmentChars={}", submissionId,
+				assessmentText == null ? 0 : assessmentText.length());
 		String userPayload = payloadLoader.loadUserPayload(submissionId);
 		String promptHash = sha256Hex(userPayload);
 		Submission submission = submissionRepository.findById(submissionId).orElseThrow();
@@ -60,6 +66,7 @@ public class AiDraftPersistenceService {
 
 	@Transactional(readOnly = true)
 	public Optional<AiDraftView> findLatestForSubmission(UUID submissionId) {
+		log.debug("findLatestForSubmission: submissionId={}", submissionId);
 		return aiDraftRepository.findFirstByInvocation_Submission_IdOrderByInvocation_InvokedAtDesc(submissionId)
 			.map(d -> {
 				var inv = d.getInvocation();

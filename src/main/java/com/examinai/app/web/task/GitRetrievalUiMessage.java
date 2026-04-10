@@ -26,11 +26,11 @@ public final class GitRetrievalUiMessage {
 		return switch (kind) {
 			case CONFIG_MISSING -> "Source retrieval is not configured on the server. An operator must set Git provider environment variables.";
 			case ACCESS_DENIED -> "The Git host denied access. Ask an administrator to check credentials or repository visibility.";
-			case NOT_FOUND -> "Repository, commit, or path was not found. Confirm coordinates with the intern or update them below.";
+			case NOT_FOUND -> "Repository or commit was not found, or the path could not be loaded at that ref. Confirm coordinates with the intern or update them below.";
 			case RATE_LIMIT -> "The Git host rate limit was hit. Wait a few minutes, then try again.";
 			case TIMEOUT -> "Fetching source timed out. Try again or narrow the file path scope.";
 			case UPSTREAM_ERROR -> "The Git host had a temporary error. Try again shortly.";
-			case INVALID_RESPONSE -> "The Git response could not be used. Try a different path scope or coordinates.";
+			case INVALID_RESPONSE -> "The Git response could not be used, or path scope is missing. Set a file path and try again.";
 		};
 	}
 }
