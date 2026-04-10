@@ -47,6 +47,16 @@ When the LLM service is down or unreachable (e.g. stop the **`llm`** container):
 
 Verify degraded mode without sharing credentials: stop **`llm`**, open a mentor submission detail, confirm banner / CTA behavior, then `docker compose start llm` (or `up`) and re-check optional draft flow.
 
+## Troubleshooting
+
+### `FATAL: role "root" does not exist` (PostgreSQL)
+
+Postgres does **not** create a `root` superuser. This usually means the **client username** does not match a role in the cluster—often after **empty or mismatched env** vs how the data volume was first initialized.
+
+1. Ensure **`POSTGRES_USER`** matches **`SPRING_DATASOURCE_USERNAME`** (Compose passes JDBC from the same `POSTGRES_*` defaults when `SPRING_DATASOURCE_*` are unset; see **`.env.example`**).
+2. If you changed **`POSTGRES_USER`** after the DB volume was created, the old role may still be in the volume. **Remove the named volume** (destructive) and bring the stack up again, or connect with the **original** role name. Example: `docker compose down -v` (drops local pilot data) then `docker compose up --build`.
+3. When using **`psql`**, pass **`-U "$POSTGRES_USER"`** (or `-U examinai`)—do not assume the shell user maps to a Postgres role.
+
 ## Smoke path: login → retrieval → optional AI
 
 1. **Stack up:** `docker compose up --build` (or your orchestration equivalent).
@@ -71,3 +81,4 @@ Verify degraded mode without sharing credentials: stop **`llm`**, open a mentor 
 
 - **NFR8:** Health and documented degraded LLM behavior in pilot.
 - **NFR12:** Env keys documented without values; Git/LLM diagnostics remain secret-safe.
+- **7.4:** Postgres role / JDBC alignment and troubleshooting for `FATAL: role "root" does not exist`.

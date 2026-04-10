@@ -1,5 +1,5 @@
 # generated: 2026-04-08
-# last_updated: 2026-04-08 (story 7-3 → done; epic-7 → done)
+# last_updated: 2026-04-10 (story 7-4 → done; epic-7 → done)
 # project: examinai_0804
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-04-08"
-last_updated: "2026-04-08 (story 7-3 → done; epic-7 → done)"
+last_updated: "2026-04-10 (story 7-4 → done; epic-7 → done)"
 project: examinai_0804
 project_key: NOKEY
 tracking_system: file-system
@@ -89,4 +89,5 @@ development_status:
   7-1-coordinator-read-only-case-record: done
   7-2-docker-compose-for-application-database-and-llm: done
   7-3-pilot-operations-runbook-and-environment-documentation: done
+  7-4-postgres-credentials-compose-alignment: done
   epic-7-retrospective: optional

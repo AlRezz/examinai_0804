@@ -36,7 +36,7 @@ Authoritative per-story keys: [`_bmad-output/implementation-artifacts/sprint-sta
 | **4** — Mentor review workspace and official outcomes | **Done** | Stories **4.1–4.5** **done** (queue, detail + source, draft rubric, publish w/ provenance, outcome history). |
 | **5** — AI-assisted drafts and resilient inference | In progress | Stories **5.1–5.4** **ready-for-dev**. |
 | **6** — Intern transparency and privacy-safe feedback | In progress | Stories **6.1–6.4** **ready-for-dev**. |
-| **7** — Audit visibility and pilot-ready deployment | In progress | Stories **7.1–7.3** **ready-for-dev**. |
+| **7** — Audit visibility and pilot-ready deployment | **Done** | Stories **7.1–7.4** **done** (includes **7.4** Postgres credentials / Compose alignment). |
 
 ## Requirements Inventory
 
@@ -252,7 +252,7 @@ Interns see lifecycle status, published mentor judgment, and clearly labeled dra
 **FRs covered:** FR22, FR23, FR24, FR25
 
 ### Epic 7: Audit visibility and pilot-ready deployment
-**Tracking:** In progress — see `sprint-status.yaml` (stories 7.1–7.3 ready-for-dev).
+**Tracking:** Done — see `sprint-status.yaml` (stories 7.1–7.4 done).
 
 Coordinators can inspect a case record for accountability, and operators can run the app, database, and model as separate composable services.
 
@@ -786,7 +786,7 @@ So that **peer grades stay private**.
 
 ## Epic 7: Audit visibility and pilot-ready deployment
 
-**Tracking:** In progress — `sprint-status.yaml` (stories 7.1–7.3 ready-for-dev).
+**Tracking:** Done — `sprint-status.yaml` (stories 7.1–7.4 done).
 
 Coordinators can inspect a case record for accountability, and operators can run the app, database, and model as separate composable services.
 
@@ -849,6 +849,25 @@ So that **new laptops can join the pilot safely**.
 **Given** production-oriented profile  
 **When** errors occur  
 **Then** user-facing pages avoid stack traces (**NFR6**) and Actuator exposure is restricted as per architecture
+
+---
+
+### Story 7.4: PostgreSQL credentials and Compose alignment
+
+As an **operator**,
+I want **the app and Postgres container to use one clear, documented database user contract**,
+So that **connections never fail with `FATAL: role "root" does not exist` or other implicit username mismatches**.
+
+**Implements:** Follow-on to **7.2** / **7.3** (FR32 operator path, NFR12 env documentation).
+
+**Acceptance Criteria:**
+
+**Given** a fresh or existing pilot volume  
+**When** `docker compose up` runs with documented env  
+**Then** JDBC uses the same PostgreSQL role the `db` service was initialized with, and troubleshooting docs cover wrong-user / stale-volume cases
+
+**Given** `.env` is missing optional overrides  
+**Then** documented defaults still yield a consistent non-`root` database role and matching app credentials
 
 ---
 

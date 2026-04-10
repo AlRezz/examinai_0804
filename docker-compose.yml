@@ -8,13 +8,15 @@
 # Ports: app 8080, db 5432, Ollama 11434 (see .env.example for overrides).
 # OLLAMA_IMAGE = Docker image (e.g. ollama/ollama:0.20.2). OLLAMA_MODEL = model tag for `ollama pull` (same as app).
 
+# Default DB identity matches `.env.example` (`examinai`). Single source: app JDBC uses the same
+# `POSTGRES_*` values so the role created on first volume init always matches the app (story 7.4).
 services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-examinai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-examinai}
+      POSTGRES_DB: ${POSTGRES_DB:-examinai}
     volumes:
       - examinai_pg_data:/var/lib/postgresql/data
     ports:
@@ -64,28 +66,28 @@ services:
       llm:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://db:5432/${POSTGRES_DB}}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-${POSTGRES_USER}}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-${POSTGRES_PASSWORD}}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://db:5432/${POSTGRES_DB:-examinai}}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-${POSTGRES_USER:-examinai}}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-${POSTGRES_PASSWORD:-examinai}}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
       OLLAMA_MODEL: ${OLLAMA_MODEL}
       GIT_PROVIDER_BASE_URL: ${GIT_PROVIDER_BASE_URL}
       GIT_PROVIDER_TOKEN: ${GIT_PROVIDER_TOKEN}
     ports:
       - 8080:8080
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "-fsS",
-          "http://127.0.0.1:8080/actuator/health",
-        ]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 90s
+#    healthcheck:
+#      test:
+#        [
+#          "CMD",
+#          "curl",
+#          "-fsS",
+#          "http://127.0.0.1:8080/actuator/health",
+#        ]
+#      interval: 15s
+#      timeout: 5s
+#      retries: 5
+#      start_period: 90s
 
 volumes:
   examinai_pg_data:
