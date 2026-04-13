@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<!-- Include inside page <head>: th:replace="~{fragments/head-welcome-jqui :: welcomeStyles}" -->
+	<th:block th:fragment="welcomeStyles">
+		<th:block th:replace="~{fragments/head-bootstrap :: styles}" />
+		<link rel="stylesheet" th:href="@{/css/welcome-jqui.css}" />
+	</th:block>
+</head>
+</html>

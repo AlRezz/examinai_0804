@@ -1,0 +1,81 @@
+/**
+ * Welcome + sign-in layout. jQuery UI **Flick** theme comes from global head (jquery-ui.min.css).
+ */
+.welcome-center {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: calc(100vh - 0px);
+	padding: 1.25rem;
+	box-sizing: border-box;
+}
+
+.welcome-card {
+	width: 100%;
+	max-width: 26rem;
+}
+
+.welcome-card-header {
+	padding: 0.65em 1em !important;
+	font-size: 1.2rem;
+	font-weight: bold;
+}
+
+.welcome-card-body {
+	padding: 1rem 1.15rem 1.15rem;
+}
+
+.welcome-tagline {
+	margin: 0 0 1rem;
+	color: #666666;
+	font-size: 0.95rem;
+	line-height: 1.45;
+}
+
+.welcome-landing .examinai-jqui-button {
+	display: inline-block;
+}
+
+.welcome-field {
+	margin-bottom: 0.85rem;
+}
+
+.welcome-field label {
+	display: block;
+	font-weight: bold;
+	font-size: 0.9rem;
+	margin-bottom: 0.3rem;
+	color: #444444;
+}
+
+.welcome-field .ui-input {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0.45em 0.55em;
+}
+
+.welcome-actions {
+	margin-top: 1rem;
+}
+
+.welcome-banner {
+	padding: 0.55em 0.7em;
+	margin-bottom: 0.85em;
+	font-size: 0.92rem;
+}
+
+.welcome-back {
+	margin: 1rem 0 0;
+	text-align: center;
+	font-size: 0.88rem;
+}
+
+.welcome-back a {
+	color: #0073ea;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+.welcome-back a:hover {
+	text-decoration: underline;
+}

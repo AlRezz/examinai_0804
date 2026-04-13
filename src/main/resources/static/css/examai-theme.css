@@ -1,0 +1,181 @@
+/**
+ * Examinai global shell — Bootstrap 5 tuned to match jQuery UI **Flick** (loaded before this file).
+ * Flick: primary interactive blue #0073ea, header grays #dddddd, accent #ff0084, borders #dddddd.
+ */
+:root,
+[data-bs-theme="light"] {
+	--ex-jqui-flick-blue: #0073ea;
+	--ex-jqui-flick-pink: #ff0084;
+	--ex-jqui-header: #dddddd;
+	--ex-jqui-header-border: #dddddd;
+	--ex-page-tint: #f3f4f6;
+	--bs-primary: #0073ea;
+	--bs-primary-rgb: 0, 115, 234;
+	--bs-link-color: #0073ea;
+	--bs-link-hover-color: #0056b3;
+	--bs-body-bg: var(--ex-page-tint);
+	--bs-body-color: #222222;
+	--bs-secondary-color: #666666;
+	--bs-border-color: #dddddd;
+	--bs-secondary-bg: #ececec;
+	--bs-tertiary-bg: #f6f6f6;
+	--bs-heading-color: #444444;
+}
+
+body {
+	min-height: 100vh;
+	background: linear-gradient(180deg, #ececec 0%, #f6f6f6 40%, #fafafa 100%) !important;
+	color: var(--bs-body-color);
+}
+
+body.bg-body-secondary {
+	background: linear-gradient(180deg, #ececec 0%, #f6f6f6 40%, #fafafa 100%) !important;
+}
+
+/* Welcome + sign-in (jQuery UI widgets): full-bleed layout, no boxed <main> shell */
+body.welcome-jqui > main:not([class*="container"]) {
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	border-top: none;
+}
+
+/* Bootstrap cards aligned with Flick panel feel */
+.card {
+	border-color: #dddddd;
+	border-top: 3px solid var(--ex-jqui-flick-blue);
+	box-shadow: 0 0.125rem 0.35rem rgba(0, 0, 0, 0.06);
+}
+
+.card.shadow-sm {
+	box-shadow: 0 0.125rem 0.35rem rgba(0, 0, 0, 0.06) !important;
+}
+
+.card-header {
+	background: linear-gradient(180deg, #f6f6f6 0%, #ececec 100%);
+	border-bottom-color: #dddddd;
+	color: #444444;
+}
+
+/* Forms */
+.form-control:focus,
+.form-select:focus {
+	border-color: #0073ea;
+	box-shadow: 0 0 0 0.2rem rgba(0, 115, 234, 0.22);
+}
+
+.btn-primary {
+	--bs-btn-bg: #0073ea;
+	--bs-btn-border-color: #0062cc;
+	--bs-btn-hover-bg: #0062cc;
+	--bs-btn-hover-border-color: #0056b3;
+}
+
+.btn-outline-primary {
+	--bs-btn-color: #0073ea;
+	--bs-btn-border-color: #0073ea;
+	--bs-btn-hover-bg: #e8f2ff;
+	--bs-btn-hover-border-color: #0062cc;
+}
+
+.btn-secondary {
+	--bs-btn-bg: #6c757d;
+	--bs-btn-border-color: #5c636a;
+}
+
+/* Alerts — Flick-friendly borders */
+.alert-info {
+	--bs-alert-border-color: #0073ea;
+	background-color: #f0f7ff;
+	color: #003d82;
+}
+
+.alert-success {
+	--bs-alert-border-color: #28a745;
+}
+
+.alert-danger {
+	--bs-alert-border-color: #ff0084;
+}
+
+.alert-warning {
+	--bs-alert-border-color: #e0a800;
+}
+
+/* Plain pages using <main> without Bootstrap grid */
+body > main:not([class*="container"]) {
+	max-width: 48rem;
+	margin: 2rem auto;
+	padding: 2rem 1.5rem;
+	background: #fff;
+	border: 1px solid #dddddd;
+	border-radius: 2px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	border-top: 4px solid var(--ex-jqui-flick-blue);
+}
+
+body > main:not([class*="container"]) h1 {
+	color: var(--bs-heading-color);
+	font-weight: 600;
+	margin-bottom: 1rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid #dddddd;
+}
+
+body > main:not([class*="container"]) a {
+	color: var(--bs-link-color);
+	font-weight: 500;
+}
+
+body > main:not([class*="container"]) a:hover {
+	color: var(--bs-link-hover-color);
+}
+
+body > main:not([class*="container"]) button[type="submit"],
+body > main:not([class*="container"]) input[type="submit"] {
+	background: linear-gradient(180deg, #0073ea 0%, #0062cc 100%);
+	border: 1px solid #0056b3;
+	color: #fff;
+	padding: 0.4rem 1rem;
+	border-radius: 2px;
+	font-weight: 600;
+}
+
+body > main:not([class*="container"]) button[type="submit"]:hover,
+body > main:not([class*="container"]) input[type="submit"]:hover {
+	filter: brightness(1.05);
+}
+
+body > main:not([class*="container"]) input:not([type="checkbox"]):not([type="radio"]) {
+	border: 1px solid #dddddd;
+	border-radius: 2px;
+	padding: 0.35rem 0.5rem;
+	width: 100%;
+	max-width: 22rem;
+}
+
+p.notice {
+	padding: 0.75rem 1rem;
+	background: #ffffff;
+	border: 1px solid #cccccc;
+	border-radius: 2px;
+	color: #444444;
+}
+
+p.error {
+	padding: 0.75rem 1rem;
+	background: #ffffff;
+	border: 1px solid #ff0084;
+	border-radius: 2px;
+	color: #222222;
+}
+
+/* Code / pre in task views */
+pre,
+code.bg-light {
+	background-color: #f6f6f6 !important;
+	border-color: #dddddd !important;
+}
