@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import com.examinai.app.domain.task.Task;
 import com.examinai.app.domain.task.TaskAssignment;
 import com.examinai.app.domain.user.User;
 import com.examinai.app.domain.user.UserRepository;
+import com.examinai.app.integration.ai.AiDraftAssessmentResult;
 import com.examinai.app.integration.ai.AiDraftAssessmentService;
 import com.examinai.app.integration.ai.InferenceUnavailableException;
 import com.examinai.app.service.AiDraftPersistenceService;
@@ -86,7 +88,12 @@ class TaskSubmissionMentorAiDraftWebMvcTest {
 		Submission submission = org.mockito.Mockito.mock(Submission.class);
 		when(submission.getId()).thenReturn(submissionId);
 		when(submissionService.findForTaskAndInternOrNull(taskId, internId)).thenReturn(submission);
-		when(aiDraftAssessmentService.generateDraft(submissionId)).thenReturn("Draft text");
+		UUID mentorUserId = UUID.randomUUID();
+		User mentor = org.mockito.Mockito.mock(User.class);
+		when(mentor.getId()).thenReturn(mentorUserId);
+		when(userRepository.findByEmail("user")).thenReturn(Optional.of(mentor));
+		when(aiDraftAssessmentService.generateDraft(submissionId))
+			.thenReturn(new AiDraftAssessmentResult("Draft text", 2, 3, 4, "fb"));
 
 		mockMvc.perform(
 				post("/tasks/" + taskId + "/submissions/" + internId + "/ai-draft-assessment").with(csrf()))
@@ -95,6 +102,7 @@ class TaskSubmissionMentorAiDraftWebMvcTest {
 
 		verify(aiDraftAssessmentService).generateDraft(submissionId);
 		verify(aiDraftPersistenceService).persistSuccessfulDraft(submissionId, "Draft text");
+		verify(mentorReviewService).saveDraft(submissionId, mentorUserId, 2, 3, 4, "fb");
 	}
 
 	@Test
@@ -145,7 +153,9 @@ class TaskSubmissionMentorAiDraftWebMvcTest {
 		Submission submission = org.mockito.Mockito.mock(Submission.class);
 		when(submission.getId()).thenReturn(submissionId);
 		when(submissionService.findForTaskAndInternOrNull(taskId, internId)).thenReturn(submission);
-		when(aiDraftAssessmentService.generateDraft(submissionId)).thenReturn("ok");
+		when(userRepository.findByEmail("user")).thenReturn(Optional.of(org.mockito.Mockito.mock(User.class)));
+		when(aiDraftAssessmentService.generateDraft(submissionId))
+			.thenReturn(new AiDraftAssessmentResult("ok", null, null, null, "ok"));
 
 		var session = new MockHttpSession();
 		session.setAttribute(DegradedInferenceAttributes.SESSION_KEY, Boolean.TRUE);

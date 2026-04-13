@@ -1,6 +1,6 @@
 examinai:
   intern:
-    # When true, interns see the latest persisted AI draft as a non-official panel on the feedback page (Epic 6.2).
+    # Legacy binding (Epic 6.2); intern "Your feedback" page shows official outcomes only — no AI panel (Epic 10).
     show-ai-draft-to-intern: ${EXAMINAI_INTERN_SHOW_AI_DRAFT:true}
   ai:
     llm-health-probe:
@@ -18,7 +18,7 @@ examinai:
   git:
     # Deployment-only: set via environment (see .env.example). Never collect from UI or database.
     base-url: ${GIT_PROVIDER_BASE_URL:https://api.github.com}
-    token: ${GIT_PROVIDER_TOKEN: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}
+    token: ${GIT_PROVIDER_TOKEN:}
     read-timeout-seconds: ${GIT_READ_TIMEOUT_SECONDS:22}
     max-retries: ${GIT_MAX_RETRIES:2}
     retry-backoff-ms: ${GIT_RETRY_BACKOFF_MS:350}
@@ -33,8 +33,10 @@ spring:
         options:
           model: ${OLLAMA_MODEL:deepseek-r1:8b}
       init:
-        pull-model-strategy: never
-        max-retries: 0
+        # Pull chat model on startup if missing (avoids Ollama 404 "model not found" when only defaults are set).
+        # Tests override this to `never` (see application-test.yml). Override with OLLAMA_MODEL for a smaller/faster model.
+        pull-model-strategy: when_missing
+        max-retries: 2
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
   jpa:

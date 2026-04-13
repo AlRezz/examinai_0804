@@ -135,7 +135,7 @@ class Epic6InternSurfacesIntegrationTest {
 	}
 
 	@Test
-	void internSeesLabeledAiDraftSeparateFromOfficialWhenBothExist() throws Exception {
+	void internFeedbackShowsOfficialOnly_aiAssistiveDraftNotListedOnPage() throws Exception {
 		var subAUpsert = submissionRepository.findByTask_IdAndIntern_Id(taskIdA, internA.getId()).orElseThrow();
 		subAUpsert.setGitRetrievalState(GitRetrievalState.OK);
 		subAUpsert.setGitRetrievedText("source line");
@@ -154,7 +154,8 @@ class Epic6InternSurfacesIntegrationTest {
 			.andExpect(status().isOk())
 			.andReturn();
 		String html = page.getResponse().getContentAsString();
-		assertThat(html).contains("Official mentor feedback").contains("Draft — not official").contains("AI draft prose for epic6 label test.");
+		assertThat(html).contains("Official mentor feedback").contains("Mentor sentence for epic6.");
+		assertThat(html).doesNotContain("AI draft prose for epic6 label test.").doesNotContain("Draft — not official");
 	}
 
 	@Test

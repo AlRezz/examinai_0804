@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.examinai.app.config.InternUiProperties;
 import com.examinai.app.domain.task.Submission;
 import com.examinai.app.domain.task.SubmissionRepository;
 
@@ -23,18 +22,11 @@ public class InternFeedbackService {
 
 	private final MentorReviewService mentorReviewService;
 
-	private final AiDraftPersistenceService aiDraftPersistenceService;
-
-	private final InternUiProperties internUiProperties;
-
 	public InternFeedbackService(SubmissionRepository submissionRepository, SubmissionLifecycleService submissionLifecycleService,
-			MentorReviewService mentorReviewService, AiDraftPersistenceService aiDraftPersistenceService,
-			InternUiProperties internUiProperties) {
+			MentorReviewService mentorReviewService) {
 		this.submissionRepository = submissionRepository;
 		this.submissionLifecycleService = submissionLifecycleService;
 		this.mentorReviewService = mentorReviewService;
-		this.aiDraftPersistenceService = aiDraftPersistenceService;
-		this.internUiProperties = internUiProperties;
 	}
 
 	@Transactional(readOnly = true)
@@ -49,8 +41,6 @@ public class InternFeedbackService {
 		var task = submission.getTask();
 		var lifecycle = submissionLifecycleService.viewForIntern(submission);
 		var official = mentorReviewService.findLatestPublishedForCurrentRevision(submission);
-		Optional<AiDraftView> ai = internUiProperties.isShowAiDraftToIntern()
-				? aiDraftPersistenceService.findLatestForSubmission(submission.getId()) : Optional.empty();
-		return Optional.of(new InternFeedbackBundle(submission.getId(), task, submission, lifecycle, official, ai));
+		return Optional.of(new InternFeedbackBundle(submission.getId(), task, submission, lifecycle, official, Optional.empty()));
 	}
 }

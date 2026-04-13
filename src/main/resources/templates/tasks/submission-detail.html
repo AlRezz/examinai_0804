@@ -67,17 +67,30 @@
 		<div class="mb-2">
 			<label class="form-label">Path scope (optional)</label>
 			<input class="form-control" type="text" th:field="*{pathScope}" placeholder="e.g. src/Main.java"/>
-			<div class="form-text">Leave blank for commit metadata only (no file body). When set, fetch resolves <strong>patch</strong>, then <strong>raw_url</strong> / <strong>contents_url</strong>, then repository <strong>contents</strong>.</div>
+			<div class="form-text">Leave blank to use the first file in the commit&rsquo;s <code>files[]</code> list (patch only). When set, fetch uses that path&rsquo;s <strong>patch</strong> if listed, otherwise repository <strong>contents</strong> for the path at the ref.</div>
 		</div>
 		<p class="text-danger small" th:if="${#fields.hasErrors('pathScope')}" th:errors="*{pathScope}">err</p>
 		<button class="btn btn-secondary" type="submit">Save coordinates</button>
 	</form>
 
-	<form class="mb-4" th:if="${submission != null}"
+	<form class="mb-3" th:if="${submission != null}"
 	      th:action="@{/tasks/{tid}/submissions/{iid}/fetch(tid=${task.id},iid=${internId})}" method="post">
 		<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 		<button class="btn btn-outline-primary" type="submit">Fetch / re-fetch source</button>
 	</form>
+
+	<!-- Fetched source (Epic 10) — shown after successful fetch for review context -->
+	<section class="card shadow-sm border-0 mb-4 rounded-3"
+	         th:if="${submission != null and submission.gitRetrievalState != null and submission.gitRetrievalState.name() == 'OK'
+	         and submission.gitRetrievedText != null and !#strings.isEmpty(#strings.trim(submission.gitRetrievedText))}">
+		<div class="card-body">
+			<h2 class="h5 card-title">Fetched source</h2>
+			<p class="text-secondary small mb-3">Text loaded from Git for this commit and path scope (unified diff patch and/or file contents). Use it alongside task instructions when reviewing.</p>
+			<pre class="mb-0 rounded-2 border bg-light p-3 small font-monospace"
+			     style="max-height: 28rem; overflow: auto; white-space: pre-wrap;"
+			     th:text="${submission.gitRetrievedText}">source</pre>
+		</div>
+	</section>
 
 	<!-- Published history (Story 4.5) -->
 	<section class="mb-4" th:if="${submission != null and !#lists.isEmpty(publishedReviewHistory)}">

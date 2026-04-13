@@ -30,7 +30,7 @@ The app maps provider HTTP results to internal **`GitFailureKind`** values and *
 | Typical upstream signal | `GitFailureKind` | Operator hint (no secrets in logs) |
 |-------------------------|------------------|-----------------------------------|
 | `GIT_PROVIDER_BASE_URL` missing / empty | `CONFIG_MISSING` | Set base URL + token in env; redeploy. |
-| Mentor UI **not found** on fetch (`NOT_FOUND`) | — | App calls **Get a commit**, then **patch** / **raw_url** / **contents_url**, then **contents** fallback. **Path scope** is required. See [REST commits](https://docs.github.com/en/rest/commits/commits?apiVersion=2026-03-10), [contents](https://docs.github.com/en/rest/repos/contents?apiVersion=2026-03-10), **README**. |
+| Mentor UI **not found** on fetch (`NOT_FOUND`) | — | App calls **Get a commit**; a matching **`files[]`** row supplies **`patch`** only; otherwise **repository contents** for **path scope** at **ref**. **Path scope** is required. See [REST commits](https://docs.github.com/en/rest/commits/commits?apiVersion=2026-03-10), [contents](https://docs.github.com/en/rest/repos/contents?apiVersion=2026-03-10), **README**. |
 | HTTP **403** | `ACCESS_DENIED` | Token scope / repo visibility / org SSO. |
 | HTTP **404** | `NOT_FOUND` | Wrong owner/repo, ref, or path scope. |
 | HTTP **429** | `RATE_LIMIT` | Back off; retried in client. |
@@ -48,6 +48,14 @@ When the LLM service is down or unreachable (e.g. stop the **`llm`** container):
 - **Publish official review** remains available; AI draft generation is **assistive** only—mentors can proceed without a successful model call.
 
 Verify degraded mode without sharing credentials: stop **`llm`**, open a mentor submission detail, confirm banner / CTA behavior, then `docker compose start llm` (or `up`) and re-check optional draft flow.
+
+### Ollama HTTP **404** — `model '…' not found` (inference)
+
+The LLM runtime only serves models present in **`ollama list`** for the daemon at **`OLLAMA_BASE_URL`**.
+
+1. **Pull the tag** configured as **`OLLAMA_MODEL`** (default **`deepseek-r1:8b`**): on the host, `ollama pull <tag>`; under Compose, `docker compose exec llm ollama pull "$OLLAMA_MODEL"` (or the concrete tag).
+2. Or set **`OLLAMA_MODEL`** to a tag you already have.
+3. The app uses **`spring.ai.ollama.init.pull-model-strategy: when_missing`** by default so a **missing** chat model may be **pulled at startup** (first pull can take several minutes). To **disable** auto-pull (e.g. golden images), set **`SPRING_AI_OLLAMA_INIT_PULL_MODEL_STRATEGY=never`** — see **README** → *AI draft assessments*.
 
 ## Troubleshooting
 
@@ -88,7 +96,7 @@ Postgres does **not** create a `root` superuser. This usually means the **client
 
 ## Traceability
 
-- **Epic 9:** Mentor AI draft on **fetched** text (structured feedback + suggestions), **read-only** display on submission detail, then rubric and publish — see **README** (*Mentor or administrator — move work through review and publish*, steps 5–7).
+- **Epic 9:** Mentor AI draft on **fetched** text (structured feedback + suggestions), **read-only** display on submission detail, then rubric and publish — see **README** (*Mentor or administrator — move work through review and publish*, steps 5–7). Story **9.5:** Ollama **model missing** / **404** troubleshooting and init **pull when missing**.
 - **NFR8:** Health and documented degraded LLM behavior in pilot.
 - **NFR12:** Env keys documented without values; Git/LLM diagnostics remain secret-safe.
 - **7.4:** Postgres role / JDBC alignment and troubleshooting for `FATAL: role "root" does not exist`.

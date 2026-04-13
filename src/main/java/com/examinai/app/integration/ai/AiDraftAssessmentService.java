@@ -25,7 +25,12 @@ public class AiDraftAssessmentService {
 	private static final String SYSTEM = """
 			You are assisting a human mentor grading an intern's work. Respond with a concise draft assessment only.
 
-			Structure the answer using exactly these two Markdown level-2 headings, in this order:
+			First output exactly these three lines (only the label, colon, a single space, and a single digit 1–5 on each line):
+			Quality: <1-5>
+			Readability: <1-5>
+			Correctness: <1-5>
+
+			Then structure the rest using exactly these two Markdown level-2 headings, in this order:
 			## Feedback on the code
 			## Suggestions to improve
 
@@ -51,7 +56,7 @@ public class AiDraftAssessmentService {
 		this.aiDraftExecutor = aiDraftExecutor;
 	}
 
-	public String generateDraft(UUID submissionId) {
+	public AiDraftAssessmentResult generateDraft(UUID submissionId) {
 		log.debug("generateDraft: submissionId={}", submissionId);
 		String userPayload = payloadLoader.loadUserPayload(submissionId);
 		long deadlineNs = System.nanoTime() + TimeUnit.SECONDS.toNanos(properties.getMaxInferenceWallSeconds());
@@ -79,7 +84,7 @@ public class AiDraftAssessmentService {
 				: new InferenceUnavailableException("AI draft failed after " + attempts + " attempts.");
 	}
 
-	private String invokeWithTimeout(String userPayload, long deadlineNs) {
+	private AiDraftAssessmentResult invokeWithTimeout(String userPayload, long deadlineNs) {
 		log.debug("invokeWithTimeout: payloadChars={}, remainingNs={}", userPayload.length(), deadlineNs - System.nanoTime());
 		long remainingNs = deadlineNs - System.nanoTime();
 		if (remainingNs <= 0) {
@@ -99,7 +104,7 @@ public class AiDraftAssessmentService {
 			if (!StringUtils.hasText(out)) {
 				throw new InferenceUnavailableException("Model returned an empty response.");
 			}
-			return out.trim();
+			return AiDraftAssessmentResponseParser.parse(out.trim());
 		}
 		catch (TimeoutException e) {
 			future.cancel(true);

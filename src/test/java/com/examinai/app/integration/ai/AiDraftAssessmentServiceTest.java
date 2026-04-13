@@ -59,13 +59,17 @@ class AiDraftAssessmentServiceTest {
 		when(chatClient.prompt().system(anyString()).user(anyString()).call().content()).thenReturn("Suggested feedback.");
 		clearInvocations(chatClient);
 
-		String out = service.generateDraft(submissionId);
+		AiDraftAssessmentResult out = service.generateDraft(submissionId);
 
-		assertThat(out).isEqualTo("Suggested feedback.");
+		assertThat(out.fullAssessmentText()).isEqualTo("Suggested feedback.");
+		assertThat(out.narrativeFeedback()).isEqualTo("Suggested feedback.");
 		verify(chatClient).prompt();
 		verify(chatClient.prompt()).system(ArgumentMatchers.<String>argThat(
 				systemPrompt -> systemPrompt.contains("## Feedback on the code")
-						&& systemPrompt.contains("## Suggestions to improve")));
+						&& systemPrompt.contains("## Suggestions to improve")
+						&& systemPrompt.contains("Quality:")
+						&& systemPrompt.contains("Readability:")
+						&& systemPrompt.contains("Correctness:")));
 		verify(payloadLoader).loadUserPayload(submissionId);
 	}
 

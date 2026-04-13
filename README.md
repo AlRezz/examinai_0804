@@ -33,6 +33,8 @@ Mentors can request an **assistive** draft from **Spring AI** (Ollama-backed `Ch
 
 Configure inference with **`OLLAMA_BASE_URL`**, **`OLLAMA_MODEL`**, and optional bounds: **`EXAMINAI_AI_DRAFT_MAX_SOURCE_CHARS`**, **`EXAMINAI_AI_DRAFT_TIMEOUT_SECONDS`** (≥ 1), **`EXAMINAI_AI_DRAFT_MAX_RETRIES`**, **`EXAMINAI_AI_DRAFT_RETRY_BACKOFF_MS`**, **`EXAMINAI_AI_DRAFT_MAX_INFERENCE_WALL_SECONDS`** (hard cap on all attempts combined), **`EXAMINAI_AI_DRAFT_MAX_FLASH_CHARS`** (flash display until drafts are persisted; see `application.yml`).
 
+**If AI draft fails with HTTP 404 and a body like `model '…' not found`:** Ollama only runs models you have pulled. Default **`OLLAMA_MODEL`** is **`deepseek-r1:8b`**. On the machine where Ollama listens (**`OLLAMA_BASE_URL`**, e.g. `http://127.0.0.1:11434`), run **`ollama pull deepseek-r1:8b`**, or set **`OLLAMA_MODEL`** to a tag you already have (check with **`ollama list`**). With Compose: **`docker compose exec llm ollama pull "$OLLAMA_MODEL"`** (or the concrete tag). The app is configured to **pull the chat model on startup when missing** (`spring.ai.ollama.init.pull-model-strategy`); the first pull can take several minutes. To disable auto-pull (e.g. pre-baked images in production), set **`SPRING_AI_OLLAMA_INIT_PULL_MODEL_STRATEGY=never`**.
+
 Example local database with Docker:
 
 ```bash

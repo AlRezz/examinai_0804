@@ -38,7 +38,8 @@ Authoritative per-story keys: [`_bmad-output/implementation-artifacts/sprint-sta
 | **6** — Intern transparency and privacy-safe feedback | **Done** | Stories **6.1–6.4** **done**. |
 | **7** — Audit visibility and pilot-ready deployment | **Done** | Stories **7.1–7.4** **done** (includes **7.4** Postgres credentials / Compose alignment). |
 | **8** — UI foundations (cross-cutting) | **Done** | **8.1** Bootstrap WebJars; **8.2** admin user edit **JOIN FETCH** for **`User.roles`** (fixes **LazyInitializationException** on edit form). |
-| **9** — Mentor AI draft: structured LLM output and read-only UI | **Done** | Stories **9.1–9.4** **done** (LLM from fetch + suggestions; read-only draft; docs; **`GitSourceClient` patch-only from `files[]`**). |
+| **9** — Mentor AI draft: structured LLM output and read-only UI | **Done** | Stories **9.1–9.6** **done** (includes **9.6** AI rubric 1–5 + mentor form auto-fill from draft). |
+| **10** — Intern & mentor UI polish (feedback tone + source visibility) | **Done** | Stories **10.1–10.4** **done** (official-only intern feedback; fetched source on mentor detail; global bluish theme; **welcome + sign-in** jQuery UI widgets on `/` and `/login`). |
 
 ## Requirements Inventory
 
@@ -268,7 +269,7 @@ Bootstrap WebJars on all pages, stable admin user edit with eager-fetched roles,
 **FRs covered:** Cross-cutting UX and FR7 documentation alignment (see Story **8.3**).
 
 ### Epic 9: Mentor AI draft — structured LLM output and read-only presentation
-**Tracking:** Done — see `sprint-status.yaml` (stories **9.1–9.4** done).
+**Tracking:** Done — see `sprint-status.yaml` (stories **9.1–9.6** done).
 
 After fetch, **Generate AI draft** calls the LLM with retrieved submission text; the assistive response must include **feedback on the code** and **suggestions to improve**. Mentors view that output only in **read-only** fields, then complete rubric scores and mentor-authored feedback and publish per Epic 4.
 
@@ -949,7 +950,7 @@ So that **coordinates and troubleshooting match the documented Commits API** (no
 
 ## Epic 9: Mentor AI draft — structured LLM output and read-only presentation
 
-**Tracking:** Done — `sprint-status.yaml`; stories **9.1–9.4** done (2026-04-13).
+**Tracking:** Done — `sprint-status.yaml`; stories **9.1–9.6** done (2026-04-13).
 
 Mentors and administrators follow README steps 5–7: generate an AI draft from **fetched** source with explicit **code feedback** and **improvement suggestions**, read that output in **non-editable** controls, then enter mentor rubric and narrative and save or publish.
 
@@ -1020,6 +1021,102 @@ So that **onboarding matches the product**: LLM call on fetched text → read-on
 **Given** `docs/runbook-pilot.md` (or equivalent pilot doc) references mentor AI draft  
 **When** the runbook lists smoke or review steps  
 **Then** it does not contradict README steps 5–7 (update or add a short bullet if the runbook mentions AI draft)
+
+---
+
+### Story 9.5: Ollama model availability and inference troubleshooting
+
+As an **operator**,
+I want **the app to pull the configured Ollama chat model when it is missing and documented recovery when Ollama returns 404 for an unknown model tag**,
+So that **mentor AI draft works on a fresh Ollama volume without opaque failures** and **tests remain offline-safe**.
+
+**Implements:** NFR4 / NFR8 operational clarity; complements Epic 5 AI integration.
+
+**Acceptance Criteria:**
+
+**Given** default `application.yml` and a running Ollama at **`OLLAMA_BASE_URL`** without the configured **`OLLAMA_MODEL`**  
+**When** the Spring Boot application starts  
+**Then** Spring AI init may **pull** the chat model when **`pull-model-strategy`** is **`when_missing`** (tests force **`never`**)
+
+**Given** a mentor triggers **Generate AI draft** and Ollama responds with **404** / **`model '…' not found`**  
+**When** an operator follows **README** / **runbook** guidance  
+**Then** they can **`ollama pull`** the tag, change **`OLLAMA_MODEL`**, or disable auto-pull via env where pre-baked images are required
+
+---
+
+### Story 9.6: AI draft rubric scores and mentor form auto-fill
+
+As a **mentor**,
+I want **the assistive draft to include suggested scores for Quality, Readability, and Correctness (1–5) and to populate my review form fields from that response**,
+So that **I can adjust the model’s proposal instead of retyping rubric values**.
+
+**Implements:** FR15 alignment with assistive output; extends Epic 9.1 structured draft contract.
+
+**Acceptance Criteria:**
+
+**Given** a successful **Generate AI draft**  
+**When** the model follows the prompt (score lines + feedback sections)  
+**Then** persisted **`AiDraft`** text remains the full response **and** **`mentor_review_drafts`** receives parsed **Quality / Readability / Correctness** and **narrative feedback** for the form
+
+**Given** the model omits a score line or headings  
+**When** the app parses the response  
+**Then** remaining fields are filled where possible without failing the draft save (**FR21** — mentor can correct before publish)
+
+---
+
+## Epic 10: Intern & mentor UI polish — feedback presentation and review context
+
+**Tracking:** Done — `sprint-status.yaml`; stories **10.1–10.4** done (2026-04-13).
+
+Lightweight layout and color treatment (Bootstrap + small custom CSS, [visual reference](https://cdn.dribbble.com/userupload/17418294/file/original-5aaa90d8170534cced726464ff60177b.png?resize=752x&vertical=center)): interns see **official** outcomes only on **Your feedback** with **score-band** card surfaces; mentors see **fetched Git text** immediately after fetch controls on **Submission review**; **application-wide** blues follow a **jQuery UI Smoothness–style** palette (`/css/examai-theme.css` loaded from `head-bootstrap`); **welcome** (`/`) and **sign-in** (`/login`) use **jQuery UI WebJars** (widgets + `.button()`).
+
+### Story 10.1: Intern “Your feedback” — official only + rubric tone
+
+As an **intern**,
+I want **only the official mentor outcome on my feedback page with a clear visual band from my rubric average**,
+So that **I am not distracted by AI drafts and I can quickly see how strong the published scores are**.
+
+**Acceptance Criteria:**
+
+**Given** a published review for the current submission revision  
+**When** the intern opens **Your feedback**  
+**Then** no AI assistive / draft panel appears **and** the official card uses **rose** if average (quality + readability + correctness) / 3 &lt; 2.5, **light yellow** if 2.5–4 inclusive, **light green** if &gt; 4
+
+### Story 10.2: Mentor submission review — fetched source visibility
+
+As a **mentor**,
+I want **the text retrieved from Git shown clearly after I fetch**,
+So that **I can review the patch or file contents in context with the task without hunting in the layout**.
+
+**Acceptance Criteria:**
+
+**Given** successful fetch with non-empty stored retrieval text  
+**When** the mentor views submission detail  
+**Then** a **Fetched source** section shows that text (monospace, scrollable) below the fetch action; Git help copy matches **patch / contents** behavior
+
+### Story 10.3: Global bluish UI shell (jQuery UI–inspired)
+
+As a **user**,
+I want **every screen to share the same calm blue chrome**,
+So that **navigation feels consistent and the product matches a familiar “widget” look (classic jQuery UI blues) without pulling in conflicting `jquery-ui.css`**.
+
+**Acceptance Criteria:**
+
+**Given** any page that includes the shared Bootstrap head fragment  
+**When** the page renders  
+**Then** `examai-theme.css` applies after Bootstrap with **primary / link / body / border** tokens and card accents in the **Smoothness** blue family, and bare **login/home-style** `<main>` shells are **visibly framed** on the tinted page background
+
+### Story 10.4: Welcome + sign-in — jQuery UI redesign
+
+As a **visitor**,
+I want **the landing and sign-in pages built with jQuery UI widgets and bluish chrome**,
+So that **the entry experience matches the rest of the app and does not look like raw HTML**.
+
+**Acceptance Criteria:**
+
+**Given** unauthenticated or returning users  
+**When** they open **`/`** or **`/login`**  
+**Then** the page loads **jQuery UI** from WebJars, shows a **centered widget card** (`ui-widget` / `ui-widget-header` / `ui-widget-content`), uses **highlight/error states** for messages on sign-in, initializes **primary actions** with **`.button()`**, and the login form posts **CSRF** safely
 
 ---
 

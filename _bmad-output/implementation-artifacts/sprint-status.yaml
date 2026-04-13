@@ -1,5 +1,5 @@
 # generated: 2026-04-08
-# last_updated: 2026-04-13 (epic-9 done)
+# last_updated: 2026-04-13 (epic-10 story 10.4 welcome jQuery UI)
 # project: examinai_0804
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-04-08"
-last_updated: "2026-04-13 (epic-9 done)"
+last_updated: "2026-04-13 (epic-10 incl. 10.4 welcome UI)"
 project: examinai_0804
 project_key: NOKEY
 tracking_system: file-system
@@ -103,4 +103,13 @@ development_status:
   9-2-read-only-ai-draft-display-on-submission-detail: done
   9-3-readme-runbook-mentor-ai-steps-alignment: done
   9-4-git-source-client-patch-only-refactor: done
+  9-5-ollama-model-pull-and-inference-troubleshooting: done
+  9-6-ai-draft-rubric-scores-and-form-fill: done
   epic-9-retrospective: optional
+
+  epic-10: done
+  10-1-intern-feedback-official-only-and-score-card-tone: done
+  10-2-mentor-submission-fetched-source-section: done
+  10-3-global-jquery-ui-inspired-bluish-theme: done
+  10-4-welcome-and-sign-in-jquery-ui-redesign: done
+  epic-10-retrospective: optional

@@ -18,16 +18,11 @@
 				<p th:if="${submission.gitRetrievalErrorCode != null and submission.gitRetrievalErrorCode == 'NOT_FOUND'}"
 				   class="small text-secondary mt-2 mb-0">
 					<strong>GitHub (REST v3):</strong> Fetch loads
-					<a href="https://docs.github.com/en/rest/commits/commits?apiVersion=2026-03-10" target="_blank" rel="noopener noreferrer">Get a commit</a>, then uses <code>patch</code> when present, otherwise <code>raw_url</code> / <code>contents_url</code>, otherwise
-					<a href="https://docs.github.com/en/rest/repos/contents?apiVersion=2026-03-10" target="_blank" rel="noopener noreferrer">repository contents</a> for the path at the ref. With no path scope, only commit metadata is shown.
+					<a href="https://docs.github.com/en/rest/commits/commits?apiVersion=2026-03-10" target="_blank" rel="noopener noreferrer">Get a commit</a>; matching <code>files[]</code> entries return <code>patch</code> text only. If the path is not in <code>files[]</code>, the app uses
+					<a href="https://docs.github.com/en/rest/repos/contents?apiVersion=2026-03-10" target="_blank" rel="noopener noreferrer">repository contents</a> for the path at the ref.
 				</p>
 			</th:block>
 		</p>
-		<div th:if="${submission.gitRetrievalState != null and submission.gitRetrievalState.name() == 'OK'
-		and submission.gitRetrievedText != null}" class="mt-2">
-			<h3 class="h6">Retrieved text</h3>
-			<pre th:text="${submission.gitRetrievedText}" style="max-height:24em;overflow:auto;background:#f6f6f6;padding:0.75em;">text</pre>
-		</div>
 	</section>
 </th:block>
 </body>

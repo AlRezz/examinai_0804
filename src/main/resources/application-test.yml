@@ -18,6 +18,8 @@ spring:
   ai:
     ollama:
       base-url: http://127.0.0.1:9
+      init:
+        pull-model-strategy: never
 
 management:
   endpoints:

@@ -4,13 +4,25 @@
 	<meta charset="UTF-8" />
 	<title>Examinai</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<th:block th:replace="~{fragments/head-bootstrap :: styles}" />
+	<th:block th:replace="~{fragments/head-welcome-jqui :: welcomeStyles}" />
 </head>
-<body>
-<main>
-	<h1>Examinai</h1>
-	<p sec:authorize="!isAuthenticated()"><a th:href="@{/login}" href="#">Sign in</a></p>
-	<p sec:authorize="isAuthenticated()"><a th:href="@{/home}" href="#">Continue to app</a></p>
+<body class="welcome-jqui">
+<main role="main">
+	<div class="welcome-center">
+		<div class="welcome-card ui-widget ui-widget-content ui-corner-all">
+			<div class="ui-widget-header ui-corner-all welcome-card-header">Examinai</div>
+			<div class="welcome-card-body welcome-landing">
+				<p class="welcome-tagline">Assessment workflow for mentors, interns, and coordinators — sign in to continue.</p>
+				<p sec:authorize="!isAuthenticated()" class="mb-0">
+					<a th:href="@{/login}" href="#" class="examinai-jqui-button" id="landingSignIn">Sign in</a>
+				</p>
+				<p sec:authorize="isAuthenticated()" class="mb-0">
+					<a th:href="@{/home}" href="#" class="examinai-jqui-button" id="landingContinue">Continue to app</a>
+				</p>
+			</div>
+		</div>
+	</div>
 </main>
+<th:block th:replace="~{fragments/welcome-scripts :: scripts}" />
 </body>
 </html>

@@ -23,6 +23,7 @@ import com.examinai.app.domain.task.GitRetrievalState;
 import com.examinai.app.domain.task.Submission;
 import com.examinai.app.domain.task.SubmissionStatus;
 import com.examinai.app.domain.user.UserRepository;
+import com.examinai.app.integration.ai.AiDraftAssessmentResult;
 import com.examinai.app.integration.ai.AiDraftAssessmentService;
 import com.examinai.app.integration.ai.InferenceUnavailableException;
 import com.examinai.app.service.AiDraftPersistenceService;
@@ -154,7 +155,7 @@ public class TaskSubmissionMentorController {
 
 	@PostMapping("/{taskId}/submissions/{internId}/ai-draft-assessment")
 	public String generateAiDraft(@PathVariable UUID taskId, @PathVariable UUID internId, HttpSession session,
-			RedirectAttributes redirectAttributes) {
+			Authentication authentication, RedirectAttributes redirectAttributes) {
 		taskService.requireTask(taskId);
 		requireAssignment(taskId, internId);
 		Submission submission = submissionService.findForTaskAndInternOrNull(taskId, internId);
@@ -163,9 +164,12 @@ public class TaskSubmissionMentorController {
 			return "redirect:/tasks/" + taskId + "/submissions/" + internId;
 		}
 		try {
-			String draft = aiDraftAssessmentService.generateDraft(submission.getId());
+			AiDraftAssessmentResult draft = aiDraftAssessmentService.generateDraft(submission.getId());
 			session.removeAttribute(DegradedInferenceAttributes.SESSION_KEY);
-			aiDraftPersistenceService.persistSuccessfulDraft(submission.getId(), draft);
+			aiDraftPersistenceService.persistSuccessfulDraft(submission.getId(), draft.fullAssessmentText());
+			UUID mentorId = requireUserId(authentication);
+			mentorReviewService.saveDraft(submission.getId(), mentorId, draft.qualityScore(), draft.readabilityScore(),
+					draft.correctnessScore(), draft.narrativeFeedback());
 			redirectAttributes.addFlashAttribute("submissionNotice",
 					"AI draft saved below. Assistive only—not final until you publish.");
 		}

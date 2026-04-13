@@ -6,8 +6,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<th:block th:replace="~{fragments/head-bootstrap :: styles}" />
 	<style>
-		.intern-official-panel { border-left: 4px solid #198754; background: #f8fff9; }
-		.intern-draft-panel { border: 2px dashed #856404; background: #fffbeb; }
+		/* Epic 10 — score band (average of three rubric dimensions) */
+		.intern-official-panel { border-radius: 0.75rem; box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.06); }
+		.intern-official-panel--rose { border-left: 4px solid #e11d48; background: #fff1f2; }
+		.intern-official-panel--yellow { border-left: 4px solid #ca8a04; background: #fefce8; }
+		.intern-official-panel--green { border-left: 4px solid #16a34a; background: #f0fdf4; }
 	</style>
 </head>
 <body class="bg-body-secondary">
@@ -18,9 +21,11 @@
 	<h1 class="h3 mb-3">Your feedback</h1>
 	<p class="text-secondary" th:text="${task.title}">task</p>
 
-	<section class="card shadow-sm intern-official-panel mb-4" th:if="${officialReview != null}">
+	<section class="card shadow-sm mb-4"
+	         th:if="${officialReview != null}"
+	         th:classappend="${officialFeedbackCardClass}">
 		<div class="card-body">
-			<h2 class="h5 text-success">Official mentor feedback</h2>
+			<h2 class="h5 text-body">Official mentor feedback</h2>
 			<p class="small text-secondary mb-2">Published <span th:text="${officialReview.publishedAt}">ts</span></p>
 			<p class="mb-2">
 				<strong>Scores</strong> —
@@ -28,29 +33,13 @@
 				readability <span th:text="${officialReview.readabilityScore}">0</span>,
 				correctness <span th:text="${officialReview.correctnessScore}">0</span>
 			</p>
-			<div class="border rounded p-3 bg-white" style="white-space: pre-wrap;" th:text="${officialReview.narrativeFeedback}">narrative</div>
+			<div class="border rounded p-3 bg-white bg-opacity-75" style="white-space: pre-wrap;" th:text="${officialReview.narrativeFeedback}">narrative</div>
 		</div>
 	</section>
 
 	<div class="alert alert-light border mb-4" th:if="${officialReview == null}">
 		<p class="mb-0"><strong>No official grade yet</strong> for your current submission revision. When your mentor publishes an outcome, it will appear here.</p>
 	</div>
-
-	<section class="card intern-draft-panel mb-4" th:if="${showAiDraftPanel}">
-		<div class="card-body">
-			<h2 class="h6 text-warning-emphasis mb-2">
-				<span class="badge text-bg-warning me-1">Draft — not official</span>
-				AI-assisted text
-			</h2>
-			<p class="small text-secondary mb-2">This is model-generated reference only. It is <strong>not</strong> your grade.</p>
-			<p class="small text-secondary mb-2" th:if="${aiDraft != null}">
-				Model <code th:text="${aiDraft.modelName}">m</code>
-				<span th:if="${aiDraft.modelDisplayVersion != null}">· <code th:text="${aiDraft.modelDisplayVersion}">v</code></span>
-				· <span th:text="${aiDraft.invokedAt}">t</span>
-			</p>
-			<div class="small" style="white-space: pre-wrap;" th:if="${aiDraft != null}" th:text="${aiDraft.assessmentText}">draft</div>
-		</div>
-	</section>
 
 	<form th:action="@{/logout}" method="post">
 		<button class="btn btn-outline-secondary btn-sm" type="submit">Sign out</button>

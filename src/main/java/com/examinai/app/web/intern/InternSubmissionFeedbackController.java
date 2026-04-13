@@ -40,9 +40,11 @@ public class InternSubmissionFeedbackController {
 		model.addAttribute("task", bundle.task());
 		model.addAttribute("submission", bundle.submission());
 		model.addAttribute("submissionLifecycle", bundle.submissionLifecycle());
-		model.addAttribute("officialReview", bundle.officialForCurrentRevision().orElse(null));
-		model.addAttribute("aiDraft", bundle.aiDraftForIntern().orElse(null));
-		model.addAttribute("showAiDraftPanel", bundle.aiDraftForIntern().isPresent());
+		var official = bundle.officialForCurrentRevision().orElse(null);
+		model.addAttribute("officialReview", official);
+		if (official != null) {
+			model.addAttribute("officialFeedbackCardClass", OfficialFeedbackCardSupport.cssClass(official));
+		}
 		return "intern/submissions/feedback";
 	}
 

@@ -4,27 +4,41 @@
 	<meta charset="UTF-8" />
 	<title>Sign in</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<th:block th:replace="~{fragments/head-bootstrap :: styles}" />
+	<th:block th:replace="~{fragments/head-welcome-jqui :: welcomeStyles}" />
 </head>
-<body>
-<main>
-	<h1>Sign in</h1>
-	<p th:if="${logoutNotice}" class="notice" role="status">You have been signed out.</p>
-	<p th:if="${loginError}" class="error" role="alert">Sign-in was not successful. Please check your email and password.</p>
-	<form th:action="@{/login}" method="post">
-		<p>
-			<label for="username">Email</label><br />
-			<input id="username" name="username" type="email" autocomplete="username" required />
-		</p>
-		<p>
-			<label for="password">Password</label><br />
-			<input id="password" name="password" type="password" autocomplete="current-password" required />
-		</p>
-		<p>
-			<button type="submit">Sign in</button>
-		</p>
-	</form>
-	<p><a th:href="@{/}" href="#">Back</a></p>
+<body class="welcome-jqui">
+<main role="main">
+	<div class="welcome-center">
+		<div class="welcome-card ui-widget ui-widget-content ui-corner-all">
+			<div class="ui-widget-header ui-corner-all welcome-card-header">Sign in</div>
+			<div class="welcome-card-body">
+				<div th:if="${logoutNotice}" class="ui-state-highlight ui-corner-all welcome-banner" role="status">
+					You have been signed out.
+				</div>
+				<div th:if="${loginError}" class="ui-state-error ui-corner-all welcome-banner" role="alert">
+					Sign-in was not successful. Please check your email and password.
+				</div>
+				<form th:action="@{/login}" method="post">
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+					<div class="welcome-field">
+						<label for="username">Email</label>
+						<input id="username" name="username" type="email" autocomplete="username" required
+						       class="ui-widget ui-widget-content ui-corner-all ui-input" />
+					</div>
+					<div class="welcome-field">
+						<label for="password">Password</label>
+						<input id="password" name="password" type="password" autocomplete="current-password" required
+						       class="ui-widget ui-widget-content ui-corner-all ui-input" />
+					</div>
+					<div class="welcome-actions">
+						<button type="submit" id="signInBtn" class="examinai-jqui-button">Sign in</button>
+					</div>
+				</form>
+				<p class="welcome-back"><a th:href="@{/}">← Back to welcome</a></p>
+			</div>
+		</div>
+	</div>
 </main>
+<th:block th:replace="~{fragments/welcome-scripts :: scripts}" />
 </body>
 </html>

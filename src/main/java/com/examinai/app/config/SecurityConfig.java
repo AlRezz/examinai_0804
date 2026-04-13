@@ -28,6 +28,8 @@ public class SecurityConfig {
 			.permitAll()
 			.requestMatchers("/css/**")
 			.permitAll()
+			.requestMatchers("/js/**")
+			.permitAll()
 			.requestMatchers("/actuator/health", "/actuator/health/**")
 			.permitAll()
 			.requestMatchers("/admin/**")
