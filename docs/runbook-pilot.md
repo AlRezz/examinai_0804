@@ -68,6 +68,28 @@ Postgres does **not** create a `root` superuser. This usually means the **client
 3. When using **`psql`** or **`pg_isready`**, pass **`-U "$POSTGRES_USER"`** (or `-U examinai`)—these tools default the DB user to the **current OS user** (often `root` inside containers), which is not a Postgres role unless you created it.
 4. The bundled **`db`** healthcheck uses **`pg_isready -U "$POSTGRES_USER"`** so it does not probe as `root`.
 
+### `docker-credential-desktop`: executable file not found (Compose / image pull)
+
+Docker reads **`~/.docker/config.json`**. If it lists **`"credsStore": "desktop"`** (Docker Desktop), the CLI runs **`docker-credential-desktop`** for registry access. Some terminals (including IDE-integrated ones) do not put Docker Desktop’s **`bin`** directory on **`PATH`**, so **`docker compose build`** or **`docker compose up --build`** fails with **`error getting credentials`** before images are pulled. The same happens when **`docker`** is installed via **Homebrew** (`/opt/homebrew/bin/docker`) but credential helpers live under **Docker Desktop’s** app bundle.
+
+**Repo helper:** from the project root, run **`./scripts/docker-with-desktop-path.sh compose …`**. It prepends Docker Desktop’s **`bin`** (so **`docker-credential-desktop`** is on **`PATH`**) and calls Homebrew’s **`docker`** when installed so **`docker compose`** still finds the Compose v2 CLI plugin, e.g. **`./scripts/docker-with-desktop-path.sh compose up -d --build`**.
+
+1. **Quick check (macOS):** prepend Docker’s bundled tools, then retry:
+   ```bash
+   export PATH="/Applications/Docker.app/Contents/Resources/bin:$PATH"
+   docker compose build
+   ```
+2. **Or** run Compose from **Terminal.app** / **iTerm** after Docker Desktop is running (same PATH fix is often applied automatically).
+3. **Last resort:** back up **`~/.docker/config.json`**, remove the **`"credsStore": "desktop"`** line, and try again. Anonymous pulls of public images on Docker Hub usually still work; add this only if you understand the impact on private registries / `docker login`.
+
+### `./mvnw package` exits **134** (`Aborted (core dumped)`) during `docker compose build`
+
+Usually the **Maven JVM hit the container memory limit** (Linux OOM killer sends **SIGABRT**, exit **128+6**). The **`Dockerfile`** caps **`MAVEN_OPTS`** heap for the build stage; if it still fails:
+
+1. In **Docker Desktop → Settings → Resources**, raise **Memory** (for example **6 GB** or more for Spring builds) and retry **`docker compose build`**.
+2. Close other heavy processes during the image build.
+3. If you customize the **`Dockerfile`**, avoid raising **`MAVEN_OPTS`** beyond what the build container is allowed to use.
+
 ## Program tasks and user accounts
 
 - **`/tasks/**`** is authorized for **mentors and administrators** (create/edit tasks, **Assign interns**, submissions). See **README** → *User flows (by role)*.

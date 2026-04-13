@@ -64,6 +64,14 @@ Pilot topology matches **FR32**: separate containers for the Spring Boot app, **
 docker compose up --build
 ```
 
+**Homebrew `docker` on macOS:** if the build fails with **`docker-credential-desktop` … not found in `$PATH`**, your CLI is probably from Homebrew while credentials are handled by Docker Desktop. Either add Docker Desktop’s tools to your `PATH` (`export PATH="/Applications/Docker.app/Contents/Resources/bin:$PATH"`) or use the repo helper (adds that `PATH` and invokes Homebrew’s **`docker`** so **`docker compose`** still loads the Compose v2 plugin):
+
+```bash
+./scripts/docker-with-desktop-path.sh compose up -d --build
+```
+
+See also **[`docs/runbook-pilot.md`](docs/runbook-pilot.md)** (*docker-credential-desktop* troubleshooting).
+
 3. Smoke-check Actuator from the host:
 
 ```bash
