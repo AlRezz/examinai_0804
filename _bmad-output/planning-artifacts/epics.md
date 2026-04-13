@@ -42,6 +42,7 @@ This document provides the complete epic and story breakdown for examinai_0804, 
 | **8** — UI foundations (cross-cutting) | **Done** | **8.1** Bootstrap WebJars; **8.2** admin user edit **JOIN FETCH** for **`User.roles`** (fixes **LazyInitializationException** on edit form). |
 | **9** — Mentor AI draft: structured LLM output and read-only UI | **Done** | Stories **9.1–9.6** **done** (includes **9.6** AI rubric 1–5 + mentor form auto-fill from draft). |
 | **10** — Intern & mentor UI polish (feedback tone + source visibility) | **Done** | Stories **10.1–10.4** **done** (official-only intern feedback; fetched source on mentor detail; global bluish theme; **welcome + sign-in** jQuery UI widgets on `/` and `/login`). |
+| **11** — Mentor navigation affordances (queue & review) | **Done** | Story **11.1** **done** — **Review queue**, **Submissions for task**, **Program tasks** / **Home**, and task submission list actions use **Bootstrap buttons** (**NFR1**). |
 
 ## Requirements Inventory
 
@@ -1119,6 +1120,40 @@ So that **the entry experience matches the rest of the app and does not look lik
 **Given** unauthenticated or returning users  
 **When** they open **`/`** or **`/login`**  
 **Then** the page loads **jQuery UI** from WebJars, shows a **centered widget card** (`ui-widget` / `ui-widget-header` / `ui-widget-content`), uses **highlight/error states** for messages on sign-in, initializes **primary actions** with **`.button()`**, and the login form posts **CSRF** safely
+
+---
+
+## Epic 11: Mentor navigation affordances — queue and submission review
+
+**Tracking:** Done — `sprint-status.yaml`; story **11.1** **done** (2026-04-13). Button-styled navigation on mentor **Submission review**, **Review queue**, and **Submissions for task** list.
+
+Mentors move between the review queue, task-scoped submission lists, and individual submission review often. **Bare hyperlinks** for these cross-page actions are easy to miss; **Bootstrap button** styling (`btn` / `btn-sm` on anchor navigation) improves **visibility**, **click targets**, and alignment with **NFR1** (keyboard-accessible controls with clear affordance on critical flows).
+
+### Story 11.1: Review queue & task submissions navigation as buttons
+
+As a **mentor or administrator**,
+I want **“Review queue”, “Submissions for task”, and the review queue’s “Program tasks” / “Home” shortcuts to appear as buttons**,
+So that **primary navigation on mentor review surfaces is obvious and easy to activate without hunting for text links**.
+
+**Implements:** NFR1 (WCAG-oriented critical-flow affordance); UX-DR3 (review workspace clarity).
+
+**Acceptance Criteria:**
+
+**Given** the **Submission review** page (`tasks/submission-detail.html`)  
+**When** the header renders  
+**Then** **Review queue** and **Submissions for task** are rendered as **Bootstrap button-styled links** (e.g. `btn btn-sm` + outline or secondary variant), grouped with consistent spacing—not plain `<a>` text with middot separator only
+
+**Given** the **Mentor review queue** page (`review/queue.html`)  
+**When** the header renders  
+**Then** **Program tasks** and **Home** use the **same button-link pattern** so queue navigation matches submission review
+
+**Given** the **Submissions for task** page (`tasks/submissions.html`) for a program task  
+**When** the mentor views the list  
+**Then** **Back to tasks** and per-row **Open** use **button-styled** anchors consistent with the queue’s **Review** action (sizes/variants may differ but affordance is **button**, not bare text)
+
+**Given** keyboard-only use  
+**When** the user tabs through the header actions  
+**Then** focus order remains logical and each control has a visible focus state (Bootstrap default)
 
 ---
 

@@ -107,6 +107,11 @@ public class AiDraftAssessmentService {
 			return AiDraftAssessmentResponseParser.parse(out.trim());
 		}
 		catch (TimeoutException e) {
+			long effectiveWaitSec = Math.max(1L, TimeUnit.NANOSECONDS.toSeconds(perCallNs));
+			log.warn(
+					"AI draft timed out after ~{}s (per-call cap {}s). Ollama may log IOException: Request was interrupted when the wait is cancelled — raise EXAMINAI_AI_DRAFT_TIMEOUT_SECONDS or EXAMINAI_AI_DRAFT_MAX_INFERENCE_WALL_SECONDS for slow models.",
+					effectiveWaitSec,
+					properties.getRequestTimeoutSeconds());
 			future.cancel(true);
 			throw new InferenceUnavailableException("AI draft request timed out.", e);
 		}

@@ -6,32 +6,39 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<th:block th:replace="~{fragments/head-bootstrap :: styles}" />
 </head>
-<body>
-<main>
-	<h1>Submissions</h1>
-	<p>Task: <strong th:text="${task.title}">task</strong></p>
-	<p><a th:href="@{/tasks}">Back to tasks</a></p>
-	<table border="1" cellpadding="6" cellspacing="0">
-		<thead>
-		<tr>
-			<th>Intern</th>
-			<th>Retrieval</th>
-			<th>Actions</th>
-		</tr>
-		</thead>
-		<tbody>
-		<tr th:each="r : ${rows}">
-			<td th:text="${r.internEmail}">email</td>
-			<td th:text="${r.retrievalSummary}">status</td>
-			<td>
-				<a th:href="@{/tasks/{tid}/submissions/{iid}(tid=${task.id},iid=${r.internId})}">Open</a>
-			</td>
-		</tr>
-		<tr th:if="${#lists.isEmpty(rows)}">
-			<td colspan="3">No interns assigned to this task.</td>
-		</tr>
-		</tbody>
-	</table>
-</main>
+<body class="bg-body-secondary">
+<div class="container py-4">
+	<header class="mb-4">
+		<h1 class="h2">Submissions</h1>
+		<p class="text-secondary mb-2">Task: <strong th:text="${task.title}">task</strong></p>
+		<p class="mb-0 d-flex flex-wrap gap-2 align-items-center">
+			<a class="btn btn-sm btn-outline-primary" th:href="@{/tasks}">Back to tasks</a>
+		</p>
+	</header>
+	<div class="table-responsive card shadow-sm">
+		<table class="table table-striped table-hover mb-0">
+			<thead class="table-light">
+			<tr>
+				<th scope="col">Intern</th>
+				<th scope="col">Retrieval</th>
+				<th scope="col">Open</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr th:each="r : ${rows}">
+				<td th:text="${r.internEmail}">email</td>
+				<td th:text="${r.retrievalSummary}">status</td>
+				<td>
+					<a class="btn btn-sm btn-primary"
+					   th:href="@{/tasks/{tid}/submissions/{iid}(tid=${task.id},iid=${r.internId})}">Open</a>
+				</td>
+			</tr>
+			<tr th:if="${#lists.isEmpty(rows)}">
+				<td colspan="3" class="text-secondary">No interns assigned to this task.</td>
+			</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
 </body>
 </html>

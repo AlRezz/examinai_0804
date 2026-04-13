@@ -11,8 +11,11 @@
 	<header class="mb-3">
 		<h1 class="h2">Submission review</h1>
 		<p class="mb-0">Task: <strong th:text="${task.title}">task</strong></p>
-		<p class="mb-0"><a th:href="@{/review/queue}">Review queue</a> ·
-			<a th:href="@{/tasks/{tid}/submissions(tid=${task.id})}">Submissions for task</a></p>
+		<p class="mb-0 d-flex flex-wrap gap-2 align-items-center">
+			<a class="btn btn-sm btn-outline-primary" th:href="@{/review/queue}">Review queue</a>
+			<a class="btn btn-sm btn-outline-primary"
+			   th:href="@{/tasks/{tid}/submissions(tid=${task.id})}">Submissions for task</a>
+		</p>
 	</header>
 
 	<p class="alert alert-success py-2" th:if="${submissionNotice}" th:text="${submissionNotice}">notice</p>
