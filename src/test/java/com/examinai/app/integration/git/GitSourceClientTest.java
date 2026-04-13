@@ -35,12 +35,12 @@ class GitSourceClientTest {
 			.andRespond(withSuccess(SAMPLE_COMMIT_JSON, MediaType.APPLICATION_JSON));
 		GitSourceClient client = new GitSourceClient(props, rc, new ObjectMapper());
 		String text = client.fetchNormalizedFileContent("a/b", "main", "README.md");
-		assertThat(text).contains("deadbeef", "hello", "README.md");
+		assertThat(text).contains("hello").doesNotContain("deadbeef", "README.md", "Commit ");
 		server.verify();
 	}
 
 	@Test
-	void emptyPatchFetchesRawUrl() {
+	void emptyPatchReturnsEmptyString() {
 		GitProviderProperties props = new GitProviderProperties();
 		props.setBaseUrl("http://localhost");
 		props.setMaxRetries(1);
@@ -52,11 +52,9 @@ class GitSourceClientTest {
 				""";
 		server.expect(once(), requestTo("http://localhost/repos/a/b/commits/main"))
 			.andRespond(withSuccess(commitJson, MediaType.APPLICATION_JSON));
-		server.expect(once(), requestTo("http://localhost/raw/blob"))
-			.andRespond(withSuccess("raw-bytes", MediaType.TEXT_PLAIN));
 		GitSourceClient client = new GitSourceClient(props, rc, new ObjectMapper());
 		String text = client.fetchNormalizedFileContent("a/b", "main", "README.md");
-		assertThat(text).contains("raw-bytes", "README.md");
+		assertThat(text).isEmpty();
 		server.verify();
 	}
 
@@ -96,7 +94,7 @@ class GitSourceClientTest {
 	}
 
 	@Test
-	void blankPathReturnsCommitMetadataOnly() {
+	void blankPathUsesFirstFileInCommitPayload() {
 		GitProviderProperties props = new GitProviderProperties();
 		props.setBaseUrl("http://localhost");
 		props.setMaxRetries(1);
@@ -108,10 +106,26 @@ class GitSourceClientTest {
 		GitSourceClient client = new GitSourceClient(props, rc, new ObjectMapper());
 		String a = client.fetchNormalizedFileContent("a/b", "main", null);
 		String b = client.fetchNormalizedFileContent("a/b", "main", "  ");
-		assertThat(a).contains("deadbeef", "init");
-		assertThat(a).doesNotContain("hello", "--- README");
-		assertThat(b).contains("deadbeef", "init");
-		assertThat(b).doesNotContain("hello", "--- README");
+		assertThat(a).isEqualTo(b).contains("hello").doesNotContain("deadbeef", "init");
+		server.verify();
+	}
+
+	@Test
+	void blankPathReturnsEmptyWhenCommitHasNoFiles() {
+		GitProviderProperties props = new GitProviderProperties();
+		props.setBaseUrl("http://localhost");
+		props.setMaxRetries(1);
+		RestClient.Builder builder = RestClient.builder().baseUrl("http://localhost");
+		MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+		RestClient rc = builder.build();
+		String noFilesCommit = """
+				{"sha":"solo","html_url":"u","commit":{"message":"m","author":{"date":"d"}},"files":[]}
+				""";
+		server.expect(once(), requestTo("http://localhost/repos/a/b/commits/main"))
+			.andRespond(withSuccess(noFilesCommit, MediaType.APPLICATION_JSON));
+		GitSourceClient client = new GitSourceClient(props, rc, new ObjectMapper());
+		String text = client.fetchNormalizedFileContent("a/b", "main", null);
+		assertThat(text).isEmpty();
 		server.verify();
 	}
 
@@ -144,7 +158,7 @@ class GitSourceClientTest {
 			.andRespond(withSuccess(contentsJson, MediaType.APPLICATION_JSON));
 		GitSourceClient client = new GitSourceClient(props, rc, new ObjectMapper());
 		String text = client.fetchNormalizedFileContent("a/b", "main", "README.md");
-		assertThat(text).contains("hello", "README.md");
+		assertThat(text).isEqualTo("hello");
 		server.verify();
 	}
 }

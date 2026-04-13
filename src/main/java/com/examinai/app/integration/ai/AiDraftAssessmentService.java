@@ -23,8 +23,15 @@ public class AiDraftAssessmentService {
 	private static final Logger log = LoggerFactory.getLogger(AiDraftAssessmentService.class);
 
 	private static final String SYSTEM = """
-			You are assisting a human mentor grading an intern's work. Produce a concise draft assessment only.
-			Use a short rubric-style note: strengths, gaps, and suggested feedback themes.
+			You are assisting a human mentor grading an intern's work. Respond with a concise draft assessment only.
+
+			Structure the answer using exactly these two Markdown level-2 headings, in this order:
+			## Feedback on the code
+			## Suggestions to improve
+
+			Under **Feedback on the code**, critique the submitted implementation (strengths, gaps, concrete observations).
+			Under **Suggestions to improve**, give actionable improvement ideas.
+
 			Do not claim certainty; the mentor decides final scores and wording. Do not ask for credentials or secrets.
 			""";
 

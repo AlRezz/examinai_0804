@@ -111,7 +111,7 @@ The app distinguishes four roles (database values): **`intern`**, **`mentor`**, 
 1. **Administrator** creates **intern** (and optionally **mentor**) accounts under **`/admin/users`** when needed.  
 2. **Mentor or administrator** creates a **task** (**`/tasks/new`**) and **assigns interns** (**`/tasks/{task-id}/assignments`**).  
 3. **Intern** opens the task and **submits** version-control **coordinates** (repository, commit ref, **path scope** — required for fetch).  
-4. **Mentor or administrator** opens the submission from the **review queue** or **task submissions**, **fetches** source, optionally requests an **AI draft**, then **publishes** the official review.
+4. **Mentor or administrator** opens the submission from the **review queue** or **task submissions**, **fetches** source, optionally generates an **AI draft** (shown read-only), then completes the **rubric** and **publishes** the official review.
 
 ---
 
@@ -147,8 +147,9 @@ The app distinguishes four roles (database values): **`intern`**, **`mentor`**, 
 2. Open the **Review queue** — **`/review/queue`** — and follow a submission link, **or** go to **Program tasks** (**`/tasks`**) → **Submissions** for a task — **`/tasks/{task-id}/submissions`** — then open an intern’s row (**`/tasks/{task-id}/submissions/{intern-id}`**).  
 3. On the **submission detail** page, if coordinates are missing or incorrect, fill the form and use **Save coordinates** so the submission exists in **submitted** state.  
 4. Choose **Fetch source** to pull normalized text from the Git provider (requires successful Git configuration and valid coordinates).  
-5. Optional: **Generate AI draft** to persist an assistive draft (requires successful fetch and a working model; this is not the official outcome).  
-6. Enter **quality**, **readability**, and **correctness** scores (1–5) and **feedback** text. Use **Save review draft** to store work in progress, or **Publish official review** to record the **published** outcome for the intern.
+5. **Generate AI draft** — the app calls the LLM with the **fetched** submission text (requires successful fetch and a working model). The model response must include **feedback on the code** and **suggestions to improve**; this assistive draft is **not** the official outcome.  
+6. The submission detail page shows the AI draft in **read-only** fields for the mentor (you cannot edit the model text there).  
+7. Enter **quality**, **readability**, and **correctness** scores (1–5) and **mentor feedback** text. Use **Save draft** to store work in progress, or **Publish official review** to record the **published** outcome for the intern.
 
 ---
 

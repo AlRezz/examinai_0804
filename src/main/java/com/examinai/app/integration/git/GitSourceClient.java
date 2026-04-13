@@ -22,8 +22,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Git provider HTTP access using a single {@link RestClient} (Story 3.2). Loads
- * {@code GET /repos/{owner}/{repo}/commits/{ref}}, then resolves file text by: {@code files[].patch} if present,
- * else {@code raw_url}, else {@code contents_url} (Contents API JSON), else {@code GET …/contents/{path}?ref=}.
+ * {@code GET /repos/{owner}/{repo}/commits/{ref}}; when the commit lists a matching {@code files[]} entry,
+ * {@link #fetchNormalizedFileContent} returns that entry's {@code patch} only. If the path is absent from
+ * {@code files[]} or the commit has no file list, falls back to {@code GET …/contents/{path}?ref=}.
  */
 public class GitSourceClient {
 
@@ -44,8 +45,10 @@ public class GitSourceClient {
 	}
 
 	/**
-	 * Loads commit metadata and UTF-8 text for review. When {@code pathScope} is null or blank/whitespace,
-	 * the path scope is treated as empty (no default file); output is commit metadata only.
+	 * Loads text for review from the commit and/or Contents API. When {@code pathScope} is null or
+	 * blank/whitespace, the first file in the commit's {@code files} array is used when present; for that
+	 * entry, the returned text is {@code patch} only. If the commit has no {@code files} entries and path
+	 * scope is blank, returns an empty string.
 	 */
 	public String fetchNormalizedFileContent(String repoIdentifier, String commitSha, String pathScope) {
 		if (!StringUtils.hasText(properties.getBaseUrl())) {
@@ -151,82 +154,26 @@ public class GitSourceClient {
 		catch (JsonProcessingException ex) {
 			throw new GitProviderException(GitFailureKind.INVALID_RESPONSE, "Could not parse Git host commit JSON.", ex);
 		}
-		String sha = root.path("sha").asText("");
-		String htmlUrl = root.path("html_url").asText("");
-		JsonNode commitNode = root.path("commit");
-		String message = commitNode.path("message").asText("");
-		String authorDate = commitNode.path("author").path("date").asText("");
-
-		StringBuilder out = new StringBuilder();
-		out.append("Commit ").append(sha.isEmpty() ? "(unknown)" : sha).append('\n');
-		if (!htmlUrl.isEmpty()) {
-			out.append("URL: ").append(htmlUrl).append('\n');
-		}
-		if (!authorDate.isEmpty()) {
-			out.append("Author date: ").append(authorDate).append('\n');
-		}
-		out.append('\n').append(message).append("\n\n");
 		JsonNode files = root.path("files");
-		JsonNode fileNode = (files.isArray() && !files.isEmpty()) ? findFileForPath(files, path) : null;
-
-		appendFileBodyFromGithubFileEntry(out, files.get(0), owner, repo, ref);
-
-		enforceMaxLength(out);
-		return out.toString();
+		if (!files.isArray() || files.isEmpty()) {
+			if (!StringUtils.hasText(path)) {
+				return "";
+			}
+			return enforceMaxLengthString(fetchViaRepositoryContents(owner, repo, path, ref));
+		}
+		JsonNode fileNode = findFileForPath(files, path);
+		if (fileNode != null) {
+			return enforceMaxLengthString(fileNode.path("patch").asText(""));
+		}
+		return enforceMaxLengthString(fetchViaRepositoryContents(owner, repo, path, ref));
 	}
 
-	/**
-	 * Prefer {@code patch}; if empty, GET {@code raw_url}; if still empty, GET {@code contents_url} JSON; else
-	 * repository Contents API for the file path at {@code ref}.
-	 */
-	private void appendFileBodyFromGithubFileEntry(StringBuilder out, JsonNode fileNode, String owner, String repo,
-			String ref) {
-		String patch = fileNode.path("patch").asText("");
-		if (StringUtils.hasText(patch)) {
-			out.append(patch);
-			if (!patch.endsWith("\n")) {
-				out.append('\n');
-			}
-			return;
-		}
-		String rawUrl = fileNode.path("raw_url").asText("");
-		if (StringUtils.hasText(rawUrl)) {
-			try {
-				String raw = httpGetBody(URI.create(rawUrl.trim()), false);
-				appendChunk(out, raw);
-				return;
-			}
-			catch (GitProviderException ex) {
-				log.debug("raw_url fetch failed, trying contents_url: {}", LogRedactionUtil.safeForLog(ex.getMessage()));
-			}
-		}
-		String contentsUrl = fileNode.path("contents_url").asText("");
-		if (StringUtils.hasText(contentsUrl)) {
-			try {
-				String json = httpGetBody(URI.create(contentsUrl.trim()), true);
-				appendChunk(out, decodeContentsFileJson(json));
-				return;
-			}
-			catch (GitProviderException ex) {
-				log.debug("contents_url fetch failed, trying repository contents API: {}",
-						LogRedactionUtil.safeForLog(ex.getMessage()));
-			}
-		}
-		String fname = fileNode.path("filename").asText("");
-		if (StringUtils.hasText(fname)) {
-			appendChunk(out, fetchViaRepositoryContents(owner, repo, fname.replace('\\', '/'), ref));
-		}
-		else {
-			out.append("(No patch, raw_url, contents_url, or filename in Git response.)\n");
-		}
-	}
-
-	private void appendChunk(StringBuilder out, String chunk) {
+	private static String enforceMaxLengthString(String chunk) {
 		if (chunk.length() > MAX_RETRIEVED_CHARS) {
 			throw new GitProviderException(GitFailureKind.INVALID_RESPONSE,
 					"Retrieved text exceeds size limit; narrow path scope.");
 		}
-		out.append(chunk);
+		return chunk;
 	}
 
 	private String fetchViaRepositoryContents(String owner, String repo, String path, String ref) {
@@ -295,6 +242,9 @@ public class GitSourceClient {
 	}
 
 	private static JsonNode findFileForPath(JsonNode files, String path) {
+		if (!StringUtils.hasText(path)) {
+			return files.get(0);
+		}
 		String normalized = path.replace('\\', '/');
 		for (JsonNode f : files) {
 			String fn = f.path("filename").asText("");
@@ -306,13 +256,6 @@ public class GitSourceClient {
 			}
 		}
 		return null;
-	}
-
-	private static void enforceMaxLength(StringBuilder out) {
-		if (out.length() > MAX_RETRIEVED_CHARS) {
-			throw new GitProviderException(GitFailureKind.INVALID_RESPONSE,
-					"Retrieved text exceeds size limit; narrow path scope.");
-		}
 	}
 
 	private URI commitUri(String owner, String repo, String ref) {

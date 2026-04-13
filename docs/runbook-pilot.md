@@ -72,7 +72,7 @@ Postgres does **not** create a `root` superuser. This usually means the **client
 3. **Login:** `GET /login` → sign in (see **README** for bootstrap dev admin—rotate before shared environments).
 4. **Tasks (mentor or administrator):** Open **`/tasks`**, create a task if needed (**`/tasks/new`**), then **Assign interns** (**`/tasks/{taskId}/assignments`**) so an intern can submit coordinates (intern accounts must exist first—**`/admin/users`** as administrator).
 5. **Retrieval:** As a mentor (or administrator), open **`/tasks/{taskId}/submissions/{internId}`** for a submission that has version-control coordinates; use the UI control that triggers **fetch** (posts to **`…/fetch`**). Confirm source text or the safe Git error panel if coordinates are wrong.
-6. **Optional AI:** With **`llm`** healthy and model pulled, use **generate AI draft** on the same page; confirm draft or degraded messaging if inference fails.
+6. **Optional AI:** After **successful fetch**, with **`llm`** healthy and the model available, use **Generate AI draft** — the app calls the LLM with the **fetched** text; the assistive response should include **feedback on the code** and **suggestions to improve** (see **README** → *Mentor or administrator*). Confirm the draft appears in **read-only** fields, then exercise **Save review draft** / **Publish official review** as needed. If inference fails, confirm degraded messaging (**NFR8**).
 
 ## Production-oriented profile (**NFR6**, Actuator)
 
@@ -88,6 +88,7 @@ Postgres does **not** create a `root` superuser. This usually means the **client
 
 ## Traceability
 
+- **Epic 9:** Mentor AI draft on **fetched** text (structured feedback + suggestions), **read-only** display on submission detail, then rubric and publish — see **README** (*Mentor or administrator — move work through review and publish*, steps 5–7).
 - **NFR8:** Health and documented degraded LLM behavior in pilot.
 - **NFR12:** Env keys documented without values; Git/LLM diagnostics remain secret-safe.
 - **7.4:** Postgres role / JDBC alignment and troubleshooting for `FATAL: role "root" does not exist`.

@@ -13,7 +13,7 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:examinai}
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
   ai:
     ollama:
       # Allow Compose / tunnel overrides; default stays local Ollama.

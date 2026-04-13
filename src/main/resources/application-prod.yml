@@ -17,7 +17,7 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:${DATABASE_PASSWORD:}}
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
   ai:
     ollama:
       base-url: ${OLLAMA_BASE_URL:http://127.0.0.1:11434}

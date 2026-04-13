@@ -14,7 +14,7 @@ spring:
     password: ""
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
   ai:
     ollama:
       base-url: http://127.0.0.1:9

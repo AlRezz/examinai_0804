@@ -1,5 +1,5 @@
 # generated: 2026-04-08
-# last_updated: 2026-04-10 (stories 8-2, 8-3 → done; epic-8 → done)
+# last_updated: 2026-04-13 (epic-9 done)
 # project: examinai_0804
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-04-08"
-last_updated: "2026-04-10 (stories 8-2, 8-3 → done; epic-8 → done)"
+last_updated: "2026-04-13 (epic-9 done)"
 project: examinai_0804
 project_key: NOKEY
 tracking_system: file-system
@@ -97,3 +97,10 @@ development_status:
   8-2-admin-user-edit-eager-fetch-roles: done
   8-3-mentor-tasks-assignments-and-documentation: done
   epic-8-retrospective: optional
+
+  epic-9: done
+  9-1-llm-draft-from-fetch-with-feedback-and-suggestions: done
+  9-2-read-only-ai-draft-display-on-submission-detail: done
+  9-3-readme-runbook-mentor-ai-steps-alignment: done
+  9-4-git-source-client-patch-only-refactor: done
+  epic-9-retrospective: optional

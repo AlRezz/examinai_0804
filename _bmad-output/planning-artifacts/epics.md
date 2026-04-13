@@ -38,6 +38,7 @@ Authoritative per-story keys: [`_bmad-output/implementation-artifacts/sprint-sta
 | **6** — Intern transparency and privacy-safe feedback | **Done** | Stories **6.1–6.4** **done**. |
 | **7** — Audit visibility and pilot-ready deployment | **Done** | Stories **7.1–7.4** **done** (includes **7.4** Postgres credentials / Compose alignment). |
 | **8** — UI foundations (cross-cutting) | **Done** | **8.1** Bootstrap WebJars; **8.2** admin user edit **JOIN FETCH** for **`User.roles`** (fixes **LazyInitializationException** on edit form). |
+| **9** — Mentor AI draft: structured LLM output and read-only UI | **Done** | Stories **9.1–9.4** **done** (LLM from fetch + suggestions; read-only draft; docs; **`GitSourceClient` patch-only from `files[]`**). |
 
 ## Requirements Inventory
 
@@ -258,6 +259,20 @@ Interns see lifecycle status, published mentor judgment, and clearly labeled dra
 Coordinators can inspect a case record for accountability, and operators can run the app, database, and model as separate composable services.
 
 **FRs covered:** FR26, FR32
+
+### Epic 8: UI foundations (cross-cutting)
+**Tracking:** Done — see `sprint-status.yaml` (stories **8.1–8.3** done).
+
+Bootstrap WebJars on all pages, stable admin user edit with eager-fetched roles, and mentor-facing program-task documentation plus Git commit retrieval alignment.
+
+**FRs covered:** Cross-cutting UX and FR7 documentation alignment (see Story **8.3**).
+
+### Epic 9: Mentor AI draft — structured LLM output and read-only presentation
+**Tracking:** Done — see `sprint-status.yaml` (stories **9.1–9.4** done).
+
+After fetch, **Generate AI draft** calls the LLM with retrieved submission text; the assistive response must include **feedback on the code** and **suggestions to improve**. Mentors view that output only in **read-only** fields, then complete rubric scores and mentor-authored feedback and publish per Epic 4.
+
+**FRs covered:** FR18, FR19, FR21 (optional AI path), UX-DR4.
 
 ---
 
@@ -929,6 +944,82 @@ So that **coordinates and troubleshooting match the documented Commits API** (no
 **Given** a configured Git provider and submission coordinates  
 **When** the app fetches source  
 **Then** it calls **`…/commits/{ref}`** and builds review text from the commit payload and the **`files`** entry matching **path scope** (default **`README.md`**)
+
+---
+
+## Epic 9: Mentor AI draft — structured LLM output and read-only presentation
+
+**Tracking:** Done — `sprint-status.yaml`; stories **9.1–9.4** done (2026-04-13).
+
+Mentors and administrators follow README steps 5–7: generate an AI draft from **fetched** source with explicit **code feedback** and **improvement suggestions**, read that output in **non-editable** controls, then enter mentor rubric and narrative and save or publish.
+
+### Story 9.1: LLM draft from fetched source with code feedback and improvement suggestions
+
+As a **mentor or administrator**,
+I want **Generate AI draft to call the LLM using the fetched submission text**,
+So that **the assistive output always reflects what was retrieved and includes both critique of the code and concrete suggestions to improve**.
+
+**Implements:** FR18, FR19 (persisted draft distinct from publish), Epic 5 integration baseline; tightens prompt/contract vs generic “draft assessment”.
+
+**Acceptance Criteria:**
+
+**Given** a submission with **successful** source fetch and payload available to the AI layer (`AiDraftPayloadLoader` or successor)  
+**When** the user triggers **Generate AI draft**  
+**Then** the system invokes Spring AI with the **user payload derived from fetched material** (no call without fetch success—surface existing error UX)  
+**And** the **system prompt** (or structured output template) requires the model to produce **feedback on the code** and **suggestions to improve** as clearly separable sections or labeled blocks in the persisted draft text
+
+**Given** a successful model response  
+**When** the draft is saved  
+**Then** persistence remains separate from published mentor review rows (**FR19**) and invocation metadata remains auditable (**FR20**)
+
+**Given** fetch failed or source text is missing  
+**When** the user attempts **Generate AI draft**  
+**Then** the action does not call the LLM with empty or stale content; the user sees an actionable message consistent with Epic 3/5 degraded patterns
+
+---
+
+### Story 9.2: Read-only AI draft display on submission detail
+
+As a **mentor or administrator**,
+I want **the AI draft shown in read-only fields**,
+So that **I do not confuse model text with my own editable feedback** and I still complete scores and mentor narrative separately.
+
+**Implements:** UX-DR4 (draft vs mentor-owned fields), FR16 (mentor free-text independent of model).
+
+**Acceptance Criteria:**
+
+**Given** a persisted AI draft for the submission  
+**When** the mentor opens the submission detail (or refreshes after generation)  
+**Then** the model draft appears in **read-only** controls (e.g. `readonly` textarea, preformatted static block, or equivalent)—not editable like mentor feedback fields  
+**And** mentor **quality / readability / correctness** and **feedback** inputs remain clearly separate and editable
+
+**Given** keyboard and screen-reader use  
+**When** the mentor navigates the review form  
+**Then** read-only draft controls have an accessible name/label distinguishing **AI assistive draft** from **mentor feedback** (**NFR1** baseline)
+
+**Given** no draft exists yet  
+**When** the page loads  
+**Then** the read-only area shows an empty or guidance state without blocking rubric entry (**FR21**)
+
+---
+
+### Story 9.3: README and pilot documentation alignment
+
+As an **operator or mentor**,
+I want **README (and runbook where applicable) to describe steps 5–7 consistently**,
+So that **onboarding matches the product**: LLM call on fetched text → read-only AI output → mentor scores and publish.
+
+**Implements:** Pilot operations continuity with Epic 7 documentation.
+
+**Acceptance Criteria:**
+
+**Given** `README.md` — *Mentor or administrator — move work through review and publish*  
+**When** a reader follows the numbered steps  
+**Then** step 5 states LLM invocation on **fetched** text with **code feedback** and **improvement suggestions**; step 6 states **read-only** AI display; step 7 matches save draft / publish official review
+
+**Given** `docs/runbook-pilot.md` (or equivalent pilot doc) references mentor AI draft  
+**When** the runbook lists smoke or review steps  
+**Then** it does not contradict README steps 5–7 (update or add a short bullet if the runbook mentions AI draft)
 
 ---
 

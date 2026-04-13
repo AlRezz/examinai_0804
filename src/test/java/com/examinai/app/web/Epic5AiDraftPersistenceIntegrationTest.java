@@ -162,7 +162,7 @@ class Epic5AiDraftPersistenceIntegrationTest {
 		String detailUrl = "/tasks/" + taskId + "/submissions/" + intern.getId();
 		MvcResult page = mockMvc.perform(get(detailUrl).session(session)).andExpect(status().isOk()).andReturn();
 		String html = page.getResponse().getContentAsString();
-		assertThat(html).contains("Not final").contains("collapsed").contains("Model draft content for UX.")
-			.contains("Official outcome is only");
+		assertThat(html).contains("Not final").contains("AI assistive draft").contains("readonly")
+			.contains("Model draft content for UX.").contains("Official outcome is only");
 	}
 }
