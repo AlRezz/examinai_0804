@@ -6,10 +6,9 @@ sections_completed:
   - technology_stack
   - critical_implementation_rules
 discovery_notes: >-
-  No application scaffold in repo yet. Stack and patterns taken from
-  _bmad-output/planning-artifacts/architecture.md. Reconcile Spring Boot patch
-  version with Spring AI compatibility when generating from start.spring.io.
-codebase_status: planning_only
+  Spring Boot application implemented per _bmad-output/planning-artifacts/architecture.md.
+  Pin Spring Boot / Spring AI versions per BOM when upgrading dependencies.
+codebase_status: implementation_complete
 ---
 
 # Project Context for AI Agents

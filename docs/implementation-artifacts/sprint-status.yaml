@@ -1,5 +1,5 @@
 # generated: 2026-04-08
-# last_updated: 2026-04-08
+# last_updated: 2026-04-13 (epic-10 story 10.4 welcome jQuery UI)
 # project: examinai_0804
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-04-08"
-last_updated: "2026-04-08"
+last_updated: "2026-04-13 (epic-10 incl. 10.4 welcome UI)"
 project: examinai_0804
 project_key: NOKEY
 tracking_system: file-system
@@ -71,22 +71,45 @@ development_status:
   4-5-outcome-and-submission-history-across-resubmissions: done
   epic-4-retrospective: optional
 
-  epic-5: in-progress
+  epic-5: done
   5-1-request-ai-draft-assessment-via-spring-ai: done
-  5-2-persist-draft-separately-and-record-invocation-metadata: ready-for-dev
-  5-3-optional-ai-mentor-workflow-without-model-dependence: ready-for-dev
-  5-4-degraded-inference-detection-banner-and-mentor-only-publish: ready-for-dev
+  5-2-persist-draft-separately-and-record-invocation-metadata: done
+  5-3-optional-ai-mentor-workflow-without-model-dependence: done
+  5-4-degraded-inference-detection-banner-and-mentor-only-publish: done
   epic-5-retrospective: optional
 
-  epic-6: in-progress
-  6-1-intern-feedback-view-for-published-outcomes: ready-for-dev
-  6-2-draft-vs-published-labeling-for-interns: ready-for-dev
-  6-3-submission-lifecycle-status: ready-for-dev
-  6-4-privacy-isolation-between-interns: ready-for-dev
+  epic-6: done
+  6-1-intern-feedback-view-for-published-outcomes: done
+  6-2-draft-vs-published-labeling-for-interns: done
+  6-3-submission-lifecycle-status: done
+  6-4-privacy-isolation-between-interns: done
   epic-6-retrospective: optional
 
-  epic-7: in-progress
-  7-1-coordinator-read-only-case-record: ready-for-dev
-  7-2-docker-compose-for-application-database-and-llm: ready-for-dev
-  7-3-pilot-operations-runbook-and-environment-documentation: ready-for-dev
+  epic-7: done
+  7-1-coordinator-read-only-case-record: done
+  7-2-docker-compose-for-application-database-and-llm: done
+  7-3-pilot-operations-runbook-and-environment-documentation: done
+  7-4-postgres-credentials-compose-alignment: done
   epic-7-retrospective: optional
+
+  epic-8: done
+  8-1-bootstrap-webjars-global-styles: done
+  8-2-admin-user-edit-eager-fetch-roles: done
+  8-3-mentor-tasks-assignments-and-documentation: done
+  epic-8-retrospective: optional
+
+  epic-9: done
+  9-1-llm-draft-from-fetch-with-feedback-and-suggestions: done
+  9-2-read-only-ai-draft-display-on-submission-detail: done
+  9-3-readme-runbook-mentor-ai-steps-alignment: done
+  9-4-git-source-client-patch-only-refactor: done
+  9-5-ollama-model-pull-and-inference-troubleshooting: done
+  9-6-ai-draft-rubric-scores-and-form-fill: done
+  epic-9-retrospective: optional
+
+  epic-10: done
+  10-1-intern-feedback-official-only-and-score-card-tone: done
+  10-2-mentor-submission-fetched-source-section: done
+  10-3-global-jquery-ui-inspired-bluish-theme: done
+  10-4-welcome-and-sign-in-jquery-ui-redesign: done
+  epic-10-retrospective: optional

@@ -34,9 +34,12 @@ Authoritative per-story keys: [`_bmad-output/implementation-artifacts/sprint-sta
 | **2** — Program tasks and intern submissions | **Done** | Stories **2.1–2.4** **done** (tasks, assignments, intern list, submissions). |
 | **3** — Trusted source retrieval from Git | **Done** | Stories **3.1–3.3** **done** (Git config/hygiene, fetch client, diagnostics UX). |
 | **4** — Mentor review workspace and official outcomes | **Done** | Stories **4.1–4.5** **done** (queue, detail + source, draft rubric, publish w/ provenance, outcome history). |
-| **5** — AI-assisted drafts and resilient inference | In progress | Stories **5.1–5.4** **ready-for-dev**. |
-| **6** — Intern transparency and privacy-safe feedback | In progress | Stories **6.1–6.4** **ready-for-dev**. |
-| **7** — Audit visibility and pilot-ready deployment | In progress | Stories **7.1–7.3** **ready-for-dev**. |
+| **5** — AI-assisted drafts and resilient inference | **Done** | Stories **5.1–5.4** **done**. |
+| **6** — Intern transparency and privacy-safe feedback | **Done** | Stories **6.1–6.4** **done**. |
+| **7** — Audit visibility and pilot-ready deployment | **Done** | Stories **7.1–7.4** **done** (includes **7.4** Postgres credentials / Compose alignment). |
+| **8** — UI foundations (cross-cutting) | **Done** | **8.1** Bootstrap WebJars; **8.2** admin user edit **JOIN FETCH** for **`User.roles`** (fixes **LazyInitializationException** on edit form). |
+| **9** — Mentor AI draft: structured LLM output and read-only UI | **Done** | Stories **9.1–9.6** **done** (includes **9.6** AI rubric 1–5 + mentor form auto-fill from draft). |
+| **10** — Intern & mentor UI polish (feedback tone + source visibility) | **Done** | Stories **10.1–10.4** **done** (official-only intern feedback; fetched source on mentor detail; global bluish theme; **welcome + sign-in** jQuery UI widgets on `/` and `/login`). |
 
 ## Requirements Inventory
 
@@ -238,25 +241,39 @@ Mentors can work through a queue, read code in context, score and comment, publi
 **FRs covered:** FR13, FR14, FR15, FR16, FR17, FR21 (publish path without AI), FR27, FR28
 
 ### Epic 5: AI-assisted drafts and resilient inference
-**Tracking:** In progress — see `sprint-status.yaml` (stories 5.1–5.4 ready-for-dev).
+**Tracking:** Done — see `sprint-status.yaml` (stories 5.1–5.4 done).
 
 The product requests and stores model drafts separately from mentor verdicts, captures audit metadata, and degrades gracefully when inference is unavailable—without blocking mentor publish.
 
 **FRs covered:** FR18, FR19, FR20, FR21 (optional draft path), FR29, FR30
 
 ### Epic 6: Intern transparency and privacy-safe feedback
-**Tracking:** In progress — see `sprint-status.yaml` (stories 6.1–6.4 ready-for-dev).
+**Tracking:** Done — see `sprint-status.yaml` (stories 6.1–6.4 done).
 
 Interns see lifecycle status, published mentor judgment, and clearly labeled drafts; they never see other interns’ outcomes.
 
 **FRs covered:** FR22, FR23, FR24, FR25
 
 ### Epic 7: Audit visibility and pilot-ready deployment
-**Tracking:** In progress — see `sprint-status.yaml` (stories 7.1–7.3 ready-for-dev).
+**Tracking:** Done — see `sprint-status.yaml` (stories 7.1–7.4 done).
 
 Coordinators can inspect a case record for accountability, and operators can run the app, database, and model as separate composable services.
 
 **FRs covered:** FR26, FR32
+
+### Epic 8: UI foundations (cross-cutting)
+**Tracking:** Done — see `sprint-status.yaml` (stories **8.1–8.3** done).
+
+Bootstrap WebJars on all pages, stable admin user edit with eager-fetched roles, and mentor-facing program-task documentation plus Git commit retrieval alignment.
+
+**FRs covered:** Cross-cutting UX and FR7 documentation alignment (see Story **8.3**).
+
+### Epic 9: Mentor AI draft — structured LLM output and read-only presentation
+**Tracking:** Done — see `sprint-status.yaml` (stories **9.1–9.6** done).
+
+After fetch, **Generate AI draft** calls the LLM with retrieved submission text; the assistive response must include **feedback on the code** and **suggestions to improve**. Mentors view that output only in **read-only** fields, then complete rubric scores and mentor-authored feedback and publish per Epic 4.
+
+**FRs covered:** FR18, FR19, FR21 (optional AI path), UX-DR4.
 
 ---
 
@@ -619,7 +636,7 @@ So that **resubmissions are explainable over time**.
 
 ## Epic 5: AI-assisted drafts and resilient inference
 
-**Tracking:** In progress — `sprint-status.yaml` (stories 5.1–5.4 ready-for-dev).
+**Tracking:** Done — `sprint-status.yaml` (stories 5.1–5.4 done).
 
 The product requests and stores model drafts separately from mentor verdicts, captures audit metadata, and degrades gracefully when inference is unavailable—without blocking mentor publish.
 
@@ -704,7 +721,7 @@ So that **reviews do not stall on infrastructure issues**.
 
 ## Epic 6: Intern transparency and privacy-safe feedback
 
-**Tracking:** In progress — `sprint-status.yaml` (stories 6.1–6.4 ready-for-dev).
+**Tracking:** Done — `sprint-status.yaml` (stories 6.1–6.4 done).
 
 Interns see lifecycle status, published mentor judgment, and clearly labeled drafts; they never see other interns’ outcomes.
 
@@ -786,7 +803,7 @@ So that **peer grades stay private**.
 
 ## Epic 7: Audit visibility and pilot-ready deployment
 
-**Tracking:** In progress — `sprint-status.yaml` (stories 7.1–7.3 ready-for-dev).
+**Tracking:** Done — `sprint-status.yaml` (stories 7.1–7.4 done).
 
 Coordinators can inspect a case record for accountability, and operators can run the app, database, and model as separate composable services.
 
@@ -849,6 +866,257 @@ So that **new laptops can join the pilot safely**.
 **Given** production-oriented profile  
 **When** errors occur  
 **Then** user-facing pages avoid stack traces (**NFR6**) and Actuator exposure is restricted as per architecture
+
+---
+
+### Story 7.4: PostgreSQL credentials and Compose alignment
+
+As an **operator**,
+I want **the app and Postgres container to use one clear, documented database user contract**,
+So that **connections never fail with `FATAL: role "root" does not exist` or other implicit username mismatches**.
+
+**Implements:** Follow-on to **7.2** / **7.3** (FR32 operator path, NFR12 env documentation).
+
+**Acceptance Criteria:**
+
+**Given** a fresh or existing pilot volume  
+**When** `docker compose up` runs with documented env  
+**Then** JDBC uses the same PostgreSQL role the `db` service was initialized with, and troubleshooting docs cover wrong-user / stale-volume cases
+
+**Given** `.env` is missing optional overrides  
+**Then** documented defaults still yield a consistent non-`root` database role and matching app credentials
+
+---
+
+## Epic 8: UI foundations (cross-cutting)
+
+**Tracking:** Done — `sprint-status.yaml` (stories **8.1–8.3** done).
+
+### Story 8.1: Bootstrap WebJars — global styles on all pages
+
+As a **user**,
+I want **Bootstrap styling on every Thymeleaf page without depending on a CDN**,
+So that **the pilot works offline and looks consistent** (login, tasks, admin, mentor, intern, coordinator).
+
+**Implements:** Architecture guidance (Bootstrap / Thymeleaf); complements **UX-DR** layout expectations.
+
+**Acceptance Criteria:**
+
+**Given** any primary Thymeleaf view  
+**When** the page renders  
+**Then** Bootstrap **5** CSS is loaded from the application (**WebJar**), not an external host, and **Spring Security** allows **`/webjars/**`** for anonymous pages such as `/login`
+
+### Story 8.2: Admin user edit — eager fetch roles
+
+As an **administrator**,
+I want **the user edit form to load current roles without a Hibernate error**,
+So that **I can maintain accounts** from **`/admin/users/{id}/edit`**.
+
+**Implements:** Stable admin UX (Story **1.5** area); avoids **LazyInitializationException** when the view reads **`User.roles`** outside the original transaction.
+
+**Acceptance Criteria:**
+
+**Given** a user with persisted roles  
+**When** an administrator opens the edit form  
+**Then** **`UserManagementService`** loads the user with **`roles`** initialized (e.g. **`JOIN FETCH`**) before returning to the controller
+
+### Story 8.3: Mentor program tasks — documentation, UI alignment, and Git “Get a commit”
+
+As a **mentor**,
+I want **clear documentation and on-page copy that I can create tasks and assign interns under `/tasks`**,
+So that **I use the same flows as an administrator for program work while user provisioning remains administrator-only** (`/admin/users`).
+
+As a **mentor**,
+I want **source fetch to use GitHub REST v3 `GET /repos/{owner}/{repo}/commits/{ref}`**,
+So that **coordinates and troubleshooting match the documented Commits API** (normalized text = commit metadata + unified diff for the path scope when that file appears in **`files`**).
+
+**Implements:** FR7 / Epic 2 alignment; clarifies that **`/tasks/**`** is **`MENTOR`** + **`ADMINISTRATOR`** (no security rule change required). Git integration aligns with [REST commits — Get a commit](https://docs.github.com/en/rest/commits/commits?apiVersion=2026-03-10).
+
+**Acceptance Criteria:**
+
+**Given** README and pilot runbook  
+**When** an operator or mentor reads onboarding material  
+**Then** tasks and intern assignments are described for **mentors and administrators**, and **User management** is called out as **administrator-only** for new accounts
+
+**Given** the program tasks list and assign-interns views  
+**When** a mentor or administrator opens them  
+**Then** copy reflects shared responsibility; mentors without admin role do not get a broken link to **`/admin/users`**
+
+**Given** a configured Git provider and submission coordinates  
+**When** the app fetches source  
+**Then** it calls **`…/commits/{ref}`** and builds review text from the commit payload and the **`files`** entry matching **path scope** (default **`README.md`**)
+
+---
+
+## Epic 9: Mentor AI draft — structured LLM output and read-only presentation
+
+**Tracking:** Done — `sprint-status.yaml`; stories **9.1–9.6** done (2026-04-13).
+
+Mentors and administrators follow README steps 5–7: generate an AI draft from **fetched** source with explicit **code feedback** and **improvement suggestions**, read that output in **non-editable** controls, then enter mentor rubric and narrative and save or publish.
+
+### Story 9.1: LLM draft from fetched source with code feedback and improvement suggestions
+
+As a **mentor or administrator**,
+I want **Generate AI draft to call the LLM using the fetched submission text**,
+So that **the assistive output always reflects what was retrieved and includes both critique of the code and concrete suggestions to improve**.
+
+**Implements:** FR18, FR19 (persisted draft distinct from publish), Epic 5 integration baseline; tightens prompt/contract vs generic “draft assessment”.
+
+**Acceptance Criteria:**
+
+**Given** a submission with **successful** source fetch and payload available to the AI layer (`AiDraftPayloadLoader` or successor)  
+**When** the user triggers **Generate AI draft**  
+**Then** the system invokes Spring AI with the **user payload derived from fetched material** (no call without fetch success—surface existing error UX)  
+**And** the **system prompt** (or structured output template) requires the model to produce **feedback on the code** and **suggestions to improve** as clearly separable sections or labeled blocks in the persisted draft text
+
+**Given** a successful model response  
+**When** the draft is saved  
+**Then** persistence remains separate from published mentor review rows (**FR19**) and invocation metadata remains auditable (**FR20**)
+
+**Given** fetch failed or source text is missing  
+**When** the user attempts **Generate AI draft**  
+**Then** the action does not call the LLM with empty or stale content; the user sees an actionable message consistent with Epic 3/5 degraded patterns
+
+---
+
+### Story 9.2: Read-only AI draft display on submission detail
+
+As a **mentor or administrator**,
+I want **the AI draft shown in read-only fields**,
+So that **I do not confuse model text with my own editable feedback** and I still complete scores and mentor narrative separately.
+
+**Implements:** UX-DR4 (draft vs mentor-owned fields), FR16 (mentor free-text independent of model).
+
+**Acceptance Criteria:**
+
+**Given** a persisted AI draft for the submission  
+**When** the mentor opens the submission detail (or refreshes after generation)  
+**Then** the model draft appears in **read-only** controls (e.g. `readonly` textarea, preformatted static block, or equivalent)—not editable like mentor feedback fields  
+**And** mentor **quality / readability / correctness** and **feedback** inputs remain clearly separate and editable
+
+**Given** keyboard and screen-reader use  
+**When** the mentor navigates the review form  
+**Then** read-only draft controls have an accessible name/label distinguishing **AI assistive draft** from **mentor feedback** (**NFR1** baseline)
+
+**Given** no draft exists yet  
+**When** the page loads  
+**Then** the read-only area shows an empty or guidance state without blocking rubric entry (**FR21**)
+
+---
+
+### Story 9.3: README and pilot documentation alignment
+
+As an **operator or mentor**,
+I want **README (and runbook where applicable) to describe steps 5–7 consistently**,
+So that **onboarding matches the product**: LLM call on fetched text → read-only AI output → mentor scores and publish.
+
+**Implements:** Pilot operations continuity with Epic 7 documentation.
+
+**Acceptance Criteria:**
+
+**Given** `README.md` — *Mentor or administrator — move work through review and publish*  
+**When** a reader follows the numbered steps  
+**Then** step 5 states LLM invocation on **fetched** text with **code feedback** and **improvement suggestions**; step 6 states **read-only** AI display; step 7 matches save draft / publish official review
+
+**Given** `docs/runbook-pilot.md` (or equivalent pilot doc) references mentor AI draft  
+**When** the runbook lists smoke or review steps  
+**Then** it does not contradict README steps 5–7 (update or add a short bullet if the runbook mentions AI draft)
+
+---
+
+### Story 9.5: Ollama model availability and inference troubleshooting
+
+As an **operator**,
+I want **the app to pull the configured Ollama chat model when it is missing and documented recovery when Ollama returns 404 for an unknown model tag**,
+So that **mentor AI draft works on a fresh Ollama volume without opaque failures** and **tests remain offline-safe**.
+
+**Implements:** NFR4 / NFR8 operational clarity; complements Epic 5 AI integration.
+
+**Acceptance Criteria:**
+
+**Given** default `application.yml` and a running Ollama at **`OLLAMA_BASE_URL`** without the configured **`OLLAMA_MODEL`**  
+**When** the Spring Boot application starts  
+**Then** Spring AI init may **pull** the chat model when **`pull-model-strategy`** is **`when_missing`** (tests force **`never`**)
+
+**Given** a mentor triggers **Generate AI draft** and Ollama responds with **404** / **`model '…' not found`**  
+**When** an operator follows **README** / **runbook** guidance  
+**Then** they can **`ollama pull`** the tag, change **`OLLAMA_MODEL`**, or disable auto-pull via env where pre-baked images are required
+
+---
+
+### Story 9.6: AI draft rubric scores and mentor form auto-fill
+
+As a **mentor**,
+I want **the assistive draft to include suggested scores for Quality, Readability, and Correctness (1–5) and to populate my review form fields from that response**,
+So that **I can adjust the model’s proposal instead of retyping rubric values**.
+
+**Implements:** FR15 alignment with assistive output; extends Epic 9.1 structured draft contract.
+
+**Acceptance Criteria:**
+
+**Given** a successful **Generate AI draft**  
+**When** the model follows the prompt (score lines + feedback sections)  
+**Then** persisted **`AiDraft`** text remains the full response **and** **`mentor_review_drafts`** receives parsed **Quality / Readability / Correctness** and **narrative feedback** for the form
+
+**Given** the model omits a score line or headings  
+**When** the app parses the response  
+**Then** remaining fields are filled where possible without failing the draft save (**FR21** — mentor can correct before publish)
+
+---
+
+## Epic 10: Intern & mentor UI polish — feedback presentation and review context
+
+**Tracking:** Done — `sprint-status.yaml`; stories **10.1–10.4** done (2026-04-13).
+
+Lightweight layout and color treatment (Bootstrap + small custom CSS, [visual reference](https://cdn.dribbble.com/userupload/17418294/file/original-5aaa90d8170534cced726464ff60177b.png?resize=752x&vertical=center)): interns see **official** outcomes only on **Your feedback** with **score-band** card surfaces; mentors see **fetched Git text** immediately after fetch controls on **Submission review**; **application-wide** blues follow a **jQuery UI Smoothness–style** palette (`/css/examai-theme.css` loaded from `head-bootstrap`); **welcome** (`/`) and **sign-in** (`/login`) use **jQuery UI WebJars** (widgets + `.button()`).
+
+### Story 10.1: Intern “Your feedback” — official only + rubric tone
+
+As an **intern**,
+I want **only the official mentor outcome on my feedback page with a clear visual band from my rubric average**,
+So that **I am not distracted by AI drafts and I can quickly see how strong the published scores are**.
+
+**Acceptance Criteria:**
+
+**Given** a published review for the current submission revision  
+**When** the intern opens **Your feedback**  
+**Then** no AI assistive / draft panel appears **and** the official card uses **rose** if average (quality + readability + correctness) / 3 &lt; 2.5, **light yellow** if 2.5–4 inclusive, **light green** if &gt; 4
+
+### Story 10.2: Mentor submission review — fetched source visibility
+
+As a **mentor**,
+I want **the text retrieved from Git shown clearly after I fetch**,
+So that **I can review the patch or file contents in context with the task without hunting in the layout**.
+
+**Acceptance Criteria:**
+
+**Given** successful fetch with non-empty stored retrieval text  
+**When** the mentor views submission detail  
+**Then** a **Fetched source** section shows that text (monospace, scrollable) below the fetch action; Git help copy matches **patch / contents** behavior
+
+### Story 10.3: Global bluish UI shell (jQuery UI–inspired)
+
+As a **user**,
+I want **every screen to share the same calm blue chrome**,
+So that **navigation feels consistent and the product matches a familiar “widget” look (classic jQuery UI blues) without pulling in conflicting `jquery-ui.css`**.
+
+**Acceptance Criteria:**
+
+**Given** any page that includes the shared Bootstrap head fragment  
+**When** the page renders  
+**Then** `examai-theme.css` applies after Bootstrap with **primary / link / body / border** tokens and card accents in the **Smoothness** blue family, and bare **login/home-style** `<main>` shells are **visibly framed** on the tinted page background
+
+### Story 10.4: Welcome + sign-in — jQuery UI redesign
+
+As a **visitor**,
+I want **the landing and sign-in pages built with jQuery UI widgets and bluish chrome**,
+So that **the entry experience matches the rest of the app and does not look like raw HTML**.
+
+**Acceptance Criteria:**
+
+**Given** unauthenticated or returning users  
+**When** they open **`/`** or **`/login`**  
+**Then** the page loads **jQuery UI** from WebJars, shows a **centered widget card** (`ui-widget` / `ui-widget-header` / `ui-widget-content`), uses **highlight/error states** for messages on sign-in, initializes **primary actions** with **`.button()`**, and the login form posts **CSRF** safely
 
 ---
 
