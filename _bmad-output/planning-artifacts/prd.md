@@ -168,9 +168,9 @@ classification:
 
 ### Journey 5 — Git API integration (system-adjacent)
 
-**Opening:** A task points at **org/repo** + **commit SHA** + allowed **paths**.
+**Opening:** A submission supplies **org/repo** + **commit ref** + **path scope** (required file path for retrieval).
 
-**Rising action:** App uses **stored credential** (secret) to call **provider API**, validates **rate/scope**, stores **snapshot metadata** and **fetched content hash** (exact storage TBD in domain reqs).
+**Rising action:** App uses **stored credential** (secret) to call the **provider REST API** (commits + optional contents/raw URLs per implementation), validates **rate/scope**, stores **retrieval state** and **normalized text** for review (per domain design).
 
 **Climax:** On **403/404**, mentor sees **actionable** error (“token lacks repo scope” / “commit not found”).
 
@@ -308,6 +308,8 @@ Mobile browsers: **best-effort** responsive layout; full mentor **review** UX ma
 - **FR10:** The system can **retrieve** source content for a submission from an external **version-control provider** using **organization-configured** credentials.
 - **FR11:** The system can **record** retrieval **success**, **failure**, and **diagnostic** details **without** exposing secrets to end users.
 - **FR12:** An **authorized user** can **re-trigger** retrieval or **correct** coordinates when retrieval fails (within policy).
+
+**MVP implementation note (Examinai):** Retrieval targets a **GitHub REST v3–compatible** API (`GIT_PROVIDER_BASE_URL`, e.g. `https://api.github.com`). Interns supply **repository** (`owner/name`), **commit ref**, and a **required path scope** (repo-relative file path—no default file). The integration **first** calls **`GET /repos/{owner}/{repo}/commits/{ref}`** to load commit metadata and **`files[]`**, then resolves file text using, in order, the matching entry’s **`patch`**, **`raw_url`**, **`contents_url`**, or **`GET /repos/{owner}/{repo}/contents/{path}?ref={ref}`** when no matching **`files[]`** row exists. **Spring `RestClient`** performs HTTP; secrets are env-only (**FR31**). See **`docs/planning-artifacts/architecture.md`** (Git provider HTTP) and **`README.md`** for operator detail.
 
 ### Mentor review workspace
 

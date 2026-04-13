@@ -1,9 +1,10 @@
 # generated: 2026-04-08
-# last_updated: 2026-04-13 (epic-10 story 10.4 welcome jQuery UI)
+# last_updated: 2026-04-13 (epic-10 complete; story 10.4 welcome/sign-in UI)
 # project: examinai_0804
 # project_key: NOKEY
 # tracking_system: file-system
 # story_location: {project-root}/_bmad-output/implementation-artifacts
+# Mirror: keep identical copy at docs/implementation-artifacts/sprint-status.yaml (project knowledge).
 
 # STATUS DEFINITIONS:
 # ==================
@@ -35,7 +36,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-04-08"
-last_updated: "2026-04-13 (epic-10 incl. 10.4 welcome UI)"
+last_updated: "2026-04-13 (epic-10 complete; story 10.4 welcome/sign-in UI)"
 project: examinai_0804
 project_key: NOKEY
 tracking_system: file-system

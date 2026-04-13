@@ -6,9 +6,10 @@ sections_completed:
   - technology_stack
   - critical_implementation_rules
 discovery_notes: >-
-  Spring Boot application implemented per _bmad-output/planning-artifacts/architecture.md.
-  Pin Spring Boot / Spring AI versions per BOM when upgrading dependencies.
-codebase_status: implementation_complete
+  Brownfield Spring Boot app; Git integration is RestClient-only in
+  com.examinai.app.integration.git.GitSourceClient. Align doc changes with
+  docs/planning-artifacts/architecture.md and README Git section.
+codebase_status: implemented
 ---
 
 # Project Context for AI Agents
@@ -27,7 +28,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 | Persistence | **PostgreSQL**, **Spring Data JPA** / Hibernate, **Liquibase** | Pin DB **major** deliberately (e.g. 16 or 17) |
 | Security | **Spring Security** | Session auth, roles, CSRF on browser mutations |
 | AI | **Spring AI** (e.g. **`spring-ai-ollama`** for local inference) | Target model **deepseek-r1:8b** in dedicated container; timeouts, retries, degraded UX |
-| Frontend assets | **Bootstrap**, **jQuery** | Via **WebJars** or `src/main/resources/static/` |
+| Frontend assets | **Bootstrap** **5** | **WebJars** + shared fragment `fragments/head-bootstrap` (story **8.1**); **jQuery** per PRD where used |
 | Deploy | **Docker Compose** | Three services: app, PostgreSQL, LLM runtime |
 | Testing | **spring-boot-starter-test** (JUnit 5, Mockito) | Co-located `*Test` classes |
 
@@ -47,7 +48,7 @@ When the Maven/Gradle project exists, **copy exact dependency versions from the 
 
 - **Controllers:** bind input, delegate to **services**, return view + model—**no** heavy business logic or direct repository use for publish / AI draft / cross-aggregate flows.
 - **Services:** own **transactions** for publish review, persist AI draft, Git snapshot metadata, and related audit rows.
-- **Git HTTP:** only in **`integration.git`**; **one** client style project-wide (**WebClient** _or_ **RestClient**—lock in first integration story, never both ad hoc).
+- **Git HTTP:** only in **`integration.git`**; use **`RestClient` only** (see `GitClientConfig`, `GitSourceClient`). Do **not** add **WebClient** for Git provider calls.
 - **LLM:** only via **`integration.ai`** / Spring AI façade—**no** raw HTTP from controllers.
 - **Templates:** `templates/` by area (`tasks/`, `review/`, `fragments/`, `layouts/`). **Static** under `static/css`, `static/js`.
 
@@ -89,6 +90,17 @@ When the Maven/Gradle project exists, **copy exact dependency versions from the 
 - Returning **500** with **Git** or **LLM** supplier message text to end users.
 - Hand-editing production schema without a Liquibase change.
 - **Mentor publish** or **AI draft** persistence implemented as controller → repository skips.
+
+### Git provider (`integration.git`)
+
+- **Config:** `examinai.git.base-url` ← **`GIT_PROVIDER_BASE_URL`**, token ← **`GIT_PROVIDER_TOKEN`** (never in DB/UI).
+- **HTTP:** **`RestClient`** with `Accept: application/vnd.github+json` and `Authorization: Bearer …` when token is set.
+- **Coordinates:** `owner/repo`, commit **`ref`**, and **path scope** (required repo-relative path—**no** default such as `README.md`).
+- **Calls (order):**
+  1. `GET {base}/repos/{owner}/{repo}/commits/{ref}` — commit JSON + `files[]`.
+  2. For the path scope, if a matching `files[]` entry exists: use **`patch`**, else GET **`raw_url`**, else GET **`contents_url`** and decode Contents JSON (`type: file`, base64 `content`).
+  3. If no matching `files[]` row: `GET {base}/repos/{owner}/{repo}/contents/{path}?ref={ref}`.
+- **Errors:** `GitProviderException` + `GitFailureKind`; map to safe mentor strings (`GitRetrievalUiMessage`), never raw provider bodies.
 
 ---
 

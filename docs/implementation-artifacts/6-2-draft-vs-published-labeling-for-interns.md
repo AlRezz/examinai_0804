@@ -24,9 +24,9 @@ so that **I do not confuse model text with my official grade**.
 
 ## Tasks / Subtasks
 
-- [ ] Integrate **5.2** draft rows into intern view when policy flag allows; CSS/labels: “Draft — not official”.
-- [ ] Product policy: document when interns see drafts (config or hardcoded MVP rule).
-- [ ] Tests: with draft + publish, labels correct; publish-only, no misleading AI block.
+- [x] Integrate **5.2** draft rows into intern view when policy flag allows; CSS/labels: “Draft — not official”.
+- [x] Product policy: document when interns see drafts (config or hardcoded MVP rule).
+- [x] Tests: with draft + publish, labels correct; publish-only, no misleading AI block.
 
 ## Dev Notes
 
@@ -45,12 +45,32 @@ so that **I do not confuse model text with my official grade**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+
+Composer (Cursor agent)
+
 ### Debug Log References
+
+_(none)_
+
 ### Completion Notes List
+
+- `examinai.intern.show-ai-draft-to-intern` (default `true`) gates `AiDraftPersistenceService` output on the intern feedback page; when `false`, the AI panel is omitted entirely.
+- Feedback template uses a dashed warning panel, badge **Draft — not official**, and copy stating the model output is not a grade; official mentor block is separate and listed first.
+
 ### File List
-_(filled by dev agent on completion)_
+
+- `src/main/java/com/examinai/app/config/InternUiProperties.java`
+- `src/main/java/com/examinai/app/config/InternUiConfiguration.java`
+- `src/main/resources/application.yml`
+- `src/main/java/com/examinai/app/service/InternFeedbackService.java`
+- `src/main/resources/templates/intern/submissions/feedback.html`
+- `src/test/java/com/examinai/app/config/InternUiPropertiesBindingTest.java`
+- `src/test/java/com/examinai/app/web/Epic6InternSurfacesIntegrationTest.java` (`internSeesLabeledAiDraftSeparateFromOfficialWhenBothExist`, plus publish-only paths in other cases)
+
+## Change Log
+
+- 2026-04-08: Intern-visible AI draft policy + labeled non-official panel on feedback page.
 
 ---
 
-**Story completion status:** `done` — Ultimate context engine analysis completed.
+**Story completion status:** `done` — Accepted; epic 6 closed in sprint tracking.

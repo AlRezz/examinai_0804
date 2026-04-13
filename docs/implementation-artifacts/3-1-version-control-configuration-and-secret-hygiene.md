@@ -24,10 +24,10 @@ so that **tokens never appear in the UI or logs**.
 
 ## Tasks / Subtasks
 
-- [ ] Add typed config bean (e.g. `GitProviderProperties`) bound from `GIT_*` or `SPRING_*` env; document in `.env.example` (keys only).
-- [ ] Ensure **no** Git client usage from controllers—only `integration.git` package.
-- [ ] Add logging helper or rules: redact query params / headers on failures.
-- [ ] Tests: properties bind from env; unit test that log lines from simulated failure omit token pattern.
+- [x] Add typed config bean (e.g. `GitProviderProperties`) bound from `GIT_*` or `SPRING_*` env; document in `.env.example` (keys only).
+- [x] Ensure **no** Git client usage from controllers—only `integration.git` package.
+- [x] Add logging helper or rules: redact query params / headers on failures.
+- [x] Tests: properties bind from env; unit test that log lines from simulated failure omit token pattern.
 
 ## Dev Notes
 
@@ -51,12 +51,22 @@ so that **tokens never appear in the UI or logs**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+Composer (Cursor agent)
 ### Debug Log References
 ### Completion Notes List
+- Added `GitProviderProperties` with `examinai.git.*` mapped from `GIT_PROVIDER_*` in `application.yml`; `.env.example` documents keys only.
+- Introduced `integration.git.LogRedactionUtil` and applied redaction in `GitSourceClient` warnings; 403 paths avoid echoing raw provider bodies in exception messages.
+- All Git HTTP remains in `com.examinai.app.integration.git` (`GitSourceClient`); controllers use services only.
 ### File List
-_(filled by dev agent on completion)_
+- `src/main/java/com/examinai/app/config/GitProviderProperties.java`
+- `src/main/java/com/examinai/app/integration/git/LogRedactionUtil.java`
+- `src/main/resources/application.yml`
+- `.env.example`
+- `src/test/java/com/examinai/app/config/GitProviderPropertiesBindingTest.java`
+- `src/test/java/com/examinai/app/integration/git/LogRedactionUtilTest.java`
+- `src/test/java/com/examinai/app/integration/git/GitSourceClientTest.java` (shared: safe failure message assertion)
+- (shared with 3.2) `GitSourceClient.java`, `GitClientConfig.java`
 
 ---
 
-**Story completion status:** `done` — Ultimate context engine analysis completed.
+**Story completion status:** `done` — Marked done; aligns with `sprint-status.yaml`.

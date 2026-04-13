@@ -3,7 +3,6 @@
 Status: done
 
 <!-- Ultimate context engine analysis completed - comprehensive developer guide created. -->
-<!-- Mirror of `_bmad-output/implementation-artifacts/5-1-request-ai-draft-assessment-via-spring-ai.md`; links adjusted for this folder. -->
 
 ## Story
 
@@ -45,11 +44,11 @@ so that **I get assistive signals without ceding final judgment**.
 
 ### References
 
-- [Source: `../../_bmad-output/planning-artifacts/epics.md` — Story 5.1]
+- [Source: `_bmad-output/planning-artifacts/epics.md` — Story 5.1]
 
 ## Correct course (Sprint change)
 
-**Proposal:** [`../../_bmad-output/planning-artifacts/sprint-change-proposal-2026-04-08.md`](../../_bmad-output/planning-artifacts/sprint-change-proposal-2026-04-08.md)  
+**Proposal:** [`_bmad-output/planning-artifacts/sprint-change-proposal-2026-04-08.md`](../planning-artifacts/sprint-change-proposal-2026-04-08.md)  
 **Scope classification:** **Minor** — no PRD/epic scope change; in-story engineering fixes only.  
 **Implementation:** Payload assembly moved to **`AiDraftPayloadLoader`** (`@Transactional(readOnly = true)`); **`AiDraftAssessmentService`** runs inference outside any DB transaction. **`aiDraftExecutor`** Spring bean (`close` on shutdown). Controller: **`NoSuchElementException`**, **`max-flash-chars`** truncation. Properties: **`@Validated`** / **`@Min`/`@Max`**. Tests: **`AiDraftPayloadLoaderTest`**, timeout path in **`AiDraftAssessmentServiceTest`**.
 

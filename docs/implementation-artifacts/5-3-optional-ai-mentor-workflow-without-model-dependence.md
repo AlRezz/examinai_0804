@@ -24,9 +24,9 @@ so that **I am never forced to rely on the model**.
 
 ## Tasks / Subtasks
 
-- [ ] Audit **4.4** publish path: no dependency on draft row.
-- [ ] UI: draft section optional / collapsed when unknown; no blocking validation on AI fields.
-- [ ] Tests: publish with zero drafts succeeds integration-style.
+- [x] Audit **4.4** publish path: no dependency on draft row.
+- [x] UI: draft section optional / collapsed when unknown; no blocking validation on AI fields.
+- [x] Tests: publish with zero drafts succeeds integration-style.
 
 ## Dev Notes
 
@@ -34,11 +34,12 @@ so that **I am never forced to rely on the model**.
 
 - **5.2** draft persistence; **4.4** publish.
 
-### Current codebase (after 5.2)
+### Current codebase (after 5.3)
 
-- **4.4** `MentorReviewService.publish` does not read AI tables; only `mentor_review_drafts` is cleared on publish.
-- AI text appears only when `latestAiDraft` is present; mentor rubric and publish have no validation tied to AI.
-- Remaining story work: explicit regression tests for “publish with zero AI rows” and UX polish (optional collapse / copy) if product wants it.
+- **4.4** `MentorReviewService.publish` does not read AI tables; only `mentor_review_drafts` is cleared on publish (cleanup, not a read dependency).
+- Mentor rubric and publish validate only scores + narrative; no AI fields on `MentorReviewForm`.
+- AI assist UI: optional “Generate AI draft” action; latest AI text only in `submission-detail.html` when `latestAiDraft` exists, in a **collapsed** `<details>` block plus copy that publish uses only the rubric below.
+- Regression: `Epic5AiDraftPersistenceIntegrationTest.publishReviewViaWebSucceedsWithNoAiInvocationRows` (no `model_invocations`); existing test still asserts mentor narrative wins when an AI draft row exists (AC2 mentor side). **Intern** draft vs published visibility is **Epic 6** (AC2 policy).
 
 ### References
 
@@ -47,12 +48,32 @@ so that **I am never forced to rely on the model**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+
+Composer (Cursor agent).
+
 ### Debug Log References
+
+—  
+
 ### Completion Notes List
+
+- Confirmed `MentorReviewService.publish` and `TaskSubmissionMentorController.publishReview` use only form scores + narrative; `deleteBySubmission_Id` is best-effort cleanup of mentor review draft, not a read dependency. No AI tables or `latestAiDraft` in publish path.
+- Mentor UI: AI draft panel is optional (only when a persisted AI draft exists), collapsed by default via `<details>`, with explicit copy that publishing uses only rubric fields below.
+- `Epic5AiDraftPersistenceIntegrationTest.publishReviewViaWebSucceedsWithNoAiInvocationRows` exercises HTTP publish with zero `model_invocations` rows; `aiDraftAndInvocationPersistedSeparatelyFromPublishedReview` already covers mentor narrative winning over AI text when a draft exists (AC2).
+
 ### File List
-_(filled by dev agent on completion)_
+
+- `src/main/resources/templates/tasks/submission-detail.html`
+- `src/test/java/com/examinai/app/web/Epic5AiDraftPersistenceIntegrationTest.java`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `_bmad-output/implementation-artifacts/5-3-optional-ai-mentor-workflow-without-model-dependence.md` (this story)
+
+## Change Log
+
+- 2026-04-08: Story 5.3 — optional AI mentor workflow UX + regression test for publish without AI rows.
+- 2026-04-08: Dev Notes and File List refreshed (removed stale “remaining work”; clarified Epic 6 scope for AC2 intern policy).
+- 2026-04-08: Marked **done** after review sign-off.
 
 ---
 
-**Story completion status:** `done` — Ultimate context engine analysis completed.
+**Story completion status:** `done` — Accepted; Epic 5 story 5.3 closed.

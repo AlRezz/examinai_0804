@@ -1,6 +1,6 @@
 # Pilot operations runbook
 
-Short guide for operators bringing up the **Examinai** pilot stack (story **7.3**), aligned with **Docker Compose** story **7.2** and ops NFRs (**NFR6**, **NFR8**, **NFR12**).
+Short guide for operators bringing up the **Examinai** pilot stack (story **7.3**). It aligns with the **Docker Compose** topology from story **7.2** and with operations NFRs (**NFR6**, **NFR8**, **NFR12**): health exposure, degraded LLM behavior, and secret-safe diagnostics.
 
 ## Prerequisites
 

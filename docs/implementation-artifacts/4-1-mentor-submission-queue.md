@@ -26,10 +26,10 @@ so that **I can work my review queue efficiently**.
 
 ## Tasks / Subtasks
 
-- [ ] Query: submissions needing mentor attention (define states consistent with **2.4** / review lifecycle).
-- [ ] `web/review` or `web/queue` controller + `templates/review/queue.html` (illustrative).
-- [ ] Secure: **MENTOR** (and policy: **ADMIN** if allowed).
-- [ ] Tests: `@WebMvcTest` with mentor user; intern gets 403.
+- [x] Query: submissions needing mentor attention (define states consistent with **2.4** / review lifecycle).
+- [x] `web/review` or `web/queue` controller + `templates/review/queue.html` (illustrative).
+- [x] Secure: **MENTOR** (and policy: **ADMIN** if allowed).
+- [x] Tests: `@WebMvcTest` with mentor user; intern gets 403.
 
 ## Dev Notes
 
@@ -41,6 +41,11 @@ so that **I can work my review queue efficiently**.
 
 - Controllers delegate to services; templates under `templates/review/` [Source: architecture **Project Structure**].
 
+### Implementation notes
+
+- Queue includes submissions in **`SUBMITTED`** and **`UNDER_REVIEW`** (excludes **`OUTCOME_PUBLISHED`**). Ordered via `SubmissionRepository.findQueuedForMentorReview` (task due date, then `updatedAt`).
+- Route: **`GET /review/queue`** (`MentorReviewQueueController`). Retrieval column summarizes git state for scanning.
+
 ### References
 
 - [Source: `_bmad-output/planning-artifacts/epics.md` — Story 4.1]
@@ -48,12 +53,30 @@ so that **I can work my review queue efficiently**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+
+Cursor (implementation session).
+
 ### Debug Log References
+
+—  
+
 ### Completion Notes List
+
+- Bootstrap 5 CDN on `review/queue.html`; table-responsive card layout.
+- Integration coverage: `Epic4MentorReviewIntegrationTest` (mentor 200, intern 403 on queue).
+
 ### File List
-_(filled by dev agent on completion)_
+
+- `src/main/java/com/examinai/app/web/review/MentorReviewQueueController.java`
+- `src/main/java/com/examinai/app/service/MentorReviewService.java` (queue query delegation)
+- `src/main/java/com/examinai/app/domain/task/SubmissionRepository.java`
+- `src/main/java/com/examinai/app/domain/task/SubmissionStatus.java`
+- `src/main/resources/templates/review/queue.html`
+- `src/main/java/com/examinai/app/config/SecurityConfig.java` (`/review/**` rule)
+- `src/main/resources/templates/home.html`, `src/main/resources/templates/tasks/list.html` (navigation links)
+- `src/test/java/com/examinai/app/web/review/MentorReviewQueueWebMvcTest.java`
+- `src/test/java/com/examinai/app/web/Epic4MentorReviewIntegrationTest.java` (queue access)
 
 ---
 
-**Story completion status:** `done` — Ultimate context engine analysis completed.
+**Story completion status:** `done` — Implemented and verified in test suite.

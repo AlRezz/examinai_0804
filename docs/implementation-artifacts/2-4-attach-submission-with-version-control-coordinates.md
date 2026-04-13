@@ -26,11 +26,11 @@ so that **mentors can review the exact code I point to**.
 
 ## Tasks / Subtasks
 
-- [ ] Liquibase: `submissions` (or equivalent) with FK to task + intern user, fields for repo/ref/scope, status enum/text, timestamps (AC: #1).
-- [ ] Service validates assignment ownership—intern can only submit for **their** task assignments (AC: #1).
-- [ ] Thymeleaf: form on intern task detail or dedicated flow; CSRF on POST (AC: #1).
-- [ ] **Do not** call Git APIs here—that is **Epic 3**; store coordinates only (AC: #1).
-- [ ] Tests: happy path + reject not-assigned task (AC: #1).
+- [x] Liquibase: `submissions` (or equivalent) with FK to task + intern user, fields for repo/ref/scope, status enum/text, timestamps (AC: #1).
+- [x] Service validates assignment ownership—intern can only submit for **their** task assignments (AC: #1).
+- [x] Thymeleaf: form on intern task detail or dedicated flow; CSRF on POST (AC: #1).
+- [x] **Do not** call Git APIs here—that is **Epic 3**; store coordinates only (AC: #1).
+- [x] Tests: happy path + reject not-assigned task (AC: #1).
 
 ## Dev Notes
 
@@ -54,12 +54,31 @@ so that **mentors can review the exact code I point to**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+
+Composer (Cursor agent)
+
 ### Debug Log References
+
 ### Completion Notes List
+
+- Added `submissions` with unique `(task_id, intern_user_id)`. `SubmissionService.upsertCoordinates` updates the existing row when present — **newest wins** (MVP; no history table). Status stored as enum string (`SUBMITTED` on save; `DRAFT` reserved). POST `/intern/tasks/{taskId}/submission` with validated `SubmissionForm`. Rejects upsert when intern is not assigned. No Git client calls.
+
+### FR28 deferral
+
+- Full submission revision history out of scope; single upserted row per intern+task documents MVP policy.
+
 ### File List
-_(filled by dev agent on completion)_
+
+- `src/main/resources/db/changelog/changes/003-epic2-tasks-assignments-submissions.yaml` (submissions section)
+- `src/main/java/com/examinai/app/domain/task/SubmissionStatus.java`
+- `src/main/java/com/examinai/app/domain/task/Submission.java`
+- `src/main/java/com/examinai/app/domain/task/SubmissionRepository.java`
+- `src/main/java/com/examinai/app/service/SubmissionService.java`
+- `src/main/java/com/examinai/app/web/intern/SubmissionForm.java`
+- `src/main/java/com/examinai/app/web/intern/InternTaskController.java`
+- `src/main/resources/templates/intern/tasks/detail.html`
+- `src/test/java/com/examinai/app/web/Epic2TaskAndInternIntegrationTest.java`
 
 ---
 
-**Story completion status:** `done` — Ultimate context engine analysis completed.
+**Story completion status:** `done` — Marked done; aligns with `sprint-status.yaml`.

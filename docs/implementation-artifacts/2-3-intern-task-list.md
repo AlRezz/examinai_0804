@@ -24,10 +24,10 @@ so that **I know what I must deliver**.
 
 ## Tasks / Subtasks
 
-- [ ] Query service: tasks for `currentUser.id` via assignment join—**no** broad task leak (AC: #1–#2).
-- [ ] `InternTaskController` (or under `web/task`) + Thymeleaf list template (AC: #1).
-- [ ] Security: role `INTERN` (and optionally self-only resource rules) (AC: #1–#2).
-- [ ] Tests: two interns, assignments differ; each sees only own rows (AC: #2).
+- [x] Query service: tasks for `currentUser.id` via assignment join—**no** broad task leak (AC: #1–#2).
+- [x] `InternTaskController` (or under `web/task`) + Thymeleaf list template (AC: #1).
+- [x] Security: role `INTERN` (and optionally self-only resource rules) (AC: #1–#2).
+- [x] Tests: two interns, assignments differ; each sees only own rows (AC: #2).
 
 ## Dev Notes
 
@@ -50,12 +50,27 @@ so that **I know what I must deliver**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+
+Composer (Cursor agent)
+
 ### Debug Log References
+
 ### Completion Notes List
+
+- `InternTaskService.listAssignedTasksForIntern` uses `TaskAssignmentRepository.findByInternIdWithTask`. `InternTaskController` at `/intern/tasks` (list) and `/intern/tasks/{taskId}` (detail scaffold for **2.4**). Security: `/intern/**` → `hasRole('INTERN')`. Mentors receive 403 on intern routes. Unassigned task detail returns **404** to avoid leaking task existence.
+
 ### File List
-_(filled by dev agent on completion)_
+
+- `src/main/java/com/examinai/app/service/InternTaskService.java`
+- `src/main/java/com/examinai/app/web/intern/InternTaskController.java`
+- `src/main/resources/templates/intern/tasks/list.html`
+- `src/main/resources/templates/intern/tasks/detail.html` (shared with 2.4)
+- `src/main/java/com/examinai/app/config/SecurityConfig.java`
+- `src/main/java/com/examinai/app/security/RoleBasedAuthenticationSuccessHandler.java`
+- `src/main/resources/templates/home.html`
+- `src/test/java/com/examinai/app/web/Epic2TaskAndInternIntegrationTest.java`
+- `src/test/java/com/examinai/app/web/LoginAndSecurityIntegrationTest.java`
 
 ---
 
-**Story completion status:** `done` — Ultimate context engine analysis completed.
+**Story completion status:** `done` — Marked done; aligns with `sprint-status.yaml`.

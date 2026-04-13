@@ -28,11 +28,11 @@ so that **reviews do not stall on infrastructure issues**.
 
 ## Tasks / Subtasks
 
-- [ ] Detect timeouts / connection errors from **5.1**; set session or request attribute e.g. `degradedInference` (reuse name from architecture **Process Patterns — Loading / degraded paths**).
-- [ ] Shared Thymeleaf fragment: banner in layout for review pages.
-- [ ] Disable or soften “Generate draft” CTA when degraded; do not block publish.
-- [ ] Actuator/custom health optional: LLM probe behind feature flag.
-- [ ] Tests: simulate LLM failure—banner shown; publish still succeeds.
+- [x] Detect timeouts / connection errors from **5.1**; set session or request attribute e.g. `degradedInference` (reuse name from architecture **Process Patterns — Loading / degraded paths**).
+- [x] Shared Thymeleaf fragment: banner in layout for review pages.
+- [x] Disable or soften “Generate draft” CTA when degraded; do not block publish.
+- [x] Actuator/custom health optional: LLM probe behind feature flag.
+- [x] Tests: simulate LLM failure—banner shown; publish still succeeds.
 
 ## Dev Notes
 
@@ -53,12 +53,31 @@ so that **reviews do not stall on infrastructure issues**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+Cursor agent (implementation)
 ### Debug Log References
 ### Completion Notes List
+- Session flag `degradedInference` set on `InferenceUnavailableException` in `generateAiDraft`, cleared on successful draft; `DegradedInferenceModelAdvice` exposes it to mentor queue and task submission views.
+- Shared fragment `tasks/fragments/degraded-inference-banner.html` on submission detail and review queue; AI draft form softened (opacity, tooltip, helper text) without disabling publish.
+- Optional `OllamaLlmHealthIndicator` (bean `llmInference`) behind `examinai.ai.llm-health-probe.enabled` (default false); probes `GET {spring.ai.ollama.base-url}/api/tags`.
+- Tests: WebMvc session assertions, queue banner content, full integration publish after mocked AI failure, health indicator DOWN to bad port when probe enabled.
+
 ### File List
-_(filled by dev agent on completion)_
+- `src/main/java/com/examinai/app/web/DegradedInferenceAttributes.java`
+- `src/main/java/com/examinai/app/web/DegradedInferenceModelAdvice.java`
+- `src/main/java/com/examinai/app/web/task/TaskSubmissionMentorController.java`
+- `src/main/java/com/examinai/app/integration/ai/LlmHealthProbeProperties.java`
+- `src/main/java/com/examinai/app/integration/ai/OllamaLlmHealthIndicator.java`
+- `src/main/java/com/examinai/app/integration/ai/AiIntegrationConfiguration.java`
+- `src/main/resources/application.yml`
+- `src/main/resources/templates/tasks/fragments/degraded-inference-banner.html`
+- `src/main/resources/templates/tasks/submission-detail.html`
+- `src/main/resources/templates/review/queue.html`
+- `src/test/java/com/examinai/app/web/task/TaskSubmissionMentorAiDraftWebMvcTest.java`
+- `src/test/java/com/examinai/app/web/review/MentorReviewQueueWebMvcTest.java`
+- `src/test/java/com/examinai/app/web/DegradedInferenceMentorIntegrationTest.java`
+- `src/test/java/com/examinai/app/integration/ai/OllamaLlmHealthIndicatorIntegrationTest.java`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
 
 ---
 
-**Story completion status:** `done` — Ultimate context engine analysis completed.
+**Story completion status:** `done`.

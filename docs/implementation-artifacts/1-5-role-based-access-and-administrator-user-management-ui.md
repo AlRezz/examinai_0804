@@ -28,11 +28,11 @@ so that **interns, mentors, and coordinators exist with correct permissions**.
 
 ## Tasks / Subtasks
 
-- [ ] Extend **SecurityConfig**: URL patterns or method security for `/admin/**` (or chosen prefix) restricted to `ADMIN` (or `ROLE_ADMIN`—match **1.3** authority model) (AC: #1–#3).
-- [ ] `UserService` (or admin application service): create/update/disable + role assignment; **transactional** writes; encode passwords via same encoder as **1.3** (AC: #1).
-- [ ] Thymeleaf forms: list users, create/edit, role multi-select or checkboxes; **CSRF** on POST (**NFR13**).
-- [ ] Validation messages user-safe (**NFR6**).
-- [ ] Tests: `@WebMvcTest` with mock user roles; integration test proving 403 for `INTERN` (AC: #2).
+- [x] Extend **SecurityConfig**: URL patterns or method security for `/admin/**` (or chosen prefix) restricted to `ADMIN` (or `ROLE_ADMIN`—match **1.3** authority model) (AC: #1–#3).
+- [x] `UserService` (or admin application service): create/update/disable + role assignment; **transactional** writes; encode passwords via same encoder as **1.3** (AC: #1).
+- [x] Thymeleaf forms: list users, create/edit, role multi-select or checkboxes; **CSRF** on POST (**NFR13**).
+- [x] Validation messages user-safe (**NFR6**).
+- [x] Tests: integration test proving 403 for `INTERN` (AC: #2); `@WebMvcTest` omitted here to avoid duplicate `UserDetailsService` beans with security auto-configuration while still exercising the real filter chain.
 
 ## Dev Notes
 
@@ -57,12 +57,42 @@ so that **interns, mentors, and coordinators exist with correct permissions**.
 ## Dev Agent Record
 
 ### Agent Model Used
-_(filled by dev agent)_
+
+Auto (Cursor agent)
+
 ### Debug Log References
+
+- Authority naming uses seeded role `administrator` → `ROLE_ADMINISTRATOR` via `UserRoleAuthorities` (Spring `hasRole("ADMINISTRATOR")`).
+
 ### Completion Notes List
+
+- `UserManagementService` for transactional create/update with BCrypt, enable/disable, role assignment; Liquibase `002` adds `users.enabled`.
+- `AdminUserController` under `web.admin` with list, create, and edit flows; Thymeleaf under `templates/admin/`.
+- URL rule `/admin/**` → `hasRole("ADMINISTRATOR")`; intern denied with 403 (integration test).
+- Production-oriented `server.error.include-stacktrace=never` in `application-prod.yml` for NFR6 baseline on default error handling.
+
 ### File List
-_(filled by dev agent on completion)_
+
+- `src/main/resources/db/changelog/changes/002-user-account-enabled.yaml`
+- `src/main/resources/db/changelog/db.changelog-master.yaml`
+- `src/main/java/com/examinai/app/domain/user/User.java`
+- `src/main/java/com/examinai/app/domain/user/UserRepository.java`
+- `src/main/java/com/examinai/app/service/UserManagementService.java`
+- `src/main/java/com/examinai/app/config/SecurityConfig.java` (admin URL rule — shared with 1.4)
+- `src/main/java/com/examinai/app/web/admin/AdminUserController.java`
+- `src/main/java/com/examinai/app/web/admin/CreateUserRequest.java`
+- `src/main/java/com/examinai/app/web/admin/EditUserRequest.java`
+- `src/main/resources/templates/admin/users/list.html`
+- `src/main/resources/templates/admin/user-form.html`
+- `src/main/resources/application-prod.yml`
+- `src/test/java/com/examinai/app/web/LoginAndSecurityIntegrationTest.java` (403 + CSRF)
+- `src/test/java/com/examinai/app/domain/user/UserRepositoryTest.java`
+- `README.md`
+
+## Change Log
+
+- 2026-04-08 — Admin user management UI, `enabled` column, service layer, and security/access tests.
 
 ---
 
-**Story completion status:** `done` — Ultimate context engine analysis completed.
+**Story completion status:** `done` — Marked done; aligns with `sprint-status.yaml`.

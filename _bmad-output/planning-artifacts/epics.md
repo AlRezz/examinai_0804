@@ -24,9 +24,11 @@ This document provides the complete epic and story breakdown for examinai_0804, 
 
 **Inputs used:** PRD (`prd.md`) and Architecture (`architecture.md`). No separate UX specification file was found under `planning-artifacts`; UX-oriented requirements were taken from the PRD **Web application specific requirements** and **Domain-specific requirements**.
 
-## Implementation status (sprint tracking)
+## Implementation status (Sprint tracking)
 
-Authoritative per-story keys: [`_bmad-output/implementation-artifacts/sprint-status.yaml`](../implementation-artifacts/sprint-status.yaml). Story markdown lives under `_bmad-output/implementation-artifacts/`.
+**Sprint status file:** [`sprint-status.yaml`](../implementation-artifacts/sprint-status.yaml) — defines `development_status` keys for epics and stories. The same YAML is kept in parallel under `_bmad-output/implementation-artifacts/` and `docs/implementation-artifacts/`; update both when the Sprint board changes.
+
+**Story records:** Markdown per story lives beside that file (same folder layout under `_bmad-output/implementation-artifacts/` and `docs/implementation-artifacts/`). Prefer editing the `_bmad-output` copy when closing a story, then mirror to `docs/` for project knowledge.
 
 | Epic | Engineering status | Notes |
 |------|-------------------|--------|

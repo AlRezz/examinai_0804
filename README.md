@@ -1,5 +1,12 @@
 # Examinai
 
+## Documentation
+
+- **Product and Sprint traceability:** [`docs/README.md`](docs/README.md) — PRD, architecture, epics, `sprint-status.yaml`, story files, runbook, and how `docs/` relates to `_bmad-output/`.
+- **Pilot operations:** [`docs/runbook-pilot.md`](docs/runbook-pilot.md) — health checks, degraded LLM, Git diagnostics, smoke path.
+
+---
+
 Spring Boot baseline for the Examinai product: Java **21**, **Maven**, Thymeleaf, JPA, PostgreSQL driver, Liquibase, Spring Security, Validation, Actuator, and **Spring AI Ollama**. The web UI uses **Bootstrap 5** from **WebJars** (shared Thymeleaf fragment `fragments/head-bootstrap` — story **8.1**) so styles do not depend on a CDN.
 
 ## Prerequisites

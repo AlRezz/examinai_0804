@@ -26,23 +26,27 @@ so that **the codebase matches the architecture baseline and later stories can a
 
 ## Tasks / Subtasks
 
-- [ ] **Confirm Boot + Spring AI** (AC: #1)  
-  - [ ] Before generating, check Spring AI compatibility matrix for chosen `bootVersion`; adjust `bootVersion` on start.spring.io if needed.
+- [x] **Confirm Boot + Spring AI** (AC: #1)  
+  - [x] Before generating, check Spring AI compatibility matrix for chosen `bootVersion`; adjust `bootVersion` on start.spring.io if needed.
 
-- [ ] **Generate project** (AC: #2)  
-  - [ ] Use Initializr with: `type=maven-project`, `javaVersion=21`, `packageName=com.examinai.app`, `groupId=com.examinai`, `artifactId=examinai`, dependencies as listed in Dev Notes / architecture curl example.  
-  - [ ] Unzip into repo; ensure `.gitignore` covers `target/`, IDE files, local env.
+- [x] **Generate project** (AC: #2)  
+  - [x] Use Initializr with: `type=maven-project`, `javaVersion=21`, `packageName=com.examinai.app`, `groupId=com.examinai`, `artifactId=examinai`, dependencies as listed in Dev Notes / architecture curl example.  
+  - [x] Unzip into repo; ensure `.gitignore` covers `target/`, IDE files, local env.
 
-- [ ] **Profiles and Actuator** (AC: #3, #5)  
-  - [ ] Add or verify `application.yml` with default profile or explicit `spring.profiles.active` for local dev.  
-  - [ ] Add `application-dev.yml` with anything needed for local run (placeholders for DB URLs acceptable if datasource is not validated until story 1.2 — see Dev Notes).  
-  - [ ] Add `application-prod.yml` with production-oriented defaults: avoid exposing full Actuator beyond health where practical; no secrets in file.
+- [x] **Profiles and Actuator** (AC: #3, #5)  
+  - [x] Add or verify `application.yml` with default profile or explicit `spring.profiles.active` for local dev.  
+  - [x] Add `application-dev.yml` with anything needed for local run (placeholders for DB URLs acceptable if datasource is not validated until story 1.2 — see Dev Notes).  
+  - [x] Add `application-prod.yml` with production-oriented defaults: avoid exposing full Actuator beyond health where practical; no secrets in file.
 
-- [ ] **Verify startup** (AC: #3)  
-  - [ ] Document one command to run with `dev` profile and confirm `/actuator/health` responds.
+- [x] **Verify startup** (AC: #3)  
+  - [x] Document one command to run with `dev` profile and confirm `/actuator/health` responds.
 
-- [ ] **README slice** (AC: #2–#5)  
-  - [ ] Short README: Java 21, Maven, how to run with `dev`, link to architecture doc for full stack.
+- [x] **README slice** (AC: #2–#5)  
+  - [x] Short README: Java 21, Maven, how to run with `dev`, link to architecture doc for full stack.
+
+## Change Log
+
+- **2026-04-08:** Story 1.1 implemented — Spring Initializr scaffold at repo root, YAML profiles (dev/test/prod), H2 for dev/test, minimal Liquibase baseline, Security permit-all bootstrap, actuator health verified (`dev` run + `mvn verify`). Parent POM set to `3.5.13` (Central coordinate; Initializr emitted `.RELEASE` suffix).
 
 ## Dev Notes
 
@@ -105,16 +109,39 @@ so that **the codebase matches the architecture baseline and later stories can a
 
 ### Agent Model Used
 
-_(filled by dev agent)_
+Cursor Agent
 
 ### Debug Log References
 
+- Initial `spring-boot-starter-parent:3.5.13.RELEASE` did not resolve from Maven Central; aligned parent to `3.5.13` (published coordinate).
+
 ### Completion Notes List
+
+- Generated project via Initializr (`bootVersion=3.5.13.RELEASE` in curl → BOM `3.5.13` / Spring AI `1.1.4` in POM); starters include `spring-ai-starter-model-ollama` (Ollama path per architecture).
+- `application-dev.yml` + runtime **H2** allow local start without PostgreSQL; `application-test.yml` + `@ActiveProfiles("test")` keep `mvn verify` free of Docker.
+- Minimal `db/changelog/db.changelog-master.yaml` baseline tag so Liquibase runs cleanly on H2 and future Postgres.
+- `SecurityConfig` uses `permitAll()` for bootstrap only (auth hardening in Epic 1 follow-ons).
+- README documents `./mvnw spring-boot:run -Dspring-boot.run.profiles=dev` and `curl /actuator/health`.
 
 ### File List
 
-_(filled by dev agent on completion)_
+- `pom.xml`
+- `README.md`
+- `.gitignore`
+- `mvnw`
+- `mvnw.cmd`
+- `.gitattributes`
+- `HELP.md`
+- `.mvn/wrapper/maven-wrapper.properties`
+- `src/main/java/com/examinai/app/ExaminaiApplication.java`
+- `src/main/java/com/examinai/app/config/SecurityConfig.java`
+- `src/main/resources/application.yml`
+- `src/main/resources/application-dev.yml`
+- `src/main/resources/application-prod.yml`
+- `src/main/resources/application-test.yml`
+- `src/main/resources/db/changelog/db.changelog-master.yaml`
+- `src/test/java/com/examinai/app/ExaminaiApplicationTests.java`
 
 ---
 
-**Story completion status:** `done` — Ultimate context engine analysis completed; comprehensive developer guide created.
+**Story completion status:** `done` — Marked done; aligns with `sprint-status.yaml`.
